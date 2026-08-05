@@ -2572,9 +2572,42 @@
     var curAcc = SETTINGS_ACCENTS.find(function (a) { return a.id === s.accent; }) || SETTINGS_ACCENTS[0];
     var hintText = isCustom ? ('自定义 ' + s.accentColor) : curAcc.label;
 
+    // 构建个人资料摘要
+    var profile = getUserProfile();
+    var avatarHtml = getAvatarHtml(profile, 44);
+    var genderLabel = { female: '女', male: '男', other: '其他' };
+    var profileInfoRows = [
+      { label: '手机号', value: profile.phone || '未设置' },
+      { label: '邮箱', value: profile.email || '未设置' },
+      { label: '性别', value: genderLabel[profile.gender] || '未设置' },
+      { label: '生日', value: profile.birthday || '未设置' },
+      { label: '身高', value: profile.height ? (profile.height + ' cm') : '未设置' }
+    ];
+
+    var profileSection = '' +
+      '<div style="background:var(--g50);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid var(--line)">' +
+        '<div class="settings-row" style="margin-bottom:0;padding:0">' +
+          '<div style="display:flex;align-items:center;gap:12px">' +
+            avatarHtml +
+            '<div>' +
+              '<div style="font-weight:600;font-size:15px;color:var(--text)">' + (profile.nickname || '用户') + '</div>' +
+              '<div style="font-size:11px;color:var(--ink-light);margin-top:2px">个人信息</div>' +
+            '</div>' +
+          '</div>' +
+          '<button class="btn ghost" onclick="closeModal();openProfileEditor()" style="padding:6px 14px;font-size:12px;border-radius:8px">编辑</button>' +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;font-size:11px;color:var(--ink-light)">' +
+          profileInfoRows.map(function(r) {
+            return '<span><span style="color:var(--g300)">' + r.label + '：</span>' + r.value + '</span>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+
     openModal({
-      title: '页面设置',
-      body: '<div class="settings-grid">' +
+      title: '设置',
+      body: profileSection +
+        '<div style="font-size:12px;color:var(--g300);font-weight:600;margin-bottom:8px">页面偏好</div>' +
+        '<div class="settings-grid">' +
         '<div class="settings-row">' +
         '<div><div class="label">夜间模式</div><div class="hint">深色背景，更适合夜间阅读</div></div>' +
         '<label class="toggle-sw"><input type="checkbox" id="setTheme" ' + (s.theme === 'dark' ? 'checked' : '') + ' onchange="updateSetting(\'theme\',this.checked?\'dark\':\'light\')"><span class="track"></span></label>' +
