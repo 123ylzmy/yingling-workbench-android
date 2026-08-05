@@ -974,6 +974,24 @@
   function goTodayTodoDay() { todoViewDate = today(); renderToday() }
 
   /* ===================== 日历（含待办+特殊日子集成） ===================== */
+  // 中国法定节假日（公历日期，涵盖2025-2027年）
+  const CHINESE_HOLIDAYS = {
+    2025: {
+      '01-01':'元旦','01-29':'春节','01-30':'春节','01-31':'春节','02-01':'春节','02-02':'春节','02-03':'春节','02-04':'春节',
+      '04-04':'清明节','05-01':'劳动节','05-02':'劳动节','05-03':'劳动节','05-04':'劳动节','05-05':'劳动节',
+      '05-31':'端午节','10-01':'国庆节','10-02':'国庆节','10-03':'国庆节','10-04':'国庆节','10-05':'国庆节','10-06':'中秋节·国庆','10-07':'国庆节','10-08':'国庆节'
+    },
+    2026: {
+      '01-01':'元旦','02-17':'春节','02-18':'春节','02-19':'春节','02-20':'春节','02-21':'春节','02-22':'春节','02-23':'春节',
+      '04-05':'清明节','05-01':'劳动节','05-02':'劳动节','05-03':'劳动节','05-04':'劳动节','05-05':'劳动节',
+      '06-19':'端午节','09-25':'中秋节','10-01':'国庆节','10-02':'国庆节','10-03':'国庆节','10-04':'国庆节','10-05':'国庆节','10-06':'国庆节','10-07':'国庆节'
+    },
+    2027: {
+      '01-01':'元旦','02-06':'春节','02-07':'春节','02-08':'春节','02-09':'春节','02-10':'春节','02-11':'春节','02-12':'春节',
+      '04-05':'清明节','05-01':'劳动节','05-02':'劳动节','05-03':'劳动节','05-04':'劳动节','05-05':'劳动节',
+      '06-09':'端午节','09-15':'中秋节','10-01':'国庆节','10-02':'国庆节','10-03':'国庆节','10-04':'国庆节','10-05':'国庆节','10-06':'国庆节','10-07':'国庆节'
+    }
+  };
   const TODO_TYPES = [
     { id: 'life', label: '生活', cls: 'life', color: '--o300', bg: '--o50' },
     { id: 'work', label: '工作', cls: 'work', color: '--pu300', bg: '--pu50' },
@@ -1054,13 +1072,16 @@
       const isWeekend = dowIdx === 0 || dowIdx === 6;
       const isSat = dowIdx === 6, isSun = dowIdx === 0;
       const isManualHoliday = state.holidays && state.holidays.includes(dateKey);
+      const legalHolidayName = (CHINESE_HOLIDAYS[calYear] || {})[dateKey];
+      const isLegalHoliday = !!legalHolidayName;
 
       // CSS类
       let dayCls = 'cal-day' + (isToday ? ' today' : '');
       if (sp && sp.type === 'birthday') dayCls += ' special-day birthday';
       if (sp && sp.type === 'special') dayCls += ' special-day special';
       if (sp && sp.type === 'holiday') dayCls += ' holiday-day';
-      if (isWeekend || isManualHoliday) dayCls += ' weekend' + (isSat ? ' sat' : '') + (isSun ? ' sun' : '');
+      if (isLegalHoliday) dayCls += ' legal-holiday';
+      if (isWeekend || isManualHoliday || isLegalHoliday) dayCls += ' weekend' + (isSat ? ' sat' : '') + (isSun ? ' sun' : '');
 
       let dotsHtml = '';
       if (types && types.size) {
@@ -1069,7 +1090,9 @@
         dotsHtml += '</div>';
       }
       let holidayTag = '';
-      if (sp && sp.type === 'holiday') {
+      if (isLegalHoliday) {
+        holidayTag = '<div class="cal-holiday-tag legal">' + esc(legalHolidayName) + '</div>';
+      } else if (sp && sp.type === 'holiday') {
         holidayTag = '<div class="cal-holiday-tag">假</div>';
       }
       cells += '<div class="' + dayCls + '" onclick="pickCalDay(' + d + ')"><div class="cal-num">' + d + '</div>' + holidayTag + dotsHtml + '</div>';
@@ -1101,6 +1124,7 @@
       '<div class="cal-legend-item"><span class="cal-legend-dot birthday"></span>生日</div>' +
       '<div class="cal-legend-item"><span class="cal-legend-dot special"></span>纪念日</div>' +
       '<div class="cal-legend-item"><span class="cal-legend-dot holiday"></span>假期</div>' +
+      '<div class="cal-legend-item"><span class="cal-legend-dot legal-holiday"></span>法定假日</div>' +
       '</div>' +
       '</div>' +
       '<div class="cal-ev-list">' +

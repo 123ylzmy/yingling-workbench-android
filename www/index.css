@@ -1286,6 +1286,31 @@ input[type=number]::-webkit-inner-spin-button {
   background: var(--danger)
 }
 
+.cal-legend-dot.legal-holiday {
+  background: #E8653A
+}
+
+/* 法定假日格子样式 */
+.cal-day.legal-holiday .cal-num {
+  color: #D4512A
+}
+.cal-day.legal-holiday.weekend .cal-num {
+  color: #E8653A
+}
+
+/* 法定假日标签 */
+.cal-day.legal-holiday .cal-holiday-tag.legal {
+  font-size: 8px;
+  font-weight: 700;
+  color: #fff;
+  background: #E8653A;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1.2;
+  margin-top: -2px;
+  white-space: nowrap
+}
+
 /* 事件列表 */
 .cal-ev-list {
   margin-top: 16px;
