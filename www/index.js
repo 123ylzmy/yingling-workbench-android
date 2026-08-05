@@ -16,7 +16,7 @@
     size = size || 28;
     // 自定义上传头像优先
     if (profile && profile.avatar_url) {
-      return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;overflow:hidden;flex-shrink:0"><img src="' + profile.avatar_url + '" style="width:100%;height:100%;object-fit:cover" alt="头像"></span>';
+      return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;overflow:hidden;flex-shrink:0"><img src="' + profile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" alt="头像"></span>';
     }
     var ai = (profile && profile.avatar_idx !== undefined) ? profile.avatar_idx : 0;
     var emoji = (profile && profile.avatar_emoji) || AVATAR_PRESETS[ai] || '🌸';
