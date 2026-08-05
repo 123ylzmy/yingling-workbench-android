@@ -1082,17 +1082,53 @@
         dayMarkers[dk].add(t.type || 'life');
       }
     });
+
+    // 从个人资料读取生日（自动显示在日历上）
+    var profileBirthday = getUserProfile() && getUserProfile().birthday;
+    var profileBdayMmdd = null;
+    var profileBdayName = '我的生日';
+    if (profileBirthday && profileBirthday !== '未设置') {
+      var parts = profileBirthday.split('-');
+      if (parts.length >= 3) {
+        profileBdayMmdd = parts[1] + '-' + parts[2];
+        var profile = getUserProfile();
+        profileBdayName = (profile && profile.nickname) ? (profile.nickname + '的生日') : '我的生日';
+      }
+    }
+
     state.events.forEach(e => {
       const dk = e.date;
       if (!dayMarkers[dk]) dayMarkers[dk] = new Set();
       dayMarkers[dk].add(e.type);
     });
+    // 自动添加个人资料生日到标记映射
+    if (profileBdayMmdd) {
+      if (!dayMarkers[profileBdayMmdd]) dayMarkers[profileBdayMmdd] = new Set();
+      dayMarkers[profileBdayMmdd].add('birthday');
+    }
+
+    // 从个人资料读取生日（自动显示在日历上）
+    var profileBirthday = getUserProfile() && getUserProfile().birthday;
+    var profileBdayMmdd = null;
+    var profileBdayName = '我的生日';
+    if (profileBirthday && profileBirthday !== '未设置') {
+      var parts = profileBirthday.split('-');
+      if (parts.length >= 3) {
+        profileBdayMmdd = parts[1] + '-' + parts[2];
+        var profile = getUserProfile();
+        profileBdayName = (profile && profile.nickname) ? (profile.nickname + '的生日') : '我的生日';
+      }
+    }
 
     // 构建生日/纪念日/假期 标记映射（用于圆底纹 + 假期小字）
     const specialDayMap = {}; // dateKey -> {type:'birthday'|'special'|'holiday', name:''}
     state.events.forEach(e => {
       specialDayMap[e.date] = e; // 同一天有多个事件时，取第一个
     });
+    // 自动添加个人资料生日（不覆盖已手动创建的生日事件）
+    if (profileBdayMmdd && !specialDayMap[profileBdayMmdd]) {
+      specialDayMap[profileBdayMmdd] = { type: 'birthday', name: profileBdayName, recurring: true, isAuto: true };
+    }
 
     // 本月事件
     const monthPrefix = String(calMonth).padStart(2, '0') + '-';
@@ -1103,6 +1139,11 @@
         monthEvs.push({ ...e, day, fullDate: calYear + '-' + String(calMonth).padStart(2, '0') + '-' + String(day).padStart(2, '0') });
       }
     });
+    // 自动添加个人资料生日到月事件列表
+    if (profileBdayMmdd && profileBdayMmdd.startsWith(monthPrefix) && !monthEvs.some(function(e) { return e.date === profileBdayMmdd && e.type === 'birthday'; })) {
+      var bday = parseInt(profileBdayMmdd.split('-')[1]);
+      monthEvs.push({ date: profileBdayMmdd, type: 'birthday', name: profileBdayName, day: bday, recurring: true, isAuto: true, fullDate: calYear + '-' + String(calMonth).padStart(2, '0') + '-' + String(bday).padStart(2, '0') });
+    }
     monthEvs.sort((a, b) => a.day - b.day);
 
     // 构建日历格子
@@ -1191,7 +1232,7 @@
           '<div class="cico ' + e.type + '">' + evIcon(e.type) + '</div>' +
           '<div class="ctext">' + esc(e.name) + '<span class="ev-label ' + e.type + '">' + (e.type === 'birthday' ? '生日' : e.type === 'holiday' ? '假期' : '纪念') + '</span>' + (e.note ? '<div style="font-size:10px;color:var(--ink-light);font-weight:400">' + esc(e.note) + '</div>' : '') + '</div>' +
           '<div class="cdt">' + e.day + '日</div>' +
-          '<div class="cdel" onclick="delEvent(\'' + e.id + '\')">删除</div>' +
+          (e.isAuto ? '<div class="cdel" style="opacity:0.4;cursor:default" title="请在个人资料中修改">自动</div>' : '<div class="cdel" onclick="delEvent(\'' + e.id + '\')">删除</div>') +
           '</div>';
       }).join('') : '<div style="text-align:center;color:var(--ink-light);font-size:12px;padding:12px">本月暂无纪念日</div>') +
       '</div>';
