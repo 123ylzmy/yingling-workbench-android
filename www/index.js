@@ -14,6 +14,10 @@
 
   function getAvatarHtml(profile, size) {
     size = size || 28;
+    // 自定义上传头像优先
+    if (profile && profile.avatar_url) {
+      return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;overflow:hidden;flex-shrink:0"><img src="' + profile.avatar_url + '" style="width:100%;height:100%;object-fit:cover" alt="头像"></span>';
+    }
     var ai = (profile && profile.avatar_idx !== undefined) ? profile.avatar_idx : 0;
     var emoji = (profile && profile.avatar_emoji) || AVATAR_PRESETS[ai] || '🌸';
     var bg = (profile && profile.avatar_bg) || '#FFE4E1';
@@ -591,7 +595,7 @@
     var g = '下午好';
     if (h < 6) g = '凌晨好'; else if (h < 11) g = '早上好'; else if (h < 13) g = '中午好'; else if (h < 18) g = '下午好'; else g = '晚上好';
     var avatarHtml = getAvatarHtml(profile, 28);
-    $('greetLine').innerHTML = g + '，' + avatarHtml + '<b>' + esc(profile.nickname || '用户') + '</b> <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()"></span><span class="mood-panel" id="moodPanel"></span></span>';
+    $('greetLine').innerHTML = g + '，' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()"></span><span class="mood-panel" id="moodPanel"></span></span>';
     if (!state.mood || state.mood.date !== today()) { state.mood = { date: today(), value: 'happy' }; }
     renderMoodIcon();
   }
@@ -3595,13 +3599,29 @@
 
     var errEl = document.getElementById('profileError');
     if (errEl) errEl.textContent = '';
+
+    // 初始化自定义头像
+    pendingAvatarUrl = null;
+    var avatarUrl = profile.avatar_url || '';
+    var urlInput = document.getElementById('profileAvatarUrl');
+    if (urlInput) urlInput.value = avatarUrl;
+    var clearBtn = document.getElementById('profileAvatarClearBtn');
+    if (clearBtn) clearBtn.style.display = avatarUrl ? '' : 'none';
+
     overlay.style.display = 'flex';
+    updateAvatarPreview();
   }
 
   function selectProfileAvatar(el, idx) {
     document.querySelectorAll('#profileAvatarPicker .avatar-option').forEach(function(o) { o.classList.remove('selected'); });
     el.classList.add('selected');
     document.getElementById('profileAvatarIdx').value = idx;
+    // 选择 emoji 头像时清除自定义上传
+    pendingAvatarUrl = null;
+    document.getElementById('profileAvatarUrl').value = '';
+    var clearBtn = document.getElementById('profileAvatarClearBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    updateAvatarPreview();
   }
 
   function closeProfileEditor() {
@@ -3620,6 +3640,7 @@
     var val = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
 
     var avatarIdx = parseInt(document.getElementById('profileAvatarIdx').value) || 0;
+    var avatarUrl = document.getElementById('profileAvatarUrl').value.trim() || oldProfile.avatar_url || '';
     var nickname = val('profileNickname');
     var gender = val('profileGender');
     var phone = val('profilePhone').replace(/\D/g, '');
@@ -3635,6 +3656,7 @@
     var newProfile = {
       nickname: nickname,
       avatar_idx: avatarIdx,
+      avatar_url: avatarUrl,
       avatar_emoji: AVATAR_FULL[avatarIdx].emoji,
       avatar_bg: AVATAR_FULL[avatarIdx].bg,
       gender: gender,
@@ -3693,4 +3715,57 @@
     renderHead();
     closeProfileEditor();
     toast('个人资料已更新 ✅');
+  }
+
+  // ============ 自定义头像上传 ============
+  var pendingAvatarUrl = null;
+
+  function handleAvatarUpload(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast('图片不能超过 2MB'); input.value = ''; return; }
+    if (!file.type.match(/^image\/(jpeg|png|webp|gif)$/)) { toast('仅支持 JPG/PNG/WebP/GIF'); input.value = ''; return; }
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      pendingAvatarUrl = e.target.result;
+      // 更新预览
+      updateAvatarPreview();
+      // 取消 emoji 选中
+      document.querySelectorAll('#profileAvatarPicker .avatar-option').forEach(function(o) { o.classList.remove('selected'); });
+      document.getElementById('profileAvatarUrl').value = pendingAvatarUrl;
+      // 显示/隐藏清除按钮
+      var clearBtn = document.getElementById('profileAvatarClearBtn');
+      if (clearBtn) clearBtn.style.display = '';
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  function clearCustomAvatar() {
+    pendingAvatarUrl = null;
+    document.getElementById('profileAvatarUrl').value = '';
+    updateAvatarPreview();
+    var clearBtn = document.getElementById('profileAvatarClearBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    // 恢复 emoji 选中
+    var ai = parseInt(document.getElementById('profileAvatarIdx').value) || 0;
+    var opts = document.querySelectorAll('#profileAvatarPicker .avatar-option');
+    opts.forEach(function(o, i) { o.classList.toggle('selected', i === ai); });
+  }
+
+  function updateAvatarPreview() {
+    var preview = document.getElementById('profileAvatarPreview');
+    if (!preview) return;
+    var url = pendingAvatarUrl || document.getElementById('profileAvatarUrl').value;
+    if (url) {
+      preview.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover" alt="头像预览">';
+    } else {
+      var profile = getUserProfile();
+      var ai = parseInt(document.getElementById('profileAvatarIdx').value) || profile.avatar_idx || 0;
+      if (ai >= 0 && ai < AVATAR_FULL.length) {
+        var a = AVATAR_FULL[ai];
+        preview.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:' + a.bg + ';font-size:28px">' + a.emoji + '</span>';
+      }
+    }
   }
