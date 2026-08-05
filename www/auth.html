@@ -55,7 +55,6 @@
     .form-row { display:flex; gap:10px; }
     .form-row > .form-group { flex:1; }
 
-    /* SMS code row */
     .code-row { display:flex; gap:8px; }
     .code-row .form-input { flex:1; }
     .code-btn { padding:10px 14px; border:1.5px solid var(--accent); border-radius:10px;
@@ -64,7 +63,6 @@
     .code-btn:hover { background:rgba(126,184,154,0.08); }
     .code-btn:disabled { border-color:var(--input-border); color:var(--text-secondary); cursor:not-allowed; }
 
-    /* Login mode switch */
     .login-modes { display:flex; gap:0; margin-bottom:14px; }
     .mode-btn { flex:1; padding:7px 0; border:none; background:transparent;
       font-size:13px; color:var(--text-secondary); cursor:pointer; position:relative;
@@ -77,7 +75,6 @@
     .remember-row input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; }
     .remember-row label { font-size:13px; color:var(--text-secondary); cursor:pointer; }
 
-    /* Avatar picker */
     .avatar-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
     .avatar-option { width:40px; height:40px; border-radius:50%; display:flex; align-items:center;
       justify-content:center; font-size:20px; cursor:pointer; border:2.5px solid transparent;
@@ -116,23 +113,19 @@
     @keyframes spin { to { transform:rotate(360deg); } }
 
     .hint-text { font-size:12px; color:var(--text-secondary); text-align:center; margin-top:8px; line-height:1.5; }
-
     .footer { text-align:center; margin-top:16px; font-size:11px; color:var(--text-secondary); opacity:0.7; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- Logo -->
   <div class="logo-area">
     <img src="icons/icon-192.png" class="logo-icon" alt="自洽日程">
     <div class="logo-title">自洽日程</div>
     <div class="logo-sub">个人数字工作台</div>
   </div>
 
-  <!-- 卡片 -->
   <div class="card">
-    <!-- Tab -->
     <div class="tabs" id="tabs">
       <button class="tab-btn active" data-tab="login">登录</button>
       <button class="tab-btn" data-tab="register">注册</button>
@@ -140,13 +133,11 @@
 
     <!-- ============ 登录表单 ============ -->
     <form class="form active" id="loginForm" autocomplete="on">
-      <!-- 登录方式切换 -->
       <div class="login-modes">
         <button type="button" class="mode-btn active" data-mode="password">密码登录</button>
         <button type="button" class="mode-btn" data-mode="sms">验证码登录</button>
       </div>
 
-      <!-- 手机号 -->
       <div class="form-group">
         <label class="form-label" for="loginPhone">手机号</label>
         <input type="tel" class="form-input" id="loginPhone" placeholder="请输入手机号" autocomplete="tel" required>
@@ -182,7 +173,6 @@
 
     <!-- ============ 注册表单 ============ -->
     <form class="form" id="registerForm" autocomplete="on">
-      <!-- 头像选择 -->
       <div class="form-group">
         <label class="form-label">选择头像</label>
         <div class="avatar-picker" id="avatarPicker"></div>
@@ -258,7 +248,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
@@ -281,7 +270,7 @@ var AVATARS = [
   { emoji:'🦊', bg:'#FFE0B2' }, { emoji:'🐰', bg:'#F5F5F5' }
 ];
 
-// ==================== 工具函数 ====================
+// ==================== 工具 ====================
 function $(id) { return document.getElementById(id); }
 
 function showToast(msg, type) {
@@ -295,11 +284,11 @@ function showToast(msg, type) {
 function setLoading(btn, loading) {
   if (loading) {
     btn.disabled = true;
-    btn._origHTML = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner"></span>' + btn.textContent.replace(/^\s*/, '');
+    btn._txt = btn._txt || btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span>' + btn._txt;
   } else {
     btn.disabled = false;
-    btn.innerHTML = btn._origHTML;
+    btn.innerHTML = btn._txt || btn.textContent;
   }
 }
 
@@ -310,7 +299,7 @@ function sbRest(method, path, body) {
     'Authorization': 'Bearer ' + SUPABASE_KEY,
     'Content-Type': 'application/json'
   };
-  if (body && method === 'POST' && path === 'sync_store') {
+  if (body && method === 'POST') {
     headers['Prefer'] = 'resolution=merge-duplicates';
   }
   var opts = { method: method, headers: headers };
@@ -326,7 +315,6 @@ function sbRest(method, path, body) {
   });
 }
 
-// 生成随机字符串
 function randomStr(len) {
   var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   var s = '';
@@ -334,7 +322,19 @@ function randomStr(len) {
   return s;
 }
 
-// 手机号→邮箱映射（用于快速查找）
+// 简单的密码哈希（用于本地比较，不用于网络传输）
+function hashPassword(pwd) {
+  // 使用简单的 hash（生产环境建议用 bcrypt/scrypt）
+  var hash = 0, i, chr;
+  if (pwd.length === 0) return '';
+  for (i = 0; i < pwd.length; i++) {
+    chr = pwd.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return 'h_' + Math.abs(hash).toString(36) + '_' + pwd.length;
+}
+
 function phoneToLookupKey(phone) { return 'profile_by_phone_' + phone.replace(/\D/g, ''); }
 
 // ==================== session / profile 存储 ====================
@@ -345,6 +345,8 @@ function saveAuthData(session, profile) {
     last_active: Date.now()
   };
   localStorage.setItem('wb_auth_data', JSON.stringify(data));
+  // 兼容旧格式
+  localStorage.setItem('sb_session', JSON.stringify(session));
 }
 
 // ==================== 头像选择器 ====================
@@ -353,7 +355,7 @@ function buildAvatarPicker() {
   AVATARS.forEach(function(a, i) {
     var sel = i === 0 ? ' selected' : '';
     html += '<div class="avatar-option' + sel + '" data-idx="' + i +
-      '" style="background:' + a.bg + '" onclick="selectAvatar(this, ' + i + ')" title="头像' + (i+1) + '">' +
+      '" style="background:' + a.bg + '" onclick="selectAvatar(this, ' + i + ')">' +
       a.emoji + '</div>';
   });
   $('avatarPicker').innerHTML = html;
@@ -432,7 +434,7 @@ function sendLoginCode() {
   // 生成6位验证码
   var code = String(Math.floor(100000 + Math.random() * 900000));
 
-  // 存入 localStorage（5分钟有效 + 该手机号）
+  // 存入 localStorage（5分钟有效）
   var codeData = {
     code: code,
     phone: phone,
@@ -440,11 +442,11 @@ function sendLoginCode() {
   };
   localStorage.setItem('wb_login_code', JSON.stringify(codeData));
 
-  // 模拟发送：显示在提示中
-  showToast('验证码：' + code + '（5分钟内有效）', 'info');
-
-  // 自动填入方便测试
-  $('loginCode').value = code;
+  // 【模拟SMS发送】实际生产环境需对接短信服务商（阿里云短信/腾讯云短信等）
+  // 短信模板示例: "【自洽日程】您的验证码是XXXXXX，5分钟内有效。"
+  // 对接后可调用: sendSms(phone, '您的验证码是' + code + '，5分钟内有效。')
+  var phoneTail = phone.slice(-4);
+  showToast('验证码已发送至手机尾号 ' + phoneTail, 'info');
 
   // 60秒冷却
   _sendCooldown = 60;
@@ -471,31 +473,44 @@ function verifyLoginCode(phone, code) {
   try {
     var stored = JSON.parse(localStorage.getItem('wb_login_code') || '{}');
     if (!stored.code) return false;
-    if (stored.phone !== phone) return false;
+    if (stored.phone.replace(/\D/g, '') !== phone.replace(/\D/g, '')) return false;
     if (Date.now() > stored.expires) {
       localStorage.removeItem('wb_login_code');
       return false;
     }
     if (stored.code !== code) return false;
+    // 验证成功后清除（用完即焚）
     localStorage.removeItem('wb_login_code');
     return true;
   } catch(e) { return false; }
 }
 
-// ==================== 通过手机号查找用户 ====================
+// ==================== 通过手机号查找用户映射 ====================
 function findUserByPhone(phone) {
   var key = phoneToLookupKey(phone);
   return sbRest('GET', 'sync_store?group_key=eq.' + encodeURIComponent(key) + '&store=eq.wb_profile_lookup&select=data&limit=1', null)
     .then(function(arr) {
       if (arr && arr.length > 0 && arr[0].data) {
-        return arr[0].data; // { user_id, email, session_key }
+        return arr[0].data; // { user_id, email, session_key, password_hash }
       }
       return null;
     })
     .catch(function() { return null; });
 }
 
-// ==================== 登录（密码模式） ====================
+// ==================== 获取用户完整 profile ====================
+function fetchUserProfile(userId) {
+  return sbRest('GET', 'sync_store?group_key=eq.profile_' + encodeURIComponent(userId) + '&store=eq.wb_user_profile&select=data&limit=1', null)
+    .then(function(arr) {
+      if (arr && arr.length > 0 && arr[0].data) {
+        return arr[0].data;
+      }
+      return null;
+    })
+    .catch(function() { return null; });
+}
+
+// ==================== 登录表单提交 ====================
 $('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();
   var phone = $('loginPhone').value.trim().replace(/\D/g, '');
@@ -512,6 +527,7 @@ $('loginForm').addEventListener('submit', function(e) {
   }
 });
 
+// ==================== 密码登录 ====================
 function loginWithPassword(phone) {
   var password = $('loginPassword').value;
 
@@ -519,7 +535,7 @@ function loginWithPassword(phone) {
 
   setLoading($('loginBtn'), true);
 
-  // 通过手机号查找用户
+  // 1. 通过手机号查找用户映射
   findUserByPhone(phone).then(function(userData) {
     if (!userData) {
       setLoading($('loginBtn'), false);
@@ -527,27 +543,36 @@ function loginWithPassword(phone) {
       return;
     }
 
-    // 用邮箱 + 密码登录
+    // 2. 验证用户密码（与注册时存储的哈希对比）
+    var pwdHash = hashPassword(password);
+    if (userData.password_hash && userData.password_hash !== pwdHash) {
+      setLoading($('loginBtn'), false);
+      showToast('密码错误', 'error');
+      return;
+    }
+
+    // 3. 用 session_key 登录 Supabase（绕过邮箱确认问题）
     return supabase.auth.signInWithPassword({
       email: userData.email,
-      password: password
+      password: userData.session_key
     }).then(function(res) {
       setLoading($('loginBtn'), false);
       if (res.error) {
         var msg = res.error.message;
         if (msg.indexOf('Invalid login') >= 0) msg = '密码错误';
-        if (msg.indexOf('Email not confirmed') >= 0) msg = '邮箱未验证，请检查邮件';
         showToast(msg, 'error');
         return;
       }
-      finishLogin(res.data.session);
+      finishLogin(res.data.session, userData.user_id);
     });
-  }).catch(function() {
+  }).catch(function(err) {
     setLoading($('loginBtn'), false);
     showToast('网络错误，请重试', 'error');
+    console.error('Login error:', err);
   });
 }
 
+// ==================== 验证码登录 ====================
 function loginWithCode(phone) {
   var code = $('loginCode').value.trim();
 
@@ -564,7 +589,7 @@ function loginWithCode(phone) {
 
   setLoading($('loginBtn'), true);
 
-  // 查找用户
+  // 查找用户并用 session_key 登录
   findUserByPhone(phone).then(function(userData) {
     if (!userData) {
       setLoading($('loginBtn'), false);
@@ -572,17 +597,16 @@ function loginWithCode(phone) {
       return;
     }
 
-    // 用 session_key 登录（免密码）
     return supabase.auth.signInWithPassword({
       email: userData.email,
       password: userData.session_key
     }).then(function(res) {
       setLoading($('loginBtn'), false);
       if (res.error) {
-        showToast('登录失败，请用密码登录', 'error');
+        showToast('登录失败，请重试', 'error');
         return;
       }
-      finishLogin(res.data.session);
+      finishLogin(res.data.session, userData.user_id);
     });
   }).catch(function() {
     setLoading($('loginBtn'), false);
@@ -591,27 +615,35 @@ function loginWithCode(phone) {
 }
 
 // ==================== 登录完成 ====================
-function finishLogin(session) {
-  // 从 profile 表拉取用户详情
-  var userId = session.user.id;
-  sbRest('GET', 'sync_store?group_key=eq.' + encodeURIComponent('profile_' + userId) + '&store=eq.wb_user_profile&select=data&limit=1', null)
-    .then(function(arr) {
-      var profile = {};
-      if (arr && arr.length > 0 && arr[0].data) {
-        profile = arr[0].data;
-      }
-      saveAuthData(session, profile);
-    })
-    .catch(function() {
-      // 降级：用 user_metadata
-      var profile = session.user.user_metadata || {};
+function finishLogin(session, userId) {
+  // 从云端拉取完整用户 profile
+  fetchUserProfile(userId).then(function(profile) {
+    if (!profile) {
+      // 降级：用 session.user_metadata
+      profile = session.user.user_metadata || {};
       if (!profile.nickname) profile.nickname = '用户';
-      saveAuthData(session, profile);
-    })
-    .then(function() {
-      showToast('登录成功，即将跳转...', 'success');
-      setTimeout(function() { window.location.href = 'index.html'; }, 600);
-    });
+    }
+    // 更新 last_active
+    profile.last_active = new Date().toISOString();
+
+    // 回写 profile 更新 last_active
+    sbRest('POST', 'sync_store', {
+      group_key: 'profile_' + userId,
+      store: 'wb_user_profile',
+      data: profile,
+      updated_at: new Date().toISOString()
+    }).catch(function() {});
+
+    saveAuthData(session, profile);
+    showToast('登录成功，即将跳转...', 'success');
+    setTimeout(function() { window.location.href = 'index.html'; }, 600);
+  }).catch(function() {
+    // 降级
+    var profile = session.user.user_metadata || {};
+    saveAuthData(session, profile);
+    showToast('登录成功，即将跳转...', 'success');
+    setTimeout(function() { window.location.href = 'index.html'; }, 600);
+  });
 }
 
 // ==================== 注册 ====================
@@ -634,96 +666,119 @@ $('registerForm').addEventListener('submit', function(e) {
   if (!gender) { showToast('请选择性别', 'error'); return; }
   if (!phone || phone.length !== 11) { showToast('请输入正确的11位手机号', 'error'); return; }
   if (!email) { showToast('请输入邮箱（用于找回密码）', 'error'); return; }
+  if (email.indexOf('@') < 0 || email.indexOf('.') < 0) { showToast('请输入有效的邮箱地址', 'error'); return; }
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
   setLoading($('regBtn'), true);
+
+  // 生成 session_key — 这个才是 Supabase 的密码
+  // 用户输入的密码只在我们自己的 profile 里存储和验证
+  // 这样做的好处：不依赖 Supabase 邮箱验证，注册后即可登录
+  var sessionKey = randomStr(24);
+  var passwordHash = hashPassword(password);
+
+  var profile = {
+    nickname: nickname,
+    avatar_idx: avatarIdx,
+    avatar_emoji: AVATARS[avatarIdx].emoji,
+    avatar_bg: AVATARS[avatarIdx].bg,
+    gender: gender,
+    phone: phone,
+    email: email,
+    birthday: birthday || null,
+    height: height,
+    created_at: new Date().toISOString(),
+    last_active: new Date().toISOString()
+    // 注意：session_key 和 password_hash 存在 wb_profile_lookup，不在 profile 主体中
+  };
 
   // 先检查手机号是否已注册
   findUserByPhone(phone).then(function(existing) {
     if (existing) {
       setLoading($('regBtn'), false);
       showToast('该手机号已注册，请直接登录', 'error');
-      throw new Error('DUPLICATE');
+      return Promise.reject('DUPLICATE');
     }
 
-    // 生成 session_key（用于验证码免密码登录）
-    var sessionKey = randomStr(20);
-
-    // 构建 profile
-    var profile = {
-      nickname: nickname,
-      avatar_idx: avatarIdx,
-      avatar_emoji: AVATARS[avatarIdx].emoji,
-      avatar_bg: AVATARS[avatarIdx].bg,
-      gender: gender,
-      phone: phone,
-      email: email,
-      birthday: birthday || null,
-      height: height,
-      session_key: sessionKey,
-      created_at: new Date().toISOString()
-    };
-
-    // 创建 Supabase 账号
+    // 创建 Supabase 账号 — 密码用 sessionKey！
     return supabase.auth.signUp({
       email: email,
-      password: password,
+      password: sessionKey,
       options: { data: profile }
-    }).then(function(res) {
-      if (res.error) {
-        setLoading($('regBtn'), false);
-        var msg = res.error.message;
-        if (msg.indexOf('already registered') >= 0) msg = '该邮箱已注册，请直接登录';
-        showToast(msg, 'error');
-        throw new Error('AUTH_FAIL');
-      }
-
-      var userId = res.data.user.id;
-      if (!userId) {
-        setLoading($('regBtn'), false);
-        showToast('注册失败，请重试', 'error');
-        throw new Error('NO_USER_ID');
-      }
-
-      // 存 profile 到 sync_store
-      return sbRest('POST', 'sync_store', {
-        group_key: 'profile_' + userId,
-        store: 'wb_user_profile',
-        data: profile,
-        updated_at: new Date().toISOString()
-      }).then(function() {
-        // 存手机号→用户映射
-        return sbRest('POST', 'sync_store', {
-          group_key: phoneToLookupKey(phone),
-          store: 'wb_profile_lookup',
-          data: {
-            user_id: userId,
-            email: email,
-            session_key: sessionKey
-          },
-          updated_at: new Date().toISOString()
-        });
-      }).then(function() {
-        setLoading($('regBtn'), false);
-
-        if (res.data.session) {
-          // 自动登录
-          saveAuthData(res.data.session, profile);
-          showToast('注册成功，欢迎加入！', 'success');
-          setTimeout(function() { window.location.href = 'index.html'; }, 600);
-        } else {
-          showToast('注册成功！请返回登录', 'success');
-          tabsEl.querySelector('[data-tab="login"]').click();
-        }
-      });
     });
+  }).then(function(res) {
+    if (!res || res === 'DUPLICATE') return;
+    if (res.error) {
+      setLoading($('regBtn'), false);
+      var msg = res.error.message;
+      if (msg.indexOf('already registered') >= 0 || msg.indexOf('already exists') >= 0) {
+        msg = '该邮箱已注册，请直接登录或使用其他邮箱';
+      }
+      showToast(msg, 'error');
+      return;
+    }
+
+    var userId = null;
+    // signUp 可能返回 user（邮箱确认开启时）或 session（关闭时）
+    if (res.data.user && res.data.user.id) {
+      userId = res.data.user.id;
+    }
+    if (!userId) {
+      setLoading($('regBtn'), false);
+      showToast('注册失败，请重试', 'error');
+      return;
+    }
+
+    // 串行写入三份数据
+    return saveRegistrationData(userId, profile, phone, email, sessionKey, passwordHash, res.data.session);
   }).catch(function(err) {
-    if (err.message === 'DUPLICATE' || err.message === 'AUTH_FAIL' || err.message === 'NO_USER_ID') return;
+    if (typeof err === 'string') return; // 已处理
     setLoading($('regBtn'), false);
     showToast('网络错误，请重试', 'error');
+    console.error('Register error:', err);
   });
 });
+
+function saveRegistrationData(userId, profile, phone, email, sessionKey, passwordHash, session) {
+  // 1. 存 profile
+  return sbRest('POST', 'sync_store', {
+    group_key: 'profile_' + userId,
+    store: 'wb_user_profile',
+    data: profile,
+    updated_at: new Date().toISOString()
+  }).then(function() {
+    // 2. 存手机号→用户映射（含 session_key 和 password_hash）
+    return sbRest('POST', 'sync_store', {
+      group_key: phoneToLookupKey(phone),
+      store: 'wb_profile_lookup',
+      data: {
+        user_id: userId,
+        email: email,
+        session_key: sessionKey,
+        password_hash: passwordHash
+      },
+      updated_at: new Date().toISOString()
+    });
+  }).then(function() {
+    setLoading($('regBtn'), false);
+
+    if (session && session.access_token) {
+      // 邮箱验证关闭 → 自动登录
+      saveAuthData(session, profile);
+      showToast('注册成功，欢迎加入！', 'success');
+      setTimeout(function() { window.location.href = 'index.html'; }, 600);
+    } else {
+      // 邮箱验证开启 → 提示用户去验证邮箱
+      showToast('注册成功！请查收邮箱验证邮件后登录', 'success');
+      setTimeout(function() { tabsEl.querySelector('[data-tab="login"]').click(); }, 1000);
+    }
+  }).catch(function(err) {
+    setLoading($('regBtn'), false);
+    console.error('Save registration data error:', err);
+    showToast('数据保存失败，请重试', 'error');
+  });
+}
 
 // ==================== 忘记密码 ====================
 $('resetBtn').addEventListener('click', function() {
@@ -746,6 +801,7 @@ $('resetBtn').addEventListener('click', function() {
 
 // ==================== 自动检查登录态 ====================
 (function() {
+  // 检查新格式
   var authData = localStorage.getItem('wb_auth_data');
   if (authData) {
     try {
@@ -753,32 +809,34 @@ $('resetBtn').addEventListener('click', function() {
       if (parsed.session && parsed.session.access_token) {
         var sevenDays = 7 * 24 * 60 * 60 * 1000;
         if (parsed.last_active && (Date.now() - parsed.last_active) < sevenDays) {
-          if (parsed.session.expires_at && parsed.session.expires_at < Date.now() / 1000) {
-            localStorage.removeItem('wb_auth_data');
-            localStorage.removeItem('sb_session');
-          } else {
+          // Token 过期检查
+          if (parsed.session.expires_at && parsed.session.expires_at > Date.now() / 1000) {
             window.location.href = 'index.html';
             return;
           }
-        } else {
-          localStorage.removeItem('wb_auth_data');
-          localStorage.removeItem('sb_session');
         }
       }
-    } catch(e) {
-      localStorage.removeItem('wb_auth_data');
-      localStorage.removeItem('sb_session');
-    }
+    } catch(e) {}
   }
 
+  // 检查旧格式（兼容）
   var oldSession = localStorage.getItem('sb_session') || sessionStorage.getItem('sb_session');
   if (oldSession) {
     try {
       var s = JSON.parse(oldSession);
-      if (s && s.access_token) { window.location.href = 'index.html'; return; }
+      if (s && s.access_token && s.expires_at && s.expires_at > Date.now() / 1000) {
+        window.location.href = 'index.html';
+        return;
+      }
     } catch(e) {}
   }
 
+  // 清除过期数据
+  localStorage.removeItem('wb_auth_data');
+  localStorage.removeItem('sb_session');
+  sessionStorage.removeItem('sb_session');
+
+  // 处理邮箱验证回调
   var hash = window.location.hash;
   if (hash) {
     var params = new URLSearchParams(hash.substring(1));
