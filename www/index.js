@@ -343,6 +343,36 @@
     });
   }
 
+  /* ---- 网络状态监听：断网暂停、恢复后自动同步 ---- */
+  var _wasOffline = false;
+  window.addEventListener('online', function() {
+    if (_wasOffline && syncConfig) {
+      _wasOffline = false;
+      doTestConnection().then(function(ok) {
+        syncConnected = ok;
+        updateSyncUI(ok);
+        if (ok) {
+          startAutoSync();
+          pollSync();
+          toast('网络已恢复，正在同步... 🔄');
+        }
+      });
+    }
+  });
+  window.addEventListener('offline', function() {
+    _wasOffline = true;
+    syncConnected = false;
+    updateSyncUI(false);
+    stopAutoSync();
+  });
+
+  /* ---- 页面可见性监听：切回前台时自动拉取最新数据 ---- */
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden && syncConfig && syncConnected) {
+      pollSync();
+    }
+  });
+
   /* ===================== 数据层 ===================== */
   const STORE_KEY = 'wb_yingling_v2';
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -385,6 +415,57 @@
       body: '<div style="padding:8px 0;font-size:14px;line-height:1.6">' + m + '</div>',
       foot: '<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" style="background:var(--danger);color:#fff" onclick="closeModal();if(window._confCb){var f=window._confCb;window._confCb=null;f()}">确认</button>'
     });
+  }
+
+  /* ===================== 每日心灵语录 ===================== */
+  const SOUL_QUOTES = [
+    "你比你相信的更勇敢，比你看起来更强大，比你想象的更聪明。",
+    "每一个不曾起舞的日子，都是对生命的辜负。",
+    "慢慢来，比较快。",
+    "你不需要完美，你只需要完整。",
+    "今天的不开心就止于此吧，明天依旧光芒万丈。",
+    "允许一切发生，然后记得做一个勇敢的人。",
+    "生活不是等待暴风雨过去，而是学会在雨中跳舞。",
+    "你是自己的太阳，无需借谁的光。",
+    "每一次呼吸都是新的开始。",
+    "温柔要有，但不是妥协。",
+    "保持心脏震荡，有人等你共鸣。",
+    "万物皆有裂痕，那是光照进来的地方。",
+    "你已经做得很好了，真的。",
+    "做你自己，因为别人都有人做了。",
+    "世界喧嚣，你做你自己就好。",
+    "不必行色匆匆，不必光芒四射，不必成为别人。",
+    "心若向阳，无畏悲伤。",
+    "当下的每一刻，都是你生命中最年轻的时刻。",
+    "相信自己，你值得拥有最好的。",
+    "日子很长，过客很多，也不必太在意。"
+  ];
+  function getDailyQuote() {
+    var d = new Date();
+    var seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    return SOUL_QUOTES[seed % SOUL_QUOTES.length];
+  }
+  function getRandomQuote() {
+    return SOUL_QUOTES[Math.floor(Math.random() * SOUL_QUOTES.length)];
+  }
+  function renderSoulQuote() {
+    var el = document.getElementById('soulQuote');
+    if (!el) return;
+    var saved = state._soulQuote;
+    var todayStr = today();
+    if (!saved || saved.date !== todayStr) {
+      saved = { date: todayStr, text: getDailyQuote() };
+      state._soulQuote = saved;
+      save();
+    }
+    el.textContent = saved.text;
+  }
+  function refreshSoulQuote() {
+    var q = getRandomQuote();
+    state._soulQuote = { date: today(), text: q };
+    save();
+    renderSoulQuote();
+    toast('已更换语录 ✨');
   }
 
   let HABITS = [];      // 从 data.json 加载
@@ -480,32 +561,55 @@
   let todoViewDate = null; // 在 initApp 中赋值
   let calYear, calMonth;
   function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); lastLocalUpdate = Date.now(); autoCloudSave() }
-  /* 自动云端保存（防抖：本地数据变更 2 秒后自动上传） */
+  /* 自动云端保存（防抖 1.5 秒，失败自动重试最多 3 次） */
   var _cloudSavePending = null;
+  var _cloudSaveRetries = 0;
   function autoCloudSave() {
     if (!syncConfig || !syncConnected) return;
     if (_cloudSavePending) clearTimeout(_cloudSavePending);
     _cloudSavePending = setTimeout(function() {
       doUpload()
-        .then(function() { lastSyncedAt = Date.now(); })
-        .catch(function() {});
+        .then(function() {
+          lastSyncedAt = Date.now();
+          _cloudSaveRetries = 0;
+          var btnLabel = document.querySelector('#cloudBtn .cloud-label');
+          if (btnLabel) {
+            var orig = btnLabel.textContent;
+            btnLabel.textContent = '已同步';
+            setTimeout(function() { if (btnLabel.textContent === '已同步') btnLabel.textContent = orig; }, 2000);
+          }
+        })
+        .catch(function() {
+          _cloudSaveRetries++;
+          if (_cloudSaveRetries < 3) { setTimeout(autoCloudSave, 5000); }
+        });
       _cloudSavePending = null;
-    }, 2000);
+    }, 1500);
   }
 
-  /* ===================== 目标体重 ===================== */
+  /* ===================== 目标体重 & 起始体重 ===================== */
   function getTargetWeight() {
-    // 健康生活独立的体重目标，不与目标激励关联
     return (state.healthTarget && state.healthTarget.weight) || 55;
+  }
+  function getStartWeight() {
+    if (state.healthTarget && state.healthTarget.startWeight != null) {
+      return state.healthTarget.startWeight;
+    }
+    const ws = [...state.weight].sort((a, b) => a.date.localeCompare(b.date));
+    return ws.length ? ws[0].weight : null;
   }
 
   function openHealthTargetModal() {
-    var tgt = (state.healthTarget && state.healthTarget.weight) || 55;
+    var tgt = getTargetWeight();
+    var start = getStartWeight();
     openModal({
       title: '设置健康目标',
       body: '<div style="padding:8px 0">' +
         '<div class="form-group"><label>目标体重 (kg)</label>' +
         '<input class="inp" type="number" id="htWeight" value="' + tgt + '" step="0.1" min="30" max="200" placeholder="比如 55.0">' +
+        '</div>' +
+        '<div class="form-group"><label>起始体重 (kg) <span style="font-weight:400;color:var(--ink-light);font-size:10px">用于计算进度，不填则自动取最早记录</span></label>' +
+        '<input class="inp" type="number" id="htStartWeight" value="' + (start != null ? start : '') + '" step="0.1" min="30" max="200" placeholder="比如 65.0">' +
         '</div>' +
         '</div>',
       foot: '<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" onclick="saveHealthTarget()">保存</button>'
@@ -513,11 +617,16 @@
   }
   function saveHealthTarget() {
     var w = parseFloat(document.getElementById('htWeight').value);
-    if (!w || w < 30 || w > 200) return toast('请输入合理的体重 (30-200 kg)');
+    var swInput = document.getElementById('htStartWeight').value.trim();
+    var sw = swInput ? parseFloat(swInput) : null;
+    if (!w || w < 30 || w > 200) return toast('请输入合理的目标体重 (30-200 kg)');
+    if (sw != null && (sw < 30 || sw > 200)) return toast('请输入合理的起始体重 (30-200 kg)');
     if (!state.healthTarget) state.healthTarget = {};
     state.healthTarget.weight = w;
+    if (sw != null) state.healthTarget.startWeight = sw;
+    else delete state.healthTarget.startWeight;
     save(); closeModal(); renderAll();
-    toast('健康目标已更新：' + w + ' kg');
+    toast('健康目标已更新');
   }
 
   /* ===================== 页头 ===================== */
@@ -1487,7 +1596,9 @@
   /* ===================== 健康页面 ===================== */
   function renderHealthStats() {
     const w = [...state.weight].sort((a, b) => a.date.localeCompare(b.date));
-    const cur = w[w.length - 1]; const start = w[0];
+    const cur = w[w.length - 1];
+    const startWeight = getStartWeight();
+    const start = startWeight != null ? { weight: startWeight } : null;
     const lost = start ? +(start.weight - (cur?.weight || start.weight)).toFixed(1) : 0;
     const tgt = getTargetWeight();
     const toGo = cur ? +(cur.weight - tgt).toFixed(1) : tgt;
@@ -3353,7 +3464,7 @@
 
   /* ===================== 渲染全体 ===================== */
   function renderAll() {
-    renderHead(); renderBkHint();
+    renderHead(); renderBkHint(); renderSoulQuote();
     // 初始化日历月份
     if (!calYear) { const now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth() + 1; }
     if (curPage === 'today') { renderToday(); renderCalendar() }

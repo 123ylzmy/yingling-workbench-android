@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="樱苓工作台">
+  <meta name="apple-mobile-web-app-title" content="自洽日程">
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
   <!-- iOS 主屏图标 -->
@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
   <!-- 主题色（Android 状态栏 + PWA 标题栏） -->
   <meta name="theme-color" content="#7EB89A">
-  <title>樱苓的日常记录</title>
+  <title>自洽日程</title>
   <link rel="stylesheet" href="index.css">
 </head>
 
@@ -27,7 +27,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="side-logo">
         <div class="dot">樱</div>
-        <div class="name">樱苓的日常记录<small>· 记录每一天</small></div>
+        <div class="name">自洽日程<small>· 记录每一天</small></div>
       </div>
       <nav class="side-nav">
         <div class="side-nav-item active" data-tab="today" onclick="switchPage(&#39;today&#39;)">
@@ -436,6 +436,20 @@
             </div>
 
             <div class="today-right">
+              <!-- 每日心灵语录 -->
+              <div class="card soul-card" id="soulCard" style="background:linear-gradient(135deg,var(--g50) 0%,var(--bg) 100%);border-left:3px solid var(--g400)">
+                <div class="card-bd" style="padding:14px 16px">
+                  <div style="display:flex;align-items:flex-start;gap:10px">
+                    <span style="font-size:20px;flex-shrink:0">✨</span>
+                    <div style="flex:1">
+                      <div style="font-size:12px;font-weight:600;color:var(--g400);margin-bottom:4px">此刻 · 心灵语录</div>
+                      <div id="soulQuote" style="font-size:14px;line-height:1.6;color:var(--ink);font-weight:500"></div>
+                    </div>
+                    <span class="fn-btn" onclick="refreshSoulQuote()" title="换一句" style="flex-shrink:0;font-size:11px">🔄</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- 今日要处理 -->
               <div class="card">
                 <div class="card-hd">

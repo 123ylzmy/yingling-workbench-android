@@ -1,4 +1,4 @@
-// 樱苓工作台 Service Worker v2
+// 自洽日程 Service Worker v2
 const CACHE_NAME = 'yl-workbench-v2';
 const ASSETS = [
   '/',

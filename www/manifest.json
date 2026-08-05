@@ -1,7 +1,7 @@
 {
-  "name": "樱苓的日常记录",
-  "short_name": "樱苓工作台",
-  "description": "个人日常管理：日历、待办、目标、健康、记账",
+  "name": "自洽日程",
+  "short_name": "自洽日程",
+  "description": "自洽日程：日历、待办、目标、健康、记账，多端自动同步",
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",
