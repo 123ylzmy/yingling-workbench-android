@@ -444,7 +444,7 @@
         if (!d.periods) d.periods = [];
         if (!d.studyModules) d.studyModules = defData.studyModules;
         if (!d.holidays) d.holidays = [];
-        if (!d.healthTarget) d.healthTarget = { weight: 55 };
+        if (!d.healthTarget) d.healthTarget = null;
         // 迁移旧工作任务：补 deadline + completedDate + progress + stages
         if (d.workTasks) d.workTasks.forEach(t => {
           if (!t.deadline) t.deadline = today();
@@ -541,7 +541,7 @@
 
   /* ===================== 目标体重 & 起始体重 ===================== */
   function getTargetWeight() {
-    return (state.healthTarget && state.healthTarget.weight) || 55;
+    return (state.healthTarget && state.healthTarget.weight) || null;
   }
   function getStartWeight() {
     if (state.healthTarget && state.healthTarget.startWeight != null) {
@@ -558,7 +558,7 @@
       title: '设置健康目标',
       body: '<div style="padding:8px 0">' +
         '<div class="form-group"><label>目标体重 (kg)</label>' +
-        '<input class="inp" type="number" id="htWeight" value="' + tgt + '" step="0.1" min="30" max="200" placeholder="比如 55.0">' +
+        '<input class="inp" type="number" id="htWeight" value="' + (tgt != null ? tgt : '') + '" step="0.1" min="30" max="200" placeholder="比如 55.0">' +
         '</div>' +
         '<div class="form-group"><label>起始体重 (kg) <span style="font-weight:400;color:var(--ink-light);font-size:10px">用于计算进度，不填则自动取最早记录</span></label>' +
         '<input class="inp" type="number" id="htStartWeight" value="' + (start != null ? start : '') + '" step="0.1" min="30" max="200" placeholder="比如 65.0">' +
@@ -1555,7 +1555,7 @@
     const start = startWeight != null ? { weight: startWeight } : null;
     const lost = start ? +(start.weight - (cur?.weight || start.weight)).toFixed(1) : 0;
     const tgt = getTargetWeight();
-    const toGo = cur ? +(cur.weight - tgt).toFixed(1) : tgt;
+    const toGo = cur && tgt != null ? +(cur.weight - tgt).toFixed(1) : null;
     const pct = cur ? Math.min(100, Math.round(((start.weight - cur.weight) / (start.weight - tgt)) * 100)) : 0;
     const streak = calcStreak();
 
@@ -1564,7 +1564,7 @@
     <div class="stat"><div class="v">${cur ? cur.weight : '—'}</div><div class="l">当前体重 kg</div></div>
     <div class="stat"><div class="v">${cur && cur.bodyFat != null ? cur.bodyFat + '%' : '—'}</div><div class="l">体脂率</div></div>
     <div class="stat"><div class="v g">${lost > 0 ? '-' + lost : '—'}</div><div class="l">已减重 kg</div></div>
-    <div class="stat"><div class="v c">${toGo > 0 ? toGo : '🎯'}</div><div class="l">距目标 kg</div></div>
+    <div class="stat"><div class="v c">${toGo != null ? (toGo > 0 ? toGo : '🎯') : '—'}</div><div class="l">距目标 kg</div></div>
   </div>
   <div class="prog-card">
     <div class="prog-ring">${ringSvg(pct, 52, 5, '#7AAA67')}</div>
@@ -1743,8 +1743,9 @@
       const typeLabel = g.category === 'health' ? '🩺 健康' : '📋 任务';
       const typeCls = 'task';
       // 健康目标显示目标信息
+      const tgtW = getTargetWeight();
       const healthTgtInfo = g.category === 'health'
-        ? ('减到 ' + getTargetWeight() + ' kg') + (g.bodyFatTgt ? ' · 体脂 ' + g.bodyFatTgt + '%' : '')
+        ? (tgtW != null ? ('减到 ' + tgtW + ' kg') : '') + (g.bodyFatTgt ? ' · 体脂 ' + g.bodyFatTgt + '%' : '')
         : '';
       // 进度奖励提示
       return `<div class="goal-card">
@@ -3475,34 +3476,42 @@
 
   // ============ 异步加载 data.json 并初始化应用 ============
   (async function initApp() {
+    var step = '';
     try {
-      var resp = await fetch('data.json');
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      // 使用 ?v 参数破坏 Service Worker 缓存
+      step = 'fetch data.json';
+      var fetchUrl = 'data.json?v=' + Date.now();
+      var resp = await fetch(fetchUrl);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' (URL: ' + fetchUrl + ')');
+      step = 'parse JSON';
       var appData = await resp.json();
       var _td = today();
       var _yd = yday();
 
-      // 解析日期占位符（__TODAY__ / __YESTERDAY__ → 实际日期）
+      step = 'resolvePlaceholders';
       resolvePlaceholders(appData, _td, _yd);
 
-      // 填充全局常量
+      step = 'init globals';
       defData = appData.defaultData;
-      DEFAULT_SETTINGS = appData.defaultSettings;
-      MOODS = appData.moods;
-      WEATHER_CODES = appData.weatherCodes;
-      SETTINGS_ACCENTS = appData.accentPresets;
-      SETTINGS_FONTS = appData.fontSizes;
-      HABITS = appData.habits;
-      CATEGORIES = appData.categories;
+      DEFAULT_SETTINGS = appData.defaultSettings || {};
+      MOODS = appData.moods || [];
+      WEATHER_CODES = appData.weatherCodes || [];
+      SETTINGS_ACCENTS = appData.accentPresets || [];
+      SETTINGS_FONTS = appData.fontSizes || [];
+      HABITS = appData.habits || [];
+      CATEGORIES = appData.categories || [];
       appSettings = DEFAULT_SETTINGS;
 
-      // 初始化 state（loadData 内部会引用 defData）
+      step = 'loadData';
       state = loadData();
+      step = 'loadSettings';
       loadSettings();
-      applySettings();
+      step = 'applySettings';
+      if (document.documentElement) applySettings();
+      else console.warn('[App] document.documentElement 不可用，跳过 applySettings');
       todoViewDate = today();
 
-      // 确保关键字段存在（兼容旧数据迁移遗漏）
+      step = 'ensure fields';
       if (!state.trainLogs) state.trainLogs = [];
       ensureTrainOrders();
       if (!state.restDays) state.restDays = [];
@@ -3512,16 +3521,16 @@
       if (!state.customHabits) state.customHabits = [];
       if (!state.studyModules) state.studyModules = [];
       if (!state.holidays) state.holidays = [];
-      if (!state.healthTarget) state.healthTarget = { weight: 55 };
+      if (!state.healthTarget) state.healthTarget = null;
 
-      // 初始渲染 + 天气
+      step = 'renderAll';
       renderAll();
       setTimeout(function () { fetchWeather(); }, 500);
 
-      console.log('[App] ✅ data.json 加载完成');
+      console.log('[App] ✅ 初始化完成');
     } catch (e) {
-      console.error('[App] ❌ data.json 加载失败:', e);
-      document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:system-ui"><h2>⚠ 数据加载失败</h2><p>请确保 data.json 与 index.html 在同一目录</p><p style="color:#888;font-size:13px;margin-top:8px">' + e.message + '</p></div>';
+      console.error('[App] ❌ 初始化失败 (step=' + step + '):', e);
+      document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:system-ui"><h2>⚠ 应用加载失败</h2><p>步骤: ' + step + '</p><p style="color:#c0392b;font-size:14px;margin:12px 0">' + e.message + '</p><p style="color:#888;font-size:12px;margin-top:20px">请尝试 <a href="javascript:location.reload(true)" style="color:#7AAA67">强制刷新</a> 或清除浏览器缓存后重试</p></div>';
     }
   })();
 
