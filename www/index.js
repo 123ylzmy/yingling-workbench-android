@@ -16,7 +16,7 @@
     size = size || 28;
     // 自定义上传头像优先
     if (profile && profile.avatar_url) {
-      return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;overflow:hidden;flex-shrink:0"><img src="' + profile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" alt="头像"></span>';
+      return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative"><img src="' + profile.avatar_url + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block" alt="头像"></span>';
     }
     var ai = (profile && profile.avatar_idx !== undefined) ? profile.avatar_idx : 0;
     var emoji = (profile && profile.avatar_emoji) || AVATAR_PRESETS[ai] || '🌸';
@@ -3691,7 +3691,7 @@
         store: 'wb_user_profile',
         data: newProfile,
         updated_at: new Date().toISOString()
-      }).then(function() {
+      }, 'Prefer: resolution=merge-duplicates').then(function() {
         // 如果手机号变了，更新 phone lookup
         if (phone && phone !== oldProfile.phone) {
           return sbFetch(syncConfig, 'POST', 'sync_store', {
