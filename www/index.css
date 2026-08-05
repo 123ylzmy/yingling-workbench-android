@@ -1975,8 +1975,16 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 .train-list {
-  margin-top: 4px
+  margin-top: 4px;
+  max-height: 420px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding-right: 4px;
 }
+/* 自定义滚动条 */
+.train-list::-webkit-scrollbar { width: 4px; }
+.train-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+.train-list::-webkit-scrollbar-track { background: transparent; }
 
 .train-list-day {
   margin-bottom: 12px;

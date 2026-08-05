@@ -2966,7 +2966,17 @@
     }
     html += '</div>';
     var target = document.getElementById(containerId);
-    if (target) target.innerHTML = html;
+    if (target) {
+      target.innerHTML = html;
+      // 自动滚动到今天在顶端
+      var todayHd = target.querySelector('.train-list-day-hd.today');
+      if (todayHd) {
+        var list = target.querySelector('.train-list');
+        if (list) {
+          list.scrollTop = todayHd.parentElement.offsetTop - 4;
+        }
+      }
+    }
   }
 
   /* ===================== 训练弹窗：分类+下拉+参数 ===================== */
