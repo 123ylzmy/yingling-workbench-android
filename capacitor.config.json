@@ -1,6 +1,6 @@
 {
   "appId": "com.yingling.workbench",
-  "appName": "自洽日程",
+  "appName": "樱苓工作台",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

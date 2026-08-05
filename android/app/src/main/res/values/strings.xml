@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">自洽日程</string>
-    <string name="title_activity_main">自洽日程</string>
+    <string name="app_name">樱苓工作台</string>
+    <string name="title_activity_main">樱苓工作台</string>
     <string name="package_name">com.yingling.workbench</string>
     <string name="custom_url_scheme">com.yingling.workbench</string>
 </resources>
