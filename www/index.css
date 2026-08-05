@@ -389,7 +389,7 @@ input[type=number]::-webkit-inner-spin-button {
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 24px 20px;
+  padding: 16px 12px 20px 24px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
@@ -943,8 +943,7 @@ input[type=number]::-webkit-inner-spin-button {
 
 .today-cal {
   flex: 1;
-  min-width: 300px;
-  max-width: 480px
+  min-width: 300px
 }
 
 .today-right {
