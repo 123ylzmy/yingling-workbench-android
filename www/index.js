@@ -3039,7 +3039,16 @@
     var panel = document.getElementById('exPanel');
     var btn = document.getElementById('exBtn');
     _exPanelOpen = !_exPanelOpen;
-    if (_exPanelOpen) { panel.classList.add('show'); btn.classList.add('open') }
+    if (_exPanelOpen) {
+      panel.classList.add('show'); btn.classList.add('open');
+      // 展开时自动滚动弹窗，让下拉按钮靠近顶部，避免面板被裁切
+      var modal = document.querySelector('.modal');
+      var dropdown = document.getElementById('exDropdown');
+      if (modal && dropdown) {
+        var offset = dropdown.getBoundingClientRect().top - modal.getBoundingClientRect().top - 20;
+        modal.scrollTop += offset;
+      }
+    }
     else { panel.classList.remove('show'); btn.classList.remove('open') }
   }
 
