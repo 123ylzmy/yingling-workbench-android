@@ -516,6 +516,7 @@
   let state = null; // 异步加载 data.json 后初始化
   let todoViewDate = null; // 在 initApp 中赋值
   let calYear, calMonth;
+  let _showLunar = true;
   function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); lastLocalUpdate = Date.now(); autoCloudSave() }
   /* 自动云端保存（防抖 1.5 秒，失败自动重试最多 3 次） */
   var _cloudSavePending = null;
@@ -1166,6 +1167,7 @@
       '<div class="mnth">' + calYear + '年 ' + calMonth + '月</div>' +
       '<button onclick="nextCalMonth()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' +
       '<button onclick="nextCalYear()" class="cal-year-btn" title="下一年"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 18 9 12 3 6"/><polyline points="9 18 15 12 9 6"/></svg></button>' +
+      '<button onclick="toggleLunar()" class="cal-lunar-btn' + (_showLunar ? ' active' : '') + '" title="' + (_showLunar ? '隐藏农历' : '显示农历') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 1 0 7 7"/></svg></button>' +
       '</div>' +
       '<div class="cal-grid">' +
       '<div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>' +
@@ -1193,6 +1195,9 @@
           '</div>';
       }).join('') : '<div style="text-align:center;color:var(--ink-light);font-size:12px;padding:12px">本月暂无纪念日</div>') +
       '</div>';
+    // 农历显示开关
+    if (_showLunar) { $('calArea').classList.remove('cal-no-lunar') }
+    else { $('calArea').classList.add('cal-no-lunar') }
   }
 
   /* 点击日历日期 → 弹出快捷添加菜单 */
@@ -1334,6 +1339,7 @@
   function nextCalMonth() { if (calMonth === 12) { calYear++; calMonth = 1 } else calMonth++; renderCalendar() }
   function prevCalYear() { calYear--; renderCalendar() }
   function nextCalYear() { calYear++; renderCalendar() }
+  function toggleLunar() { _showLunar = !_showLunar; renderCalendar() }
   function delEvent(id) { conf('删除这条记录？', function () { state.events = state.events.filter(function (e) { return e.id !== id }); save(); renderAll() }) }
 
   /* ===================== 习惯打卡（仅健康页使用） ===================== */

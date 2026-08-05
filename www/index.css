@@ -1058,6 +1058,39 @@ input[type=number]::-webkit-inner-spin-button {
   height: 16px
 }
 
+.cal-lunar-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--ink-lighter);
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  opacity: .5;
+  margin-left: 6px;
+}
+.cal-lunar-btn:hover {
+  opacity: .8;
+  background: var(--g100);
+  color: var(--ink-soft);
+}
+.cal-lunar-btn.active {
+  opacity: 1;
+  color: var(--amber, #f59e0b);
+}
+.cal-lunar-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+#calArea.cal-no-lunar .cal-lunar {
+  display: none;
+}
+
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
