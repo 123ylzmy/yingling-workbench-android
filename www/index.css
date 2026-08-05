@@ -5027,11 +5027,10 @@ input[type=range]::-webkit-slider-thumb {
   }
 }
 
-/* ── 桌面宽屏（≥1200px）—— 内容区弹性居中，日历:右侧=1:2 ── */
+/* ── 桌面宽屏（≥1200px）—— 全宽铺满，日历:右侧=1:2弹性分配 ── */
 @media(min-width:1200px) {
   .content {
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 16px 24px;
   }
 }
 
