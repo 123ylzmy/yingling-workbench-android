@@ -2049,7 +2049,8 @@
         '</div>' +
         '</div>';
     }
-    $('studyArea').innerHTML = timerHTML + `
+    $('studyTimerArea').innerHTML = timerHTML;
+    $('studyListArea').innerHTML = `
   <div class="study-stats">
     <div class="study-stat">
       <div class="v">${(wM / 60).toFixed(1)}</div>

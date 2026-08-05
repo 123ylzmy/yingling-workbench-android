@@ -427,8 +427,29 @@ input[type=number]::-webkit-inner-spin-button {
   flex-shrink: 0
 }
 
-/* ========== 卡片 ========== */
-.card {
+    /* ========== 通用双栏布局（健康/目标/学习页） ========== */
+    .page-split {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .page-left, .page-right {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .page-left>.card, .page-right>.card {
+      margin-bottom: 14px;
+    }
+    .page-left>.card:last-child, .page-right>.card:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ========== 卡片 ========== */
+    .card {
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -2912,11 +2933,23 @@ input[type=number]::-webkit-inner-spin-button {
   box-shadow: var(--shadow-hover)
 }
 
-.goal-card:last-child {
-  margin-bottom: 0
-}
+    .goal-card:last-child {
+      margin-bottom: 0
+    }
 
-.goal-top {
+    /* 宽屏：目标卡片双栏 grid */
+    @media(min-width:1101px) {
+      #goalList {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      #goalList .goal-card {
+        margin-bottom: 0;
+      }
+    }
+
+    .goal-top {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -4065,6 +4098,15 @@ input[type=range]::-webkit-slider-thumb {
     flex: unset;
     overflow-y: visible;
     min-height: unset
+  }
+
+  /* 双栏页面 ≤1100px → 上下堆叠 */
+  .page-split {
+    flex-direction: column;
+  }
+  .page-left, .page-right {
+    flex: unset;
+    width: 100%;
   }
 }
 

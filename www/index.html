@@ -641,6 +641,8 @@
 
           <!-- 健康数据面板 -->
           <div class="health-panel active" id="hpanelHealth">
+            <div class="page-split">
+              <div class="page-left">
             <div class="card">
               <div class="card-hd"><span class="dot g"></span>本月健康进度
                 <button class="add-btn" onclick="openHealthTargetModal()" title="设置健康目标">
@@ -688,7 +690,8 @@
                 </div>
               </div>
             </div>
-
+              </div>
+              <div class="page-right">
             <div class="card">
               <div class="card-hd"><span class="dot g"></span>体重记录
                 <button class="add-btn" onclick="openWeightModal()">
@@ -795,6 +798,8 @@
                   <button onclick="openWeightModal()">记录体重</button>
                   <button onclick="openMeasureModal()">记录围度</button>
                 </div>
+              </div>
+            </div>
               </div>
             </div>
           </div>
@@ -1086,48 +1091,23 @@
 
         <!-- ===== 学习技能 ===== -->
         <div class="page" id="page-study">
-          <div class="card">
-            <div class="card-hd">
-              <span class="dot p"></span>学习技能
-              <div style="margin-left:auto;display:flex;gap:6px">
-                <button class="add-btn" style="flex:1;background:var(--p50);color:var(--p300);justify-content:center"
-                  onclick="manageStudyModules()">管理模块</button>
-                <button class="add-btn" style="flex:1;background:var(--p50);color:var(--p300);justify-content:center"
-                  onclick="openStudyModal()">手动记录</button>
+          <div class="page-split">
+            <div class="page-left">
+              <div class="card" style="height:100%">
+                <div class="card-hd"><span class="dot p"></span>学习计时</div>
+                <div class="card-bd" id="studyTimerArea"></div>
               </div>
             </div>
-            <div class="card-bd" id="studyArea">
-              <div class="study-timer" style="background:var(--bg);padding:28px 20px">
-                <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><button
-                    class="btn-timer-pick" onclick="openTimerModuleModal()">+ 选择学习模块</button>
-                  <div class="timer-mode-toggle"><span class="tmode-opt active"
-                      onclick="selTimerMode=&#39;up&#39;;renderStudy()">正计时</span><span class="tmode-opt"
-                      onclick="selTimerMode=&#39;down&#39;;renderStudy()">倒计时</span></div><button
-                    class="btn-timer-start" onclick="startStudyTimer()" disabled=""><svg viewBox="0 0 24 24"
-                      fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px">
-                      <polygon points="6,3 20,12 6,21"></polygon>
-                    </svg>开始学习</button>
+            <div class="page-right">
+              <div class="card">
+                <div class="card-hd">
+                  <span class="dot p"></span>学习数据
+                  <div style="margin-left:auto;display:flex;gap:6px">
+                    <button class="add-btn" style="flex:1;background:var(--p50);color:var(--p300);justify-content:center" onclick="manageStudyModules()">管理模块</button>
+                    <button class="add-btn" style="flex:1;background:var(--p50);color:var(--p300);justify-content:center" onclick="openStudyModal()">手动记录</button>
+                  </div>
                 </div>
-              </div>
-              <div class="study-stats">
-                <div class="study-stat">
-                  <div class="v">0.0</div>
-                  <div class="l">本周累计小时</div>
-                </div>
-                <div class="study-stat">
-                  <div class="v">0</div>
-                  <div class="l">本周学习次数</div>
-                </div>
-              </div>
-              <div class="study-tabs">
-                <div class="study-tab active" onclick="skillFilter=&#39;all&#39;;renderStudy()">全部</div>
-
-
-                <a class="study-manage" onclick="manageStudyModules()" title="管理学习模块">⚙</a>
-              </div>
-
-              <div class="study-list">
-                <div class="today-empty">还没有学习记录</div>
+                <div class="card-bd" id="studyListArea"></div>
               </div>
             </div>
           </div>
