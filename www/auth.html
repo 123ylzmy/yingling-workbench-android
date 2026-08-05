@@ -486,12 +486,21 @@ function verifyLoginCode(phone, code) {
 }
 
 // ==================== 通过手机号查找用户映射 ====================
+function parseDataField(d) {
+  // 兼容 JSONB（返回对象）和 TEXT（返回 JSON 字符串）两种列类型
+  if (!d) return null;
+  if (typeof d === 'string') {
+    try { d = JSON.parse(d); } catch(e) { return null; }
+  }
+  return d;
+}
+
 function findUserByPhone(phone) {
   var key = phoneToLookupKey(phone);
   return sbRest('GET', 'sync_store?group_key=eq.' + encodeURIComponent(key) + '&store=eq.wb_profile_lookup&select=data&limit=1', null)
     .then(function(arr) {
-      if (arr && arr.length > 0 && arr[0].data) {
-        return arr[0].data; // { user_id, email, session_key, password_hash }
+      if (arr && arr.length > 0) {
+        return parseDataField(arr[0].data); // { user_id, email, session_key, password_hash }
       }
       return null;
     })
@@ -502,8 +511,8 @@ function findUserByPhone(phone) {
 function fetchUserProfile(userId) {
   return sbRest('GET', 'sync_store?group_key=eq.profile_' + encodeURIComponent(userId) + '&store=eq.wb_user_profile&select=data&limit=1', null)
     .then(function(arr) {
-      if (arr && arr.length > 0 && arr[0].data) {
-        return arr[0].data;
+      if (arr && arr.length > 0) {
+        return parseDataField(arr[0].data);
       }
       return null;
     })
@@ -543,26 +552,47 @@ function loginWithPassword(phone) {
       return;
     }
 
+    console.log('[Login] userData found:', { user_id: userData.user_id, email: userData.email, has_password_hash: !!userData.password_hash, has_session_key: !!userData.session_key });
+
     // 2. 验证用户密码（与注册时存储的哈希对比）
     var pwdHash = hashPassword(password);
-    if (userData.password_hash && userData.password_hash !== pwdHash) {
+    console.log('[Login] pwdHash=' + pwdHash + ', stored=' + userData.password_hash);
+
+    if (userData.password_hash) {
+      if (userData.password_hash !== pwdHash) {
+        setLoading($('loginBtn'), false);
+        showToast('密码错误', 'error');
+        console.error('[Login] Password hash mismatch');
+        return;
+      }
+      console.log('[Login] Password hash matched ✓');
+    } else {
+      console.warn('[Login] No password_hash stored — skipping local password check');
+    }
+
+    // 3. 用 session_key 登录 Supabase
+    if (!userData.session_key) {
       setLoading($('loginBtn'), false);
-      showToast('密码错误', 'error');
+      showToast('账号数据异常，请联系客服', 'error');
+      console.error('[Login] No session_key in userData');
       return;
     }
 
-    // 3. 用 session_key 登录 Supabase（绕过邮箱确认问题）
     return supabase.auth.signInWithPassword({
       email: userData.email,
       password: userData.session_key
     }).then(function(res) {
       setLoading($('loginBtn'), false);
       if (res.error) {
+        console.error('[Login] Supabase signInWithPassword failed:', res.error.message);
         var msg = res.error.message;
-        if (msg.indexOf('Invalid login') >= 0) msg = '密码错误';
+        if (msg.indexOf('Invalid login') >= 0 || msg.indexOf('invalid') >= 0) {
+          msg = '账号验证失败——可能是邮箱未验证，请查收验证邮件后重试';
+        }
         showToast(msg, 'error');
         return;
       }
+      console.log('[Login] Supabase auth success ✓');
       finishLogin(res.data.session, userData.user_id);
     });
   }).catch(function(err) {

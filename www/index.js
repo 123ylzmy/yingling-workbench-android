@@ -1,4 +1,13 @@
 /* ===================== 认证 ===================== */
+  // 解析 sync_store 返回的 data 字段（兼容 JSONB 对象和 TEXT 字符串）
+  function parseStoreData(d) {
+    if (!d) return null;
+    if (typeof d === 'string') {
+      try { d = JSON.parse(d); } catch(e) { return d; }
+    }
+    return d;
+  }
+
   function getUserProfile() {
     return window.__profile || { nickname: '用户', avatar_idx: 0, gender: '' };
   }
@@ -85,10 +94,12 @@
     return sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.userId) + '&store=eq.wb_yingling_v2&select=data,updated_at&limit=1', null)
       .then(function(arr) {
         if (arr && arr.length > 0 && arr[0].data) {
-          var merged = mergeStateData(state, arr[0].data);
+          var rawData = parseStoreData(arr[0].data);
+          if (!rawData) return;
+          var merged = mergeStateData(state, rawData);
           if (JSON.stringify(merged) !== JSON.stringify(state)) {
             state = merged; save(); renderAll();
-            if (arr[0].data && JSON.stringify(arr[0].data).length > 10) {
+            if (rawData && JSON.stringify(rawData).length > 10) {
               toast('已从云端同步数据 📥');
             }
           }
@@ -251,7 +262,7 @@
     sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent('profile_' + syncConfig.userId) + '&store=eq.wb_user_profile&select=data&limit=1', null)
       .then(function(arr) {
         if (arr && arr.length > 0 && arr[0].data) {
-          var cloudProfile = arr[0].data;
+          var cloudProfile = parseStoreData(arr[0].data);
           // 合并到本地 profile
           var authData = localStorage.getItem('wb_auth_data');
           if (authData) {
@@ -3615,7 +3626,8 @@
             data: {
               user_id: userId,
               email: email || oldProfile.email,
-              session_key: newProfile.session_key
+              session_key: newProfile.session_key,
+              password_hash: oldProfile.password_hash || ''
             },
             updated_at: new Date().toISOString()
           });
