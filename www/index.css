@@ -5026,6 +5026,14 @@ input[type=range]::-webkit-slider-thumb {
   }
 }
 
+/* ── 桌面宽屏（≥1200px）—— 限制最大宽度，避免卡片过度拉伸 ── */
+@media(min-width:1200px) {
+  .content {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+}
+
 /* ========== 主题变体 ========== */
 /* 暗夜模式 */
 [data-theme="dark"] {
