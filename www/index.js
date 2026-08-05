@@ -1,26 +1,51 @@
 /* ===================== 认证 ===================== */
+  function getUserProfile() {
+    return window.__profile || { nickname: '用户', avatar_idx: 0, gender: '' };
+  }
+
+  function getAvatarHtml(profile, size) {
+    size = size || 28;
+    var ai = (profile && profile.avatar_idx !== undefined) ? profile.avatar_idx : 0;
+    var emoji = (profile && profile.avatar_emoji) || AVATAR_PRESETS[ai] || '🌸';
+    var bg = (profile && profile.avatar_bg) || '#FFE4E1';
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + bg + ';font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0">' + emoji + '</span>';
+  }
+
+  // 预设头像（与 auth.html 保持一致）
+  var AVATAR_PRESETS = ['🌸','🌿','☀️','🌙','⭐','🦋','🐱','🌈','🍀','💜','🌊','🔥','🌻','🐼','🍓','🎀','💎','🌹','🦊','🐰'];
+
+  // 性别判断：只有女性才显示经期记录
+  function isFemaleUser() {
+    var profile = getUserProfile();
+    return profile && profile.gender === 'female';
+  }
+
   function handleLogout() {
+    localStorage.removeItem("wb_auth_data");
     localStorage.removeItem("sb_session");
     sessionStorage.removeItem("sb_session");
     window.location.replace("auth.html");
   }
 
-  /* ===================== 云同步（同步码模式 · fetch 直连，零 CDN 依赖）==================== */
+  /* ===================== 云同步（自动按用户隔离 · fetch 直连 Supabase REST API）==================== */
   let syncConnected = false;
   let syncTimer = null;
   let lastSyncedAt = null;
-  let lastLocalUpdate = Date.now();  // 本地最新修改时间戳，用于双向同步比较
-  let syncConfig = null; // { url, key, code }
-  const SYNC_CONFIG_KEY = 'wb_yingling_sync_config';
+  let lastLocalUpdate = Date.now();
+  let syncConfig = null; // { url, key, userId }
 
-  /* ---- fetch 封装：直连 Supabase REST API ---- */
+  function getUserId() {
+    var auth = window.__auth;
+    return auth && auth.user ? auth.user.id : null;
+  }
+
+  /* ---- fetch 封装 ---- */
   function sbFetch(config, method, path, body, extraHeaders) {
     var headers = {
       'apikey': config.key,
       'Authorization': 'Bearer ' + config.key,
       'Content-Type': 'application/json'
     };
-    // 支持额外 header（如 Prefer: resolution=merge-duplicates）
     if (extraHeaders) {
       var parts = extraHeaders.split(': ');
       if (parts.length === 2) headers[parts[0]] = parts[1];
@@ -34,50 +59,21 @@
     });
   }
 
-  /* ---- 配置读写 ---- */
-  function loadSyncConfig() {
-    try { var r = localStorage.getItem(SYNC_CONFIG_KEY); if (r) syncConfig = JSON.parse(r); } catch (e) { syncConfig = null; }
-  }
-
-  function saveSyncConfig() {
-    var url = document.getElementById('syncUrl').value.trim();
-    var key = document.getElementById('syncKey').value.trim();
-    var code = document.getElementById('syncCode').value.trim();
-    var errEl = document.getElementById('authError');
-    errEl.textContent = '';
-    if (!url || !key || !code) { errEl.textContent = '请填写完整的同步配置'; return; }
-    if (!url.startsWith('https://') || !url.includes('.supabase.co')) { errEl.textContent = '项目 URL 格式不正确'; return; }
-    syncConfig = { url: url, key: key, code: code };
-    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(syncConfig));
-    // 保存后立即测试连接
-    errEl.style.color = 'var(--warning)';
-    errEl.textContent = '正在验证连接...';
-    doTestConnection().then(function(ok) {
-      syncConnected = ok;
-      updateSyncUI(ok);
-      if (ok) {
-        errEl.style.color = 'var(--success)';
-        errEl.textContent = '✅ 连接成功！配置已保存';
-        setTimeout(function() { errEl.style.color = ''; errEl.textContent = ''; closeAuth(); }, 1000);
-        // 首次上传（只推不拉，避免云端旧数据覆盖本地）
-        doUpload();
-        startAutoSync();
-      } else {
-        errEl.style.color = '';
-        errEl.textContent = '配置已保存但连接失败，请检查后重试';
-      }
-    });
-  }
-
-  function doTestConnection() {
-    return sbFetch(syncConfig, 'GET', 'sync_store?select=count', null)
-      .then(function() { return true; })
-      .catch(function() { return false; });
+  /* ---- 自动初始化同步配置（使用用户ID隔离数据）---- */
+  function initSyncConfig() {
+    var uid = getUserId();
+    if (!uid) return;
+    syncConfig = {
+      url: 'https://dyvzxlntyqebblewpihj.supabase.co',
+      key: 'sb_publishable_kSGB8khWFcMSemqJ1m6Rxw_pI4gGrhc',
+      userId: uid
+    };
   }
 
   function doUpload() {
+    if (!syncConfig) return Promise.resolve();
     return sbFetch(syncConfig, 'POST', 'sync_store', {
-      group_key: syncConfig.code,
+      group_key: syncConfig.userId,
       store: 'wb_yingling_v2',
       data: state,
       updated_at: new Date().toISOString()
@@ -85,13 +81,16 @@
   }
 
   function downloadAndMerge() {
-    return sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.code) + '&store=eq.wb_yingling_v2&select=data,updated_at&limit=1', null)
+    if (!syncConfig) return Promise.resolve();
+    return sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.userId) + '&store=eq.wb_yingling_v2&select=data,updated_at&limit=1', null)
       .then(function(arr) {
         if (arr && arr.length > 0 && arr[0].data) {
           var merged = mergeStateData(state, arr[0].data);
           if (JSON.stringify(merged) !== JSON.stringify(state)) {
             state = merged; save(); renderAll();
-            toast('已从云端同步最新数据 📥');
+            if (arr[0].data && JSON.stringify(arr[0].data).length > 10) {
+              toast('已从云端同步数据 📥');
+            }
           }
         }
         lastSyncedAt = Date.now();
@@ -103,130 +102,46 @@
   function updateSyncUI(connected) {
     var label = document.getElementById('syncLabel');
     var btn = document.getElementById('cloudBtn');
+    if (!btn) return;
     var btnLabel = btn.querySelector('.cloud-label');
     var dot = document.getElementById('syncDot');
     if (connected) {
-      label.textContent = '已连接';
-      btnLabel.textContent = '已同步';
+      if (label) label.textContent = '已同步';
+      if (btnLabel) btnLabel.textContent = '已同步';
       btn.style.background = 'var(--g100)';
       btn.style.color = 'var(--g500)';
       btn.style.borderColor = 'var(--g300)';
-      dot.style.background = 'var(--success)';
+      if (dot) dot.style.background = 'var(--success)';
     } else {
-      label.textContent = '未配置';
-      btnLabel.textContent = '云同步';
+      if (label) label.textContent = '离线';
+      if (btnLabel) btnLabel.textContent = '同步中';
       btn.style.background = 'var(--g50)';
       btn.style.color = 'var(--g400)';
       btn.style.borderColor = 'var(--g200)';
-      dot.style.background = 'var(--g200)';
+      if (dot) dot.style.background = 'var(--g200)';
     }
   }
 
-  function toggleCloudPanel() { openAuth(); }
-
-  function openAuth() {
-    loadSyncConfig();
-    var overlay = document.getElementById('authOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'flex';
-    if (syncConfig) {
-      document.getElementById('syncUrl').value = syncConfig.url || '';
-      document.getElementById('syncKey').value = syncConfig.key || '';
-      document.getElementById('syncCode').value = syncConfig.code || '';
-    }
-    var errEl = document.getElementById('authError');
-    if (errEl) errEl.textContent = '';
-    var statusRow = document.getElementById('syncStatusRow');
-    if (statusRow) {
-      statusRow.style.display = 'block';
-      statusRow.textContent = syncConfig ? '当前：已配置（同步码：' + syncConfig.code + '）' : '当前：未配置';
-    }
-  }
-
-  function closeAuth() { document.getElementById('authOverlay').style.display = 'none'; }
-
-  /* ---- 连接测试 ---- */
-  async function testSyncConnection() {
-    var errEl = document.getElementById('authError');
-    var url = document.getElementById('syncUrl').value.trim();
-    var key = document.getElementById('syncKey').value.trim();
-    errEl.textContent = '';
-    if (!url || !key) { errEl.textContent = '请填写项目 URL 和 Anon Key'; return; }
-    var cfg = { url: url, key: key, code: 'test' };
-    try {
-      await sbFetch(cfg, 'GET', 'sync_store?select=count', null);
-      errEl.style.color = 'var(--success)';
-      errEl.textContent = '✅ 连接成功！数据库可访问';
-      setTimeout(function() { errEl.style.color = ''; errEl.textContent = ''; }, 3000);
-    } catch (e) {
-      errEl.textContent = '连接失败：' + (e.message || '请检查配置是否正确');
-    }
-  }
-
-  /* ---- 设置面板：上传 / 从云端加载 ---- */
-  async function syncNowFromSettings(mode) {
-    var errEl = document.getElementById('authError');
-    var url = document.getElementById('syncUrl').value.trim();
-    var key = document.getElementById('syncKey').value.trim();
-    var code = document.getElementById('syncCode').value.trim();
-    errEl.textContent = '';
-    if (!url || !key || !code) { errEl.textContent = '请填写完整的同步配置'; return; }
-    var cfg = syncConfig || { url: url, key: key, code: code };
-    errEl.style.color = 'var(--warning)';
-
-    if (mode === 'download') {
-      // 从云端下载
-      errEl.textContent = '正在从云端加载...';
-      try {
-        var arr = await sbFetch(cfg, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent(code) + '&store=eq.wb_yingling_v2&select=data,updated_at&limit=1', null);
-        if (arr && arr.length > 0 && arr[0].data) {
-          var merged = mergeStateData(state, arr[0].data);
-          if (JSON.stringify(merged) !== JSON.stringify(state)) {
-            state = merged; save(); renderAll();
-            errEl.style.color = 'var(--success)';
-            errEl.textContent = '✅ 已从云端加载最新数据';
-          } else {
-            errEl.style.color = 'var(--success)';
-            errEl.textContent = '✅ 数据一致，无需更新';
-          }
-        } else {
-          errEl.textContent = '云端暂无数据，请先在另一台设备上传';
-        }
-        lastSyncedAt = Date.now();
-      } catch (e) {
-        errEl.style.color = '';
-        errEl.textContent = '加载失败：' + (e.message || '请检查网络和配置');
+  function toggleCloudPanel() {
+    if (!syncConnected) {
+      // 手动触发同步
+      if (syncConfig) {
+        doUpload().then(function() {
+          lastSyncedAt = Date.now();
+          toast('数据已同步 ✅');
+        }).catch(function() {
+          toast('同步失败，请检查网络', 'error');
+        });
       }
-    } else {
-      // 上传到云端
-      errEl.textContent = '正在上传...';
-      try {
-        var upBody = { group_key: code, store: 'wb_yingling_v2', data: state, updated_at: new Date().toISOString() };
-        await sbFetch(cfg, 'POST', 'sync_store', upBody, 'Prefer: resolution=merge-duplicates');
-        lastSyncedAt = Date.now();
-        errEl.style.color = 'var(--success)';
-        errEl.textContent = '✅ 已上传到云端';
-      } catch (e) {
-        errEl.style.color = '';
-        errEl.textContent = '上传失败：' + (e.message || '请检查网络和配置');
-      }
+      return;
     }
-    setTimeout(function() { errEl.style.color = ''; errEl.textContent = ''; }, 3000);
-  }
-
-  /* ---- 顶部按钮手动同步：只上传（本地数据最权威，不会被云端覆盖）---- */
-  async function syncNow() {
-    if (!syncConfig || !syncConnected) { toast('请先配置并连接云同步'); openAuth(); return; }
-    try {
-      var btn = document.getElementById('cloudBtn');
-      var btnLabel = btn.querySelector('.cloud-label');
-      btnLabel.textContent = '同步中';
-      var upBody = { group_key: syncConfig.code, store: 'wb_yingling_v2', data: state, updated_at: new Date().toISOString() };
-      await sbFetch(syncConfig, 'POST', 'sync_store', upBody, 'Prefer: resolution=merge-duplicates');
+    // 已连接，手动上传
+    doUpload().then(function() {
       lastSyncedAt = Date.now();
-      btnLabel.textContent = '已同步';
-      toast('数据已上传云端 ✅');
-    } catch (e) { toast('同步失败：' + (e.message || '请检查网络')); }
+      toast('数据已同步 ✅');
+    }).catch(function() {
+      toast('同步失败', 'error');
+    });
   }
 
   /* ---- 数据合并 ---- */
@@ -286,7 +201,7 @@
     try {
       // 1) 查询云端最新时间戳
       var arr = await sbFetch(syncConfig, 'GET',
-        'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.code) +
+        'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.userId) +
         '&store=eq.wb_yingling_v2&select=updated_at&limit=1', null);
 
       var cloudTime = 0;
@@ -297,7 +212,7 @@
       // 2) 如果云端比本地新 → 下载合并（另一台设备改过数据）
       if (cloudTime > lastLocalUpdate && cloudTime > (lastSyncedAt || 0)) {
         var full = await sbFetch(syncConfig, 'GET',
-          'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.code) +
+          'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.userId) +
           '&store=eq.wb_yingling_v2&select=data,updated_at&limit=1', null);
         if (full && full.length > 0 && full[0].data) {
           // 用时间戳判断云端是否真的更新了
@@ -320,7 +235,7 @@
       }
       // 3) 如果本地比云端新 → 上传（本设备刚改过数据）
       else if (lastLocalUpdate > cloudTime && lastLocalUpdate > (lastSyncedAt || 0)) {
-        var upBody = { group_key: syncConfig.code, store: 'wb_yingling_v2', data: state, updated_at: new Date().toISOString() };
+        var upBody = { group_key: syncConfig.userId, store: 'wb_yingling_v2', data: state, updated_at: new Date().toISOString() };
         await sbFetch(syncConfig, 'POST', 'sync_store', upBody, 'Prefer: resolution=merge-duplicates');
         lastSyncedAt = Date.now();
       }
@@ -329,18 +244,23 @@
     }
   }
 
-  // 页面加载时恢复同步状态，启动实时双向同步
-  loadSyncConfig();
-  if (syncConfig) {
-    doTestConnection().then(function(ok) {
-      syncConnected = ok;
-      updateSyncUI(ok);
-      if (ok) {
+  // 页面加载时自动初始化同步（基于登录用户）
+  initSyncConfig();
+  if (syncConfig && syncConfig.userId) {
+    // 快速测试连接并启动同步
+    sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.userId) + '&store=eq.wb_yingling_v2&select=updated_at&limit=1', null)
+      .then(function() {
+        syncConnected = true;
+        updateSyncUI(true);
         startAutoSync();
-        // 首次立即检查一次（不等 3 秒），双向同步
-        pollSync();
-      }
-    });
+        // 首次拉取云端数据
+        downloadAndMerge();
+      })
+      .catch(function() {
+        syncConnected = false;
+        updateSyncUI(false);
+        // 即使连接失败也不影响本地使用
+      });
   }
 
   /* ---- 网络状态监听：断网暂停、恢复后自动同步 ---- */
@@ -631,13 +551,15 @@
 
   /* ===================== 页头 ===================== */
   function renderHead() {
-    const d = new Date();
-    const wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+    var profile = getUserProfile();
+    var d = new Date();
+    var wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
     $('dateLine').textContent = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 · 星期' + wk;
-    const h = d.getHours();
-    let g = '下午好';
+    var h = d.getHours();
+    var g = '下午好';
     if (h < 6) g = '凌晨好'; else if (h < 11) g = '早上好'; else if (h < 13) g = '中午好'; else if (h < 18) g = '下午好'; else g = '晚上好';
-    $('greetLine').innerHTML = g + '，<b>樱苓</b> <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()"></span><span class="mood-panel" id="moodPanel"></span></span>';
+    var avatarHtml = getAvatarHtml(profile, 28);
+    $('greetLine').innerHTML = g + '，' + avatarHtml + '<b>' + esc(profile.nickname || '用户') + '</b> <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()"></span><span class="mood-panel" id="moodPanel"></span></span>';
     if (!state.mood || state.mood.date !== today()) { state.mood = { date: today(), value: 'happy' }; }
     renderMoodIcon();
   }
@@ -2791,14 +2713,16 @@
   function computeRestDays() {
     var set = {};
     state.restDays.forEach(function (d) { set[d] = 'rest' });
-    state.periods.forEach(function (p) {
-      var start = new Date(p.start);
-      var dur = p.duration || 5;
-      for (var i = 0; i < dur; i++) {
-        var d = new Date(start); d.setDate(start.getDate() + i);
-        set[fmtTrainDate(d)] = 'period';
-      }
-    });
+    if (isFemaleUser()) {
+      state.periods.forEach(function (p) {
+        var start = new Date(p.start);
+        var dur = p.duration || 5;
+        for (var i = 0; i < dur; i++) {
+          var d = new Date(start); d.setDate(start.getDate() + i);
+          set[fmtTrainDate(d)] = 'period';
+        }
+      });
+    }
     return set;
   }
 
@@ -2810,8 +2734,9 @@
     save(); renderTrainLogs('trainRecords');
   }
 
-  // 记录姨妈期弹窗
+  // 记录姨妈期弹窗（仅女性可用）
   function openPeriodModal() {
+    if (!isFemaleUser()) { toast('仅女性用户可使用经期记录'); return; }
     var listHtml = '';
     if (state.periods.length) {
       listHtml = '<div style="margin-bottom:12px;font-size:11px;color:var(--ink-soft)">历史记录：</div>';
@@ -2870,19 +2795,24 @@
 
   function renderTrainLogs(containerId) {
     initTrainWeek();
+    // 控制经期链接可见性
+    var pl = document.getElementById('periodLink');
+    if (pl) pl.style.display = isFemaleUser() ? '' : 'none';
     var todayStr = today();
     var isThisWeek = fmtTrainDate(getMonday(new Date())) === fmtTrainDate(trainWeekStart);
     var restMap = computeRestDays();
 
-    // 导航栏：加入姨妈期提示
+    // 导航栏：加入姨妈期提示（仅女性显示）
     var periodHint = '';
-    state.periods.forEach(function (p) {
-      var pStart = new Date(p.start); var dur = p.duration || 5;
-      var pEnd = new Date(p.start); pEnd.setDate(pStart.getDate() + dur - 1);
-      if (pEnd >= trainWeekStart && pStart < new Date(trainWeekStart.getTime() + 7 * 864e5)) {
-        periodHint = '<span style="font-size:10px;color:var(--p300);white-space:nowrap">' + (pStart.getMonth() + 1) + '/' + pStart.getDate() + '起姨妈期 · ' + dur + '天</span>';
-      }
-    });
+    if (isFemaleUser()) {
+      state.periods.forEach(function (p) {
+        var pStart = new Date(p.start); var dur = p.duration || 5;
+        var pEnd = new Date(p.start); pEnd.setDate(pStart.getDate() + dur - 1);
+        if (pEnd >= trainWeekStart && pStart < new Date(trainWeekStart.getTime() + 7 * 864e5)) {
+          periodHint = '<span style="font-size:10px;color:var(--p300);white-space:nowrap">' + (pStart.getMonth() + 1) + '/' + pStart.getDate() + '起姨妈期 · ' + dur + '天</span>';
+        }
+      });
+    }
     var navHtml = '<button onclick="prevTrainWeek()" title="上一周">&larr;</button>' +
       '<div class="week-label">' + fmtWeekRange(trainWeekStart) + (isThisWeek ? '（本周）' : '') + '</div>' +
       '<button onclick="nextTrainWeek()" title="下一周">&rarr;</button>' +

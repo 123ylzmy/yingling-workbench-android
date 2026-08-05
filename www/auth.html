@@ -10,290 +10,104 @@
   <title>登录 — 自洽日程</title>
   <style>
     :root {
-      --bg: #FAF7F2;
-      --card: #FFFFFF;
-      --accent: #7EB89A;
-      --accent-hover: #6DAB8A;
-      --text: #3D3D3D;
-      --text-secondary: #888888;
-      --line: #EBE5DC;
-      --input-bg: #F5F2EC;
-      --input-border: #E0D9CC;
-      --error: #E06C6C;
-      --radius: 14px;
+      --bg: #FAF7F2; --card: #FFFFFF; --accent: #7EB89A; --accent-hover: #6DAB8A;
+      --text: #3D3D3D; --text-secondary: #888888; --line: #EBE5DC;
+      --input-bg: #F5F2EC; --input-border: #E0D9CC; --error: #E06C6C; --radius: 14px;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
     }
+    body::before { content:''; position:fixed; top:-120px; right:-80px; width:300px; height:300px;
+      background:radial-gradient(circle, rgba(126,184,154,0.12) 0%, transparent 70%); border-radius:50%; pointer-events:none; }
+    body::after { content:''; position:fixed; bottom:-100px; left:-60px; width:250px; height:250px;
+      background:radial-gradient(circle, rgba(180,160,140,0.10) 0%, transparent 70%); border-radius:50%; pointer-events:none; }
 
-    /* 背景装饰 */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -120px; right: -80px;
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(126,184,154,0.12) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-    body::after {
-      content: '';
-      position: fixed;
-      bottom: -100px; left: -60px;
-      width: 250px; height: 250px;
-      background: radial-gradient(circle, rgba(180,160,140,0.10) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
+    .container { width:100%; max-width:420px; position:relative; z-index:1; animation:fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-    .container {
-      width: 100%;
-      max-width: 380px;
-      position: relative;
-      z-index: 1;
-      animation: fadeIn 0.5s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .logo-area { text-align:center; margin-bottom:24px; }
+    .logo-icon { width:64px; height:64px; border-radius:18px; object-fit:cover; margin-bottom:10px;
+      box-shadow:0 4px 20px rgba(126,184,154,0.25); }
+    .logo-title { font-size:20px; font-weight:600; color:var(--text); }
+    .logo-sub { font-size:13px; color:var(--text-secondary); margin-top:4px; }
 
-    /* Logo 区 */
-    .logo-area {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-    .logo-icon {
-      width: 64px; height: 64px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #7EB89A, #5A9A7A);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 34px;
-      color: #fff;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 20px rgba(126,184,154,0.25);
-    }
-    .logo-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .logo-sub {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
+    .card { background:var(--card); border-radius:var(--radius); padding:24px 22px;
+      box-shadow:0 2px 16px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03); }
 
-    /* 卡片 */
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
-    }
+    .tabs { display:flex; gap:0; margin-bottom:20px; background:var(--input-bg); border-radius:10px; padding:3px; }
+    .tab-btn { flex:1; padding:9px 0; border:none; background:transparent; border-radius:8px;
+      font-size:14px; font-weight:500; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; }
+    .tab-btn.active { background:var(--card); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.06); }
 
-    /* Tab 切换 */
-    .tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 24px;
-      background: var(--input-bg);
-      border-radius: 10px;
-      padding: 3px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 9px 0;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .tab-btn.active {
-      background: var(--card);
-      color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    }
+    .form { display:none; }
+    .form.active { display:block; }
 
-    /* 表单 */
-    .form { display: none; }
-    .form.active { display: block; }
+    .form-group { margin-bottom:14px; }
+    .form-label { display:block; font-size:13px; font-weight:500; color:var(--text); margin-bottom:5px; }
+    .form-input, .form-select { width:100%; padding:10px 12px; border:1.5px solid var(--input-border);
+      border-radius:10px; background:var(--input-bg); font-size:15px; color:var(--text);
+      outline:none; transition:border-color 0.2s, box-shadow 0.2s; -webkit-appearance:none; }
+    .form-input:focus, .form-select:focus { border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(126,184,154,0.10); background:#fff; }
+    .form-row { display:flex; gap:10px; }
+    .form-row > .form-group { flex:1; }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    .form-input {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--input-border);
-      border-radius: 10px;
-      background: var(--input-bg);
-      font-size: 15px;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      -webkit-appearance: none;
-    }
-    .form-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(126,184,154,0.10);
-      background: #fff;
-    }
-    .form-input.error {
-      border-color: var(--error);
-    }
-    .form-error {
-      font-size: 12px;
-      color: var(--error);
-      margin-top: 4px;
-      min-height: 16px;
-    }
+    .remember-row { display:flex; align-items:center; gap:8px; margin-bottom:18px; }
+    .remember-row input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; }
+    .remember-row label { font-size:13px; color:var(--text-secondary); cursor:pointer; }
 
-    /* 记住我 */
-    .remember-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .remember-row input[type="checkbox"] {
-      accent-color: var(--accent);
-      width: 16px; height: 16px;
-    }
-    .remember-row label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
+    /* Avatar picker */
+    .avatar-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .avatar-option { width:44px; height:44px; border-radius:50%; display:flex; align-items:center;
+      justify-content:center; font-size:22px; cursor:pointer; border:2.5px solid transparent;
+      transition:border-color 0.2s, transform 0.15s; }
+    .avatar-option:hover { transform:scale(1.1); }
+    .avatar-option.selected { border-color:var(--accent); box-shadow:0 0 0 3px rgba(126,184,154,0.2); }
 
-    /* 按钮 */
-    .btn-primary {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: var(--accent);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .btn-primary { width:100%; padding:12px; border:none; border-radius:10px; background:var(--accent);
+      color:#fff; font-size:15px; font-weight:600; cursor:pointer; transition:background 0.2s, transform 0.1s; }
+    .btn-primary:hover { background:var(--accent-hover); }
+    .btn-primary:active { transform:scale(0.98); }
+    .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
 
-    /* 链接 */
-    .form-link {
-      display: block;
-      text-align: center;
-      margin-top: 14px;
-      font-size: 13px;
-      color: var(--accent);
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .form-link:hover {
-      text-decoration: underline;
-    }
+    .form-link { display:block; text-align:center; margin-top:12px; font-size:13px; color:var(--accent);
+      cursor:pointer; text-decoration:none; }
+    .form-link:hover { text-decoration:underline; }
 
-    /* Toast */
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-120px);
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #fff;
-      z-index: 1000;
-      transition: transform 0.3s ease;
-      pointer-events: none;
-      white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.success { background: #7EB89A; }
-    .toast.error { background: #E06C6C; }
+    .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-120px);
+      padding:12px 24px; border-radius:10px; font-size:14px; font-weight:500; color:#fff;
+      z-index:1000; transition:transform 0.3s ease; pointer-events:none; white-space:nowrap;
+      box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.success { background:#7EB89A; }
+    .toast.error { background:#E06C6C; }
 
-    /* 忘记密码视图 */
-    .forgot-view { display: none; }
-    .forgot-view.active { display: block; }
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 13px;
-      color: var(--accent);
-      cursor: pointer;
-      margin-bottom: 16px;
-      background: none;
-      border: none;
-      padding: 0;
-    }
-    .back-btn:hover { text-decoration: underline; }
+    .forgot-view { display:none; }
+    .forgot-view.active { display:block; }
+    .back-btn { display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--accent);
+      cursor:pointer; margin-bottom:14px; background:none; border:none; padding:0; }
+    .back-btn:hover { text-decoration:underline; }
 
-    /* Loading spinner */
-    .spinner {
-      display: inline-block;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3);
+      border-top-color:#fff; border-radius:50%; animation:spin 0.6s linear infinite;
+      vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
-    /* 底部 */
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 11px;
-      color: var(--text-secondary);
-      opacity: 0.7;
-    }
+    .footer { text-align:center; margin-top:18px; font-size:11px; color:var(--text-secondary); opacity:0.7; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <!-- Logo -->
-    <div class="logo-area">
-      <img src="icons/icon-192.png" class="logo-icon" style="width:64px;height:64px;border-radius:18px;object-fit:cover;margin-bottom:12px;box-shadow:0 4px 20px rgba(126,184,154,0.25)" alt="自洽日程">
-      <div class="logo-title">自洽日程</div>
-      <div class="logo-sub">个人数字工作台</div>
-    </div>
+  <div class="logo-area">
+    <img src="icons/icon-192.png" class="logo-icon" alt="自洽日程">
+    <div class="logo-title">自洽日程</div>
+    <div class="logo-sub">个人数字工作台</div>
+  </div>
 
   <!-- 卡片 -->
   <div class="card">
@@ -308,16 +122,14 @@
       <div class="form-group">
         <label class="form-label" for="loginEmail">邮箱</label>
         <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" autocomplete="email" required>
-        <div class="form-error" id="loginEmailError"></div>
       </div>
       <div class="form-group">
         <label class="form-label" for="loginPassword">密码</label>
         <input type="password" class="form-input" id="loginPassword" placeholder="输入密码" autocomplete="current-password" required>
-        <div class="form-error" id="loginPasswordError"></div>
       </div>
       <div class="remember-row">
         <input type="checkbox" id="rememberMe" checked>
-        <label for="rememberMe">记住登录状态</label>
+        <label for="rememberMe">保持登录（一周内无需重新登录）</label>
       </div>
       <button type="submit" class="btn-primary" id="loginBtn">登录</button>
       <span class="form-link" id="showForgot">忘记密码？</span>
@@ -325,32 +137,71 @@
 
     <!-- 注册表单 -->
     <form class="form" id="registerForm" autocomplete="on">
+      <!-- 头像选择 -->
       <div class="form-group">
-        <label class="form-label" for="regEmail">邮箱</label>
+        <label class="form-label">选择头像</label>
+        <div class="avatar-picker" id="avatarPicker"></div>
+        <input type="hidden" id="regAvatar" value="0">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="regNickname">昵称 <span style="color:var(--error)">*</span></label>
+          <input type="text" class="form-input" id="regNickname" placeholder="给自己起个名字" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regGender">性别 <span style="color:var(--error)">*</span></label>
+          <select class="form-select" id="regGender" required>
+            <option value="">请选择</option>
+            <option value="female">女</option>
+            <option value="male">男</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regEmail">邮箱 <span style="color:var(--error)">*</span></label>
         <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" autocomplete="email" required>
-        <div class="form-error" id="regEmailError"></div>
       </div>
+
       <div class="form-group">
-        <label class="form-label" for="regPassword">密码（至少6位）</label>
-        <input type="password" class="form-input" id="regPassword" placeholder="至少6位密码" autocomplete="new-password" required minlength="6">
-        <div class="form-error" id="regPasswordError"></div>
+        <label class="form-label" for="regPhone">手机号（选填，用于找回密码）</label>
+        <input type="tel" class="form-input" id="regPhone" placeholder="138xxxx8888" autocomplete="tel">
       </div>
-      <div class="form-group">
-        <label class="form-label" for="regConfirm">确认密码</label>
-        <input type="password" class="form-input" id="regConfirm" placeholder="再次输入密码" autocomplete="new-password" required>
-        <div class="form-error" id="regConfirmError"></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="regBirthday">生日</label>
+          <input type="date" class="form-input" id="regBirthday">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regHeight">身高 (cm)</label>
+          <input type="number" class="form-input" id="regHeight" placeholder="165" min="100" max="250" step="1">
+        </div>
       </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="regPassword">密码（至少6位）<span style="color:var(--error)">*</span></label>
+          <input type="password" class="form-input" id="regPassword" placeholder="至少6位密码" autocomplete="new-password" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regConfirm">确认密码 <span style="color:var(--error)">*</span></label>
+          <input type="password" class="form-input" id="regConfirm" placeholder="再次输入" autocomplete="new-password" required>
+        </div>
+      </div>
+
       <button type="submit" class="btn-primary" id="regBtn">注册</button>
       <span class="form-link" id="switchToLogin">已有账号？去登录</span>
     </form>
 
-    <!-- 忘记密码视图 -->
+    <!-- 忘记密码 -->
     <div class="forgot-view" id="forgotView">
       <button class="back-btn" id="backToLogin">← 返回登录</button>
       <div class="form-group">
         <label class="form-label" for="forgotEmail">注册邮箱</label>
         <input type="email" class="form-input" id="forgotEmail" placeholder="your@email.com" required>
-        <div class="form-error" id="forgotEmailError"></div>
       </div>
       <button class="btn-primary" id="resetBtn">发送重置链接</button>
       <p style="font-size:12px;color:var(--text-secondary);margin-top:12px;text-align:center">
@@ -359,7 +210,7 @@
     </div>
   </div>
 
-  <div class="footer">v2026.08.05 — PWA 可安装版</div>
+  <div class="footer">v2026.08.05 — 自洽日程</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -368,13 +219,26 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
-// ==================== Supabase 初始化 ====================
+// ==================== Supabase ====================
 var SUPABASE_URL = 'https://dyvzxlntyqebblewpihj.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_kSGB8khWFcMSemqJ1m6Rxw_pI4gGrhc';
-
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ==================== UI 工具 ====================
+// ==================== 预设头像 ====================
+var AVATARS = [
+  { emoji:'🌸', bg:'#FFE4E1' }, { emoji:'🌿', bg:'#E8F5E9' },
+  { emoji:'☀️', bg:'#FFF8E1' }, { emoji:'🌙', bg:'#E3F2FD' },
+  { emoji:'⭐', bg:'#FFF3E0' }, { emoji:'🦋', bg:'#E0F7FA' },
+  { emoji:'🐱', bg:'#FCE4EC' }, { emoji:'🌈', bg:'#F3E5F5' },
+  { emoji:'🍀', bg:'#C8E6C9' }, { emoji:'💜', bg:'#EDE7F6' },
+  { emoji:'🌊', bg:'#BBDEFB' }, { emoji:'🔥', bg:'#FFEBEE' },
+  { emoji:'🌻', bg:'#FFF9C4' }, { emoji:'🐼', bg:'#EFEBE9' },
+  { emoji:'🍓', bg:'#F8BBD0' }, { emoji:'🎀', bg:'#F48FB1' },
+  { emoji:'💎', bg:'#B3E5FC' }, { emoji:'🌹', bg:'#FFCDD2' },
+  { emoji:'🦊', bg:'#FFE0B2' }, { emoji:'🐰', bg:'#F5F5F5' }
+];
+
+// ==================== 工具函数 ====================
 function $(id) { return document.getElementById(id); }
 
 function showToast(msg, type) {
@@ -396,15 +260,46 @@ function setLoading(btn, loading) {
   }
 }
 
+// 保存 session + profile + 活跃时间
+function saveAuthData(session, profile) {
+  var data = {
+    session: session,
+    profile: profile,
+    last_active: Date.now()
+  };
+  localStorage.setItem('wb_auth_data', JSON.stringify(data));
+  // 同时保留旧的 sb_session 兼容
+  if (session) localStorage.setItem('sb_session', JSON.stringify(session));
+}
+
+// ==================== 头像选择器 ====================
+function buildAvatarPicker() {
+  var html = '';
+  AVATARS.forEach(function(a, i) {
+    var sel = i === 0 ? ' selected' : '';
+    html += '<div class="avatar-option' + sel + '" data-idx="' + i +
+      '" style="background:' + a.bg + '" onclick="selectAvatar(this, ' + i + ')" title="头像' + (i+1) + '">' +
+      a.emoji + '</div>';
+  });
+  $('avatarPicker').innerHTML = html;
+}
+
+function selectAvatar(el, idx) {
+  document.querySelectorAll('.avatar-option').forEach(function(o) { o.classList.remove('selected'); });
+  el.classList.add('selected');
+  $('regAvatar').value = idx;
+}
+buildAvatarPicker();
+
 // ==================== Tab 切换 ====================
-var tabs = $('tabs');
+var tabsEl = $('tabs');
 var forms = document.querySelectorAll('.form');
 var forgotView = $('forgotView');
 
-tabs.addEventListener('click', function(e) {
+tabsEl.addEventListener('click', function(e) {
   if (!e.target.classList.contains('tab-btn')) return;
   var tab = e.target.dataset.tab;
-  tabs.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  tabsEl.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
   e.target.classList.add('active');
   forms.forEach(function(f) { f.classList.remove('active'); });
   forgotView.classList.remove('active');
@@ -413,7 +308,7 @@ tabs.addEventListener('click', function(e) {
 });
 
 $('switchToLogin').addEventListener('click', function() {
-  tabs.querySelector('[data-tab="login"]').click();
+  tabsEl.querySelector('[data-tab="login"]').click();
 });
 
 $('showForgot').addEventListener('click', function() {
@@ -431,16 +326,9 @@ $('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();
   var email = $('loginEmail').value.trim();
   var password = $('loginPassword').value;
-  var valid = true;
 
-  $('loginEmailError').textContent = '';
-  $('loginPasswordError').textContent = '';
-  $('loginEmail').classList.remove('error');
-  $('loginPassword').classList.remove('error');
-
-  if (!email) { $('loginEmailError').textContent = '请输入邮箱'; $('loginEmail').classList.add('error'); valid = false; }
-  if (!password) { $('loginPasswordError').textContent = '请输入密码'; $('loginPassword').classList.add('error'); valid = false; }
-  if (!valid) return;
+  if (!email) { showToast('请输入邮箱', 'error'); return; }
+  if (!password) { showToast('请输入密码', 'error'); return; }
 
   setLoading($('loginBtn'), true);
   supabase.auth.signInWithPassword({ email: email, password: password })
@@ -448,17 +336,19 @@ $('loginForm').addEventListener('submit', function(e) {
       setLoading($('loginBtn'), false);
       if (res.error) {
         var msg = res.error.message;
-        if (msg.includes('Invalid login')) msg = '邮箱或密码错误';
-        if (msg.includes('Email not confirmed')) msg = '邮箱未验证，请检查邮件';
+        if (msg.indexOf('Invalid login') >= 0) msg = '邮箱或密码错误';
+        if (msg.indexOf('Email not confirmed') >= 0) msg = '邮箱未验证，请检查邮件';
         showToast(msg, 'error');
         return;
       }
-      // 保存 session
-      var storage = $('rememberMe').checked ? localStorage : sessionStorage;
-      storage.setItem('sb_session', JSON.stringify(res.data.session));
-      showToast('登录成功，即将跳转…', 'success');
-      setTimeout(function() { window.location.href = 'index.html'; }, 800);
-    }).catch(function(err) {
+      // 提取 profile 信息
+      var profile = (res.data.user && res.data.user.user_metadata) || {};
+      if (!profile.nickname) profile.nickname = email.split('@')[0];
+      if (profile.avatar_idx === undefined) profile.avatar_idx = 0;
+      saveAuthData(res.data.session, profile);
+      showToast('登录成功，即将跳转...', 'success');
+      setTimeout(function() { window.location.href = 'index.html'; }, 600);
+    }).catch(function() {
       setLoading($('loginBtn'), false);
       showToast('网络错误，请重试', 'error');
     });
@@ -467,69 +357,80 @@ $('loginForm').addEventListener('submit', function(e) {
 // ==================== 注册 ====================
 $('registerForm').addEventListener('submit', function(e) {
   e.preventDefault();
+
+  var avatarIdx = parseInt($('regAvatar').value) || 0;
+  var nickname = $('regNickname').value.trim();
+  var gender = $('regGender').value;
   var email = $('regEmail').value.trim();
+  var phone = $('regPhone').value.trim();
+  var birthday = $('regBirthday').value;
+  var height = parseFloat($('regHeight').value) || null;
   var password = $('regPassword').value;
-  var confirm = $('regConfirm').value;
-  var valid = true;
+  var confirmPwd = $('regConfirm').value;
 
-  ['regEmail', 'regPassword', 'regConfirm'].forEach(function(id) {
-    $(id + 'Error').textContent = '';
-    $(id).classList.remove('error');
-  });
+  // 校验
+  if (!nickname) { showToast('请输入昵称', 'error'); return; }
+  if (nickname.length > 16) { showToast('昵称最多16个字符', 'error'); return; }
+  if (!gender) { showToast('请选择性别', 'error'); return; }
+  if (!email) { showToast('请输入邮箱', 'error'); return; }
+  if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
+  if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
-  if (!email) { $('regEmailError').textContent = '请输入邮箱'; $('regEmail').classList.add('error'); valid = false; }
-  if (password.length < 6) { $('regPasswordError').textContent = '密码至少6位'; $('regPassword').classList.add('error'); valid = false; }
-  if (password !== confirm) { $('regConfirmError').textContent = '两次密码不一致'; $('regConfirm').classList.add('error'); valid = false; }
-  if (!valid) return;
+  // 构建 user_metadata
+  var profile = {
+    nickname: nickname,
+    avatar_idx: avatarIdx,
+    avatar_emoji: AVATARS[avatarIdx].emoji,
+    avatar_bg: AVATARS[avatarIdx].bg,
+    gender: gender,
+    birthday: birthday || null,
+    height: height,
+    phone: phone || null,
+    created_at: new Date().toISOString()
+  };
 
   setLoading($('regBtn'), true);
-  supabase.auth.signUp({ email: email, password: password })
-    .then(function(res) {
-      setLoading($('regBtn'), false);
-      if (res.error) {
-        var msg = res.error.message;
-        if (msg.includes('already registered')) msg = '该邮箱已注册，请直接登录';
-        showToast(msg, 'error');
-        return;
-      }
-      if (res.data.user && !res.data.session) {
-        showToast('注册成功！请查看邮箱验证后登录', 'success');
-      } else {
-        showToast('注册成功！', 'success');
-        var storage = $('rememberMe').checked ? localStorage : sessionStorage;
-        storage.setItem('sb_session', JSON.stringify(res.data.session));
-        setTimeout(function() { window.location.href = 'index.html'; }, 800);
-      }
-    }).catch(function(err) {
-      setLoading($('regBtn'), false);
-      showToast('网络错误，请重试', 'error');
-    });
+  supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: { data: profile }
+  }).then(function(res) {
+    setLoading($('regBtn'), false);
+    if (res.error) {
+      var msg = res.error.message;
+      if (msg.indexOf('already registered') >= 0) msg = '该邮箱已注册，请直接登录';
+      showToast(msg, 'error');
+      return;
+    }
+    if (res.data.user && !res.data.session) {
+      showToast('注册成功！请查看邮箱验证后登录', 'success');
+      tabsEl.querySelector('[data-tab="login"]').click();
+    } else {
+      // 自动登录
+      saveAuthData(res.data.session, profile);
+      showToast('注册成功，欢迎加入！', 'success');
+      setTimeout(function() { window.location.href = 'index.html'; }, 600);
+    }
+  }).catch(function() {
+    setLoading($('regBtn'), false);
+    showToast('网络错误，请重试', 'error');
+  });
 });
 
 // ==================== 忘记密码 ====================
-$('resetBtn').addEventListener('click', function(e) {
+$('resetBtn').addEventListener('click', function() {
   var email = $('forgotEmail').value.trim();
-  $('forgotEmailError').textContent = '';
-  $('forgotEmail').classList.remove('error');
-
-  if (!email) {
-    $('forgotEmailError').textContent = '请输入注册邮箱';
-    $('forgotEmail').classList.add('error');
-    return;
-  }
+  if (!email) { showToast('请输入注册邮箱', 'error'); return; }
 
   setLoading($('resetBtn'), true);
   supabase.auth.resetPasswordForEmail(email, {
     redirectTo: window.location.origin + '/auth.html#reset'
   }).then(function(res) {
     setLoading($('resetBtn'), false);
-    if (res.error) {
-      showToast(res.error.message, 'error');
-      return;
-    }
+    if (res.error) { showToast(res.error.message, 'error'); return; }
     showToast('重置链接已发送，请查收邮件', 'success');
     setTimeout(function() { $('backToLogin').click(); }, 2000);
-  }).catch(function(err) {
+  }).catch(function() {
     setLoading($('resetBtn'), false);
     showToast('网络错误，请重试', 'error');
   });
@@ -537,31 +438,58 @@ $('resetBtn').addEventListener('click', function(e) {
 
 // ==================== 自动检查登录态 ====================
 (function() {
-  var session = localStorage.getItem('sb_session') || sessionStorage.getItem('sb_session');
-  if (session) {
+  // 优先使用新版 auth data
+  var authData = localStorage.getItem('wb_auth_data');
+  if (authData) {
     try {
-      var parsed = JSON.parse(session);
-      if (parsed && parsed.access_token) {
-        // 已登录，跳转到主页
+      var parsed = JSON.parse(authData);
+      if (parsed.session && parsed.session.access_token) {
+        // 检查是否7天未活跃
+        var sevenDays = 7 * 24 * 60 * 60 * 1000;
+        if (parsed.last_active && (Date.now() - parsed.last_active) < sevenDays) {
+          // 检查 token 是否过期，如果过期尝试刷新
+          if (parsed.session.expires_at && parsed.session.expires_at < Date.now() / 1000) {
+            // Token过期，清除并重新登录
+            localStorage.removeItem('wb_auth_data');
+            localStorage.removeItem('sb_session');
+          } else {
+            window.location.href = 'index.html';
+            return;
+          }
+        } else {
+          // 超过7天，清除
+          localStorage.removeItem('wb_auth_data');
+          localStorage.removeItem('sb_session');
+        }
+      }
+    } catch(e) {
+      localStorage.removeItem('wb_auth_data');
+      localStorage.removeItem('sb_session');
+    }
+  }
+
+  // 兼容旧版
+  var oldSession = localStorage.getItem('sb_session') || sessionStorage.getItem('sb_session');
+  if (oldSession) {
+    try {
+      var s = JSON.parse(oldSession);
+      if (s && s.access_token) {
         window.location.href = 'index.html';
         return;
       }
     } catch(e) {}
   }
 
-  // 处理 Supabase 回调（邮箱验证、密码重置等）
+  // 处理 Supabase 回调
   var hash = window.location.hash;
   if (hash) {
     var params = new URLSearchParams(hash.substring(1));
     if (params.get('type') === 'signup') {
       showToast('邮箱验证成功，请登录', 'success');
-    } else if (params.get('type') === 'recovery') {
-      showToast('请在下方设置新密码', 'success');
     }
     window.location.hash = '';
   }
 })();
 </script>
-
 </body>
 </html>

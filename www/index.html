@@ -858,7 +858,7 @@
             <div class="card">
               <div class="card-hd"><span class="dot g"></span>训练计划
                 <span class="hd-date" id="trainHdDate">· 8/3 - 8/9（本周）</span>
-                <a class="subtle-link" onclick="openPeriodModal()" title="记录姨妈期">记录姨妈</a>
+                <a class="subtle-link" id="periodLink" onclick="openPeriodModal()" title="记录姨妈期" style="display:none">记录姨妈</a>
                 <button class="add-btn" onclick="openTrainModal()">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -1251,20 +1251,54 @@
 (function() {
   var SUPABASE_URL = "https://dyvzxlntyqebblewpihj.supabase.co";
   var SUPABASE_KEY = "sb_publishable_kSGB8khWFcMSemqJ1m6Rxw_pI4gGrhc";
+  var SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
-  // 获取存储的 session
-  var sessionData = localStorage.getItem("sb_session") || sessionStorage.getItem("sb_session");
-  if (!sessionData) {
-    window.location.replace("auth.html");
-    return;
+  // 读取新版 auth data
+  var authStr = localStorage.getItem("wb_auth_data");
+  if (!authStr) {
+    // 兼容旧版 sb_session
+    var oldSession = localStorage.getItem("sb_session") || sessionStorage.getItem("sb_session");
+    if (!oldSession) { window.location.replace("auth.html"); return; }
+    try {
+      var old = JSON.parse(oldSession);
+      if (old && old.access_token && old.user) {
+        // 迁移到新版格式
+        var profile = old.user.user_metadata || {};
+        if (!profile.nickname) profile.nickname = (old.user.email || "").split("@")[0];
+        if (profile.avatar_idx === undefined) profile.avatar_idx = 0;
+        authStr = JSON.stringify({
+          session: old,
+          profile: profile,
+          last_active: Date.now()
+        });
+        localStorage.setItem("wb_auth_data", authStr);
+        localStorage.removeItem("sb_session");
+      } else {
+        window.location.replace("auth.html"); return;
+      }
+    } catch(e) { window.location.replace("auth.html"); return; }
   }
 
   try {
-    var session = JSON.parse(sessionData);
+    var auth = JSON.parse(authStr);
+    var session = auth.session;
 
-    // 检查是否过期
+    // 检查7天未活跃 → 重新登录
+    if (!auth.last_active || (Date.now() - auth.last_active) >= SEVEN_DAYS) {
+      localStorage.removeItem("wb_auth_data");
+      localStorage.removeItem("sb_session");
+      sessionStorage.removeItem("sb_session");
+      window.location.replace("auth.html");
+      return;
+    }
+
+    // 更新活跃时间
+    auth.last_active = Date.now();
+    localStorage.setItem("wb_auth_data", JSON.stringify(auth));
+
+    // 检查 token 是否过期
     if (session.expires_at && session.expires_at < Date.now() / 1000) {
-      // 尝试用 refresh_token 刷新
+      // 尝试刷新
       fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
         method: "POST",
         headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
@@ -1272,34 +1306,25 @@
       }).then(function(res) { return res.json(); })
         .then(function(data) {
           if (data.access_token) {
-            var newSession = {
-              access_token: data.access_token,
-              refresh_token: data.refresh_token,
-              expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
-              user: session.user
-            };
-            // 更新存储
-            if (localStorage.getItem("sb_session")) {
-              localStorage.setItem("sb_session", JSON.stringify(newSession));
-            } else {
-              sessionStorage.setItem("sb_session", JSON.stringify(newSession));
-            }
-            // 暴露到全局
-            window.__auth = newSession;
+            session.access_token = data.access_token;
+            session.refresh_token = data.refresh_token;
+            session.expires_at = Math.floor(Date.now() / 1000) + data.expires_in;
+            auth.session = session;
+            auth.last_active = Date.now();
+            localStorage.setItem("wb_auth_data", JSON.stringify(auth));
+            window.__auth = session;
+            window.__profile = auth.profile;
           } else {
-            localStorage.removeItem("sb_session");
-            sessionStorage.removeItem("sb_session");
+            localStorage.removeItem("wb_auth_data");
             window.location.replace("auth.html");
           }
-        }).catch(function() {
-          window.location.replace("auth.html");
-        });
+        }).catch(function() { window.location.replace("auth.html"); });
     } else {
       window.__auth = session;
+      window.__profile = auth.profile || {};
     }
   } catch(e) {
-    localStorage.removeItem("sb_session");
-    sessionStorage.removeItem("sb_session");
+    localStorage.removeItem("wb_auth_data");
     window.location.replace("auth.html");
   }
 })();
