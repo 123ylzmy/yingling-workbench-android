@@ -516,7 +516,7 @@
   let state = null; // 异步加载 data.json 后初始化
   let todoViewDate = null; // 在 initApp 中赋值
   let calYear, calMonth;
-  let _showLunar = true;
+  let _showLunar = false;
   function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); lastLocalUpdate = Date.now(); autoCloudSave() }
   /* 自动云端保存（防抖 1.5 秒，失败自动重试最多 3 次） */
   var _cloudSavePending = null;
