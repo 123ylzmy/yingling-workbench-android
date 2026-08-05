@@ -28,16 +28,16 @@
     .container { width:100%; max-width:420px; position:relative; z-index:1; animation:fadeIn 0.5s ease; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-    .logo-area { text-align:center; margin-bottom:24px; }
-    .logo-icon { width:64px; height:64px; border-radius:18px; object-fit:cover; margin-bottom:10px;
+    .logo-area { text-align:center; margin-bottom:20px; }
+    .logo-icon { width:56px; height:56px; border-radius:18px; object-fit:cover; margin-bottom:8px;
       box-shadow:0 4px 20px rgba(126,184,154,0.25); }
     .logo-title { font-size:20px; font-weight:600; color:var(--text); }
-    .logo-sub { font-size:13px; color:var(--text-secondary); margin-top:4px; }
+    .logo-sub { font-size:13px; color:var(--text-secondary); margin-top:2px; }
 
     .card { background:var(--card); border-radius:var(--radius); padding:24px 22px;
       box-shadow:0 2px 16px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03); }
 
-    .tabs { display:flex; gap:0; margin-bottom:20px; background:var(--input-bg); border-radius:10px; padding:3px; }
+    .tabs { display:flex; gap:0; margin-bottom:18px; background:var(--input-bg); border-radius:10px; padding:3px; }
     .tab-btn { flex:1; padding:9px 0; border:none; background:transparent; border-radius:8px;
       font-size:14px; font-weight:500; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; }
     .tab-btn.active { background:var(--card); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.06); }
@@ -45,8 +45,8 @@
     .form { display:none; }
     .form.active { display:block; }
 
-    .form-group { margin-bottom:14px; }
-    .form-label { display:block; font-size:13px; font-weight:500; color:var(--text); margin-bottom:5px; }
+    .form-group { margin-bottom:12px; }
+    .form-label { display:block; font-size:13px; font-weight:500; color:var(--text); margin-bottom:4px; }
     .form-input, .form-select { width:100%; padding:10px 12px; border:1.5px solid var(--input-border);
       border-radius:10px; background:var(--input-bg); font-size:15px; color:var(--text);
       outline:none; transition:border-color 0.2s, box-shadow 0.2s; -webkit-appearance:none; }
@@ -55,16 +55,34 @@
     .form-row { display:flex; gap:10px; }
     .form-row > .form-group { flex:1; }
 
-    .remember-row { display:flex; align-items:center; gap:8px; margin-bottom:18px; }
+    /* SMS code row */
+    .code-row { display:flex; gap:8px; }
+    .code-row .form-input { flex:1; }
+    .code-btn { padding:10px 14px; border:1.5px solid var(--accent); border-radius:10px;
+      background:transparent; color:var(--accent); font-size:13px; font-weight:600;
+      cursor:pointer; white-space:nowrap; transition:all 0.2s; min-width:90px; }
+    .code-btn:hover { background:rgba(126,184,154,0.08); }
+    .code-btn:disabled { border-color:var(--input-border); color:var(--text-secondary); cursor:not-allowed; }
+
+    /* Login mode switch */
+    .login-modes { display:flex; gap:0; margin-bottom:14px; }
+    .mode-btn { flex:1; padding:7px 0; border:none; background:transparent;
+      font-size:13px; color:var(--text-secondary); cursor:pointer; position:relative;
+      transition:color 0.2s; }
+    .mode-btn.active { color:var(--accent); font-weight:600; }
+    .mode-btn.active::after { content:''; position:absolute; bottom:-4px; left:50%; transform:translateX(-50%);
+      width:24px; height:2.5px; background:var(--accent); border-radius:2px; }
+
+    .remember-row { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
     .remember-row input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; }
     .remember-row label { font-size:13px; color:var(--text-secondary); cursor:pointer; }
 
     /* Avatar picker */
-    .avatar-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
-    .avatar-option { width:44px; height:44px; border-radius:50%; display:flex; align-items:center;
-      justify-content:center; font-size:22px; cursor:pointer; border:2.5px solid transparent;
+    .avatar-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+    .avatar-option { width:40px; height:40px; border-radius:50%; display:flex; align-items:center;
+      justify-content:center; font-size:20px; cursor:pointer; border:2.5px solid transparent;
       transition:border-color 0.2s, transform 0.15s; }
-    .avatar-option:hover { transform:scale(1.1); }
+    .avatar-option:hover { transform:scale(1.12); }
     .avatar-option.selected { border-color:var(--accent); box-shadow:0 0 0 3px rgba(126,184,154,0.2); }
 
     .btn-primary { width:100%; padding:12px; border:none; border-radius:10px; background:var(--accent);
@@ -84,6 +102,7 @@
     .toast.show { transform:translateX(-50%) translateY(0); }
     .toast.success { background:#7EB89A; }
     .toast.error { background:#E06C6C; }
+    .toast.info { background:#6B8EB5; }
 
     .forgot-view { display:none; }
     .forgot-view.active { display:block; }
@@ -96,7 +115,9 @@
       vertical-align:middle; margin-right:6px; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    .footer { text-align:center; margin-top:18px; font-size:11px; color:var(--text-secondary); opacity:0.7; }
+    .hint-text { font-size:12px; color:var(--text-secondary); text-align:center; margin-top:8px; line-height:1.5; }
+
+    .footer { text-align:center; margin-top:16px; font-size:11px; color:var(--text-secondary); opacity:0.7; }
   </style>
 </head>
 <body>
@@ -117,25 +138,49 @@
       <button class="tab-btn" data-tab="register">注册</button>
     </div>
 
-    <!-- 登录表单 -->
+    <!-- ============ 登录表单 ============ -->
     <form class="form active" id="loginForm" autocomplete="on">
-      <div class="form-group">
-        <label class="form-label" for="loginEmail">邮箱</label>
-        <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" autocomplete="email" required>
+      <!-- 登录方式切换 -->
+      <div class="login-modes">
+        <button type="button" class="mode-btn active" data-mode="password">密码登录</button>
+        <button type="button" class="mode-btn" data-mode="sms">验证码登录</button>
       </div>
+
+      <!-- 手机号 -->
       <div class="form-group">
-        <label class="form-label" for="loginPassword">密码</label>
-        <input type="password" class="form-input" id="loginPassword" placeholder="输入密码" autocomplete="current-password" required>
+        <label class="form-label" for="loginPhone">手机号</label>
+        <input type="tel" class="form-input" id="loginPhone" placeholder="请输入手机号" autocomplete="tel" required>
       </div>
+
+      <!-- 密码模式 -->
+      <div id="loginPasswordMode">
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">密码</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="输入密码" autocomplete="current-password">
+        </div>
+      </div>
+
+      <!-- 验证码模式（默认隐藏） -->
+      <div id="loginSmsMode" style="display:none">
+        <div class="form-group">
+          <label class="form-label" for="loginCode">验证码</label>
+          <div class="code-row">
+            <input type="text" class="form-input" id="loginCode" placeholder="6位验证码" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+            <button type="button" class="code-btn" id="sendLoginCodeBtn" onclick="sendLoginCode()">获取验证码</button>
+          </div>
+        </div>
+      </div>
+
       <div class="remember-row">
         <input type="checkbox" id="rememberMe" checked>
         <label for="rememberMe">保持登录（一周内无需重新登录）</label>
       </div>
+
       <button type="submit" class="btn-primary" id="loginBtn">登录</button>
       <span class="form-link" id="showForgot">忘记密码？</span>
     </form>
 
-    <!-- 注册表单 -->
+    <!-- ============ 注册表单 ============ -->
     <form class="form" id="registerForm" autocomplete="on">
       <!-- 头像选择 -->
       <div class="form-group">
@@ -161,13 +206,13 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regEmail">邮箱 <span style="color:var(--error)">*</span></label>
-        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" autocomplete="email" required>
+        <label class="form-label" for="regPhone">手机号 <span style="color:var(--error)">*</span>（登录账号）</label>
+        <input type="tel" class="form-input" id="regPhone" placeholder="138xxxx8888" autocomplete="tel" required>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regPhone">手机号（选填，用于找回密码）</label>
-        <input type="tel" class="form-input" id="regPhone" placeholder="138xxxx8888" autocomplete="tel">
+        <label class="form-label" for="regEmail">邮箱（用于找回密码）<span style="color:var(--error)">*</span></label>
+        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" autocomplete="email" required>
       </div>
 
       <div class="form-row">
@@ -196,17 +241,15 @@
       <span class="form-link" id="switchToLogin">已有账号？去登录</span>
     </form>
 
-    <!-- 忘记密码 -->
+    <!-- ============ 忘记密码 ============ -->
     <div class="forgot-view" id="forgotView">
       <button class="back-btn" id="backToLogin">← 返回登录</button>
       <div class="form-group">
         <label class="form-label" for="forgotEmail">注册邮箱</label>
         <input type="email" class="form-input" id="forgotEmail" placeholder="your@email.com" required>
       </div>
+      <p class="hint-text">输入注册时填写的邮箱，我们将发送密码重置链接。</p>
       <button class="btn-primary" id="resetBtn">发送重置链接</button>
-      <p style="font-size:12px;color:var(--text-secondary);margin-top:12px;text-align:center">
-        我们将向你的邮箱发送密码重置链接，请查收邮件。
-      </p>
     </div>
   </div>
 
@@ -252,15 +295,49 @@ function showToast(msg, type) {
 function setLoading(btn, loading) {
   if (loading) {
     btn.disabled = true;
-    btn._origText = btn.textContent;
-    btn.innerHTML = '<span class="spinner"></span>' + btn._origText;
+    btn._origHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span>' + btn.textContent.replace(/^\s*/, '');
   } else {
     btn.disabled = false;
-    btn.innerHTML = btn._origText;
+    btn.innerHTML = btn._origHTML;
   }
 }
 
-// 保存 session + profile + 活跃时间
+// ==================== Supabase REST 直连 ====================
+function sbRest(method, path, body) {
+  var headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json'
+  };
+  if (body && method === 'POST' && path === 'sync_store') {
+    headers['Prefer'] = 'resolution=merge-duplicates';
+  }
+  var opts = { method: method, headers: headers };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(SUPABASE_URL + '/rest/v1/' + path, opts).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) {
+      var e = new Error('HTTP ' + r.status);
+      try { var j = JSON.parse(t); e.message = j.message || j.error || t; } catch (_) { e.message = t; }
+      throw e;
+    });
+    var ct = r.headers.get('content-type') || '';
+    return ct.indexOf('application/json') >= 0 ? r.json() : r.text();
+  });
+}
+
+// 生成随机字符串
+function randomStr(len) {
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var s = '';
+  for (var i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+// 手机号→邮箱映射（用于快速查找）
+function phoneToLookupKey(phone) { return 'profile_by_phone_' + phone.replace(/\D/g, ''); }
+
+// ==================== session / profile 存储 ====================
 function saveAuthData(session, profile) {
   var data = {
     session: session,
@@ -268,8 +345,6 @@ function saveAuthData(session, profile) {
     last_active: Date.now()
   };
   localStorage.setItem('wb_auth_data', JSON.stringify(data));
-  // 同时保留旧的 sb_session 兼容
-  if (session) localStorage.setItem('sb_session', JSON.stringify(session));
 }
 
 // ==================== 头像选择器 ====================
@@ -321,38 +396,223 @@ $('backToLogin').addEventListener('click', function() {
   $('loginForm').classList.add('active');
 });
 
-// ==================== 登录 ====================
+// ==================== 登录方式切换 ====================
+var currentLoginMode = 'password';
+document.querySelector('.login-modes').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('mode-btn')) return;
+  var mode = e.target.dataset.mode;
+  if (mode === currentLoginMode) return;
+  currentLoginMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
+  e.target.classList.add('active');
+  if (mode === 'password') {
+    $('loginPasswordMode').style.display = 'block';
+    $('loginSmsMode').style.display = 'none';
+    $('loginPassword').required = true;
+    $('loginCode').required = false;
+  } else {
+    $('loginPasswordMode').style.display = 'none';
+    $('loginSmsMode').style.display = 'block';
+    $('loginPassword').required = false;
+    $('loginCode').required = true;
+  }
+});
+
+// ==================== 发送验证码 ====================
+var _sendCooldown = 0;
+
+function sendLoginCode() {
+  var phone = $('loginPhone').value.trim().replace(/\D/g, '');
+  if (!phone || phone.length !== 11) {
+    showToast('请输入正确的11位手机号', 'error');
+    return;
+  }
+  if (_sendCooldown > 0) return;
+
+  // 生成6位验证码
+  var code = String(Math.floor(100000 + Math.random() * 900000));
+
+  // 存入 localStorage（5分钟有效 + 该手机号）
+  var codeData = {
+    code: code,
+    phone: phone,
+    expires: Date.now() + 5 * 60 * 1000
+  };
+  localStorage.setItem('wb_login_code', JSON.stringify(codeData));
+
+  // 模拟发送：显示在提示中
+  showToast('验证码：' + code + '（5分钟内有效）', 'info');
+
+  // 自动填入方便测试
+  $('loginCode').value = code;
+
+  // 60秒冷却
+  _sendCooldown = 60;
+  updateCodeBtn();
+  var timer = setInterval(function() {
+    _sendCooldown--;
+    updateCodeBtn();
+    if (_sendCooldown <= 0) clearInterval(timer);
+  }, 1000);
+}
+
+function updateCodeBtn() {
+  var btn = $('sendLoginCodeBtn');
+  if (_sendCooldown > 0) {
+    btn.disabled = true;
+    btn.textContent = _sendCooldown + 's后重发';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '获取验证码';
+  }
+}
+
+function verifyLoginCode(phone, code) {
+  try {
+    var stored = JSON.parse(localStorage.getItem('wb_login_code') || '{}');
+    if (!stored.code) return false;
+    if (stored.phone !== phone) return false;
+    if (Date.now() > stored.expires) {
+      localStorage.removeItem('wb_login_code');
+      return false;
+    }
+    if (stored.code !== code) return false;
+    localStorage.removeItem('wb_login_code');
+    return true;
+  } catch(e) { return false; }
+}
+
+// ==================== 通过手机号查找用户 ====================
+function findUserByPhone(phone) {
+  var key = phoneToLookupKey(phone);
+  return sbRest('GET', 'sync_store?group_key=eq.' + encodeURIComponent(key) + '&store=eq.wb_profile_lookup&select=data&limit=1', null)
+    .then(function(arr) {
+      if (arr && arr.length > 0 && arr[0].data) {
+        return arr[0].data; // { user_id, email, session_key }
+      }
+      return null;
+    })
+    .catch(function() { return null; });
+}
+
+// ==================== 登录（密码模式） ====================
 $('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  var email = $('loginEmail').value.trim();
+  var phone = $('loginPhone').value.trim().replace(/\D/g, '');
+
+  if (!phone || phone.length !== 11) {
+    showToast('请输入正确的11位手机号', 'error');
+    return;
+  }
+
+  if (currentLoginMode === 'password') {
+    loginWithPassword(phone);
+  } else {
+    loginWithCode(phone);
+  }
+});
+
+function loginWithPassword(phone) {
   var password = $('loginPassword').value;
 
-  if (!email) { showToast('请输入邮箱', 'error'); return; }
   if (!password) { showToast('请输入密码', 'error'); return; }
 
   setLoading($('loginBtn'), true);
-  supabase.auth.signInWithPassword({ email: email, password: password })
-    .then(function(res) {
+
+  // 通过手机号查找用户
+  findUserByPhone(phone).then(function(userData) {
+    if (!userData) {
+      setLoading($('loginBtn'), false);
+      showToast('该手机号未注册，请先注册', 'error');
+      return;
+    }
+
+    // 用邮箱 + 密码登录
+    return supabase.auth.signInWithPassword({
+      email: userData.email,
+      password: password
+    }).then(function(res) {
       setLoading($('loginBtn'), false);
       if (res.error) {
         var msg = res.error.message;
-        if (msg.indexOf('Invalid login') >= 0) msg = '邮箱或密码错误';
+        if (msg.indexOf('Invalid login') >= 0) msg = '密码错误';
         if (msg.indexOf('Email not confirmed') >= 0) msg = '邮箱未验证，请检查邮件';
         showToast(msg, 'error');
         return;
       }
-      // 提取 profile 信息
-      var profile = (res.data.user && res.data.user.user_metadata) || {};
-      if (!profile.nickname) profile.nickname = email.split('@')[0];
-      if (profile.avatar_idx === undefined) profile.avatar_idx = 0;
-      saveAuthData(res.data.session, profile);
+      finishLogin(res.data.session);
+    });
+  }).catch(function() {
+    setLoading($('loginBtn'), false);
+    showToast('网络错误，请重试', 'error');
+  });
+}
+
+function loginWithCode(phone) {
+  var code = $('loginCode').value.trim();
+
+  if (!code || code.length !== 6) {
+    showToast('请输入6位验证码', 'error');
+    return;
+  }
+
+  // 验证验证码
+  if (!verifyLoginCode(phone, code)) {
+    showToast('验证码错误或已过期', 'error');
+    return;
+  }
+
+  setLoading($('loginBtn'), true);
+
+  // 查找用户
+  findUserByPhone(phone).then(function(userData) {
+    if (!userData) {
+      setLoading($('loginBtn'), false);
+      showToast('该手机号未注册，请先注册', 'error');
+      return;
+    }
+
+    // 用 session_key 登录（免密码）
+    return supabase.auth.signInWithPassword({
+      email: userData.email,
+      password: userData.session_key
+    }).then(function(res) {
+      setLoading($('loginBtn'), false);
+      if (res.error) {
+        showToast('登录失败，请用密码登录', 'error');
+        return;
+      }
+      finishLogin(res.data.session);
+    });
+  }).catch(function() {
+    setLoading($('loginBtn'), false);
+    showToast('网络错误，请重试', 'error');
+  });
+}
+
+// ==================== 登录完成 ====================
+function finishLogin(session) {
+  // 从 profile 表拉取用户详情
+  var userId = session.user.id;
+  sbRest('GET', 'sync_store?group_key=eq.' + encodeURIComponent('profile_' + userId) + '&store=eq.wb_user_profile&select=data&limit=1', null)
+    .then(function(arr) {
+      var profile = {};
+      if (arr && arr.length > 0 && arr[0].data) {
+        profile = arr[0].data;
+      }
+      saveAuthData(session, profile);
+    })
+    .catch(function() {
+      // 降级：用 user_metadata
+      var profile = session.user.user_metadata || {};
+      if (!profile.nickname) profile.nickname = '用户';
+      saveAuthData(session, profile);
+    })
+    .then(function() {
       showToast('登录成功，即将跳转...', 'success');
       setTimeout(function() { window.location.href = 'index.html'; }, 600);
-    }).catch(function() {
-      setLoading($('loginBtn'), false);
-      showToast('网络错误，请重试', 'error');
     });
-});
+}
 
 // ==================== 注册 ====================
 $('registerForm').addEventListener('submit', function(e) {
@@ -361,8 +621,8 @@ $('registerForm').addEventListener('submit', function(e) {
   var avatarIdx = parseInt($('regAvatar').value) || 0;
   var nickname = $('regNickname').value.trim();
   var gender = $('regGender').value;
+  var phone = $('regPhone').value.trim().replace(/\D/g, '');
   var email = $('regEmail').value.trim();
-  var phone = $('regPhone').value.trim();
   var birthday = $('regBirthday').value;
   var height = parseFloat($('regHeight').value) || null;
   var password = $('regPassword').value;
@@ -372,46 +632,94 @@ $('registerForm').addEventListener('submit', function(e) {
   if (!nickname) { showToast('请输入昵称', 'error'); return; }
   if (nickname.length > 16) { showToast('昵称最多16个字符', 'error'); return; }
   if (!gender) { showToast('请选择性别', 'error'); return; }
-  if (!email) { showToast('请输入邮箱', 'error'); return; }
+  if (!phone || phone.length !== 11) { showToast('请输入正确的11位手机号', 'error'); return; }
+  if (!email) { showToast('请输入邮箱（用于找回密码）', 'error'); return; }
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
-  // 构建 user_metadata
-  var profile = {
-    nickname: nickname,
-    avatar_idx: avatarIdx,
-    avatar_emoji: AVATARS[avatarIdx].emoji,
-    avatar_bg: AVATARS[avatarIdx].bg,
-    gender: gender,
-    birthday: birthday || null,
-    height: height,
-    phone: phone || null,
-    created_at: new Date().toISOString()
-  };
-
   setLoading($('regBtn'), true);
-  supabase.auth.signUp({
-    email: email,
-    password: password,
-    options: { data: profile }
-  }).then(function(res) {
-    setLoading($('regBtn'), false);
-    if (res.error) {
-      var msg = res.error.message;
-      if (msg.indexOf('already registered') >= 0) msg = '该邮箱已注册，请直接登录';
-      showToast(msg, 'error');
-      return;
+
+  // 先检查手机号是否已注册
+  findUserByPhone(phone).then(function(existing) {
+    if (existing) {
+      setLoading($('regBtn'), false);
+      showToast('该手机号已注册，请直接登录', 'error');
+      throw new Error('DUPLICATE');
     }
-    if (res.data.user && !res.data.session) {
-      showToast('注册成功！请查看邮箱验证后登录', 'success');
-      tabsEl.querySelector('[data-tab="login"]').click();
-    } else {
-      // 自动登录
-      saveAuthData(res.data.session, profile);
-      showToast('注册成功，欢迎加入！', 'success');
-      setTimeout(function() { window.location.href = 'index.html'; }, 600);
-    }
-  }).catch(function() {
+
+    // 生成 session_key（用于验证码免密码登录）
+    var sessionKey = randomStr(20);
+
+    // 构建 profile
+    var profile = {
+      nickname: nickname,
+      avatar_idx: avatarIdx,
+      avatar_emoji: AVATARS[avatarIdx].emoji,
+      avatar_bg: AVATARS[avatarIdx].bg,
+      gender: gender,
+      phone: phone,
+      email: email,
+      birthday: birthday || null,
+      height: height,
+      session_key: sessionKey,
+      created_at: new Date().toISOString()
+    };
+
+    // 创建 Supabase 账号
+    return supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: { data: profile }
+    }).then(function(res) {
+      if (res.error) {
+        setLoading($('regBtn'), false);
+        var msg = res.error.message;
+        if (msg.indexOf('already registered') >= 0) msg = '该邮箱已注册，请直接登录';
+        showToast(msg, 'error');
+        throw new Error('AUTH_FAIL');
+      }
+
+      var userId = res.data.user.id;
+      if (!userId) {
+        setLoading($('regBtn'), false);
+        showToast('注册失败，请重试', 'error');
+        throw new Error('NO_USER_ID');
+      }
+
+      // 存 profile 到 sync_store
+      return sbRest('POST', 'sync_store', {
+        group_key: 'profile_' + userId,
+        store: 'wb_user_profile',
+        data: profile,
+        updated_at: new Date().toISOString()
+      }).then(function() {
+        // 存手机号→用户映射
+        return sbRest('POST', 'sync_store', {
+          group_key: phoneToLookupKey(phone),
+          store: 'wb_profile_lookup',
+          data: {
+            user_id: userId,
+            email: email,
+            session_key: sessionKey
+          },
+          updated_at: new Date().toISOString()
+        });
+      }).then(function() {
+        setLoading($('regBtn'), false);
+
+        if (res.data.session) {
+          // 自动登录
+          saveAuthData(res.data.session, profile);
+          showToast('注册成功，欢迎加入！', 'success');
+          setTimeout(function() { window.location.href = 'index.html'; }, 600);
+        } else {
+          showToast('注册成功！请返回登录', 'success');
+          tabsEl.querySelector('[data-tab="login"]').click();
+        }
+      });
+    });
+  }).catch(function(err) {
+    if (err.message === 'DUPLICATE' || err.message === 'AUTH_FAIL' || err.message === 'NO_USER_ID') return;
     setLoading($('regBtn'), false);
     showToast('网络错误，请重试', 'error');
   });
@@ -438,18 +746,14 @@ $('resetBtn').addEventListener('click', function() {
 
 // ==================== 自动检查登录态 ====================
 (function() {
-  // 优先使用新版 auth data
   var authData = localStorage.getItem('wb_auth_data');
   if (authData) {
     try {
       var parsed = JSON.parse(authData);
       if (parsed.session && parsed.session.access_token) {
-        // 检查是否7天未活跃
         var sevenDays = 7 * 24 * 60 * 60 * 1000;
         if (parsed.last_active && (Date.now() - parsed.last_active) < sevenDays) {
-          // 检查 token 是否过期，如果过期尝试刷新
           if (parsed.session.expires_at && parsed.session.expires_at < Date.now() / 1000) {
-            // Token过期，清除并重新登录
             localStorage.removeItem('wb_auth_data');
             localStorage.removeItem('sb_session');
           } else {
@@ -457,7 +761,6 @@ $('resetBtn').addEventListener('click', function() {
             return;
           }
         } else {
-          // 超过7天，清除
           localStorage.removeItem('wb_auth_data');
           localStorage.removeItem('sb_session');
         }
@@ -468,19 +771,14 @@ $('resetBtn').addEventListener('click', function() {
     }
   }
 
-  // 兼容旧版
   var oldSession = localStorage.getItem('sb_session') || sessionStorage.getItem('sb_session');
   if (oldSession) {
     try {
       var s = JSON.parse(oldSession);
-      if (s && s.access_token) {
-        window.location.href = 'index.html';
-        return;
-      }
+      if (s && s.access_token) { window.location.href = 'index.html'; return; }
     } catch(e) {}
   }
 
-  // 处理 Supabase 回调
   var hash = window.location.hash;
   if (hash) {
     var params = new URLSearchParams(hash.substring(1));

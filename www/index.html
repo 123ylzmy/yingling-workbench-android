@@ -196,6 +196,12 @@
           </div>
         </div>
         <div class="topbar-right">
+          <button class="topbar-btn" id="profileBtn" onclick="openProfileEditor()" title="个人资料" style="margin-right:2px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
           <button class="topbar-btn" onclick="openSettings()" title="设置">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round" width="16" height="16">
@@ -1193,50 +1199,61 @@
     </div>
   </div>
 
-  <!-- 云同步：邮箱验证码登录弹窗 -->
-  <!-- 云同步设置弹窗 -->
-  <div class="auth-modal-overlay" id="authOverlay" style="display:none">
-    <div class="auth-modal" style="max-width:420px;text-align:left">
-      <h3 style="text-align:center">☁️ 云端同步设置</h3>
-      <p class="sub" style="text-align:center">两端填写相同的同步码即可实时互通<br>未配置时 App 完全按本地模式运行</p>
+  <!-- ============ 个人资料编辑弹窗 ============ -->
+  <div class="auth-modal-overlay" id="profileOverlay" style="display:none">
+    <div class="auth-modal" style="max-width:440px;text-align:left">
+      <h3 style="text-align:center">👤 个人资料</h3>
+      <p class="sub" style="text-align:center;margin-bottom:16px">修改后自动同步到云端，所有设备更新</p>
 
-      <div style="margin-bottom:10px">
-        <label style="font-size:12px;color:var(--g400)">Supabase 项目 URL</label>
-        <input type="text" id="syncUrl" placeholder="https://xxxx.supabase.co" value="https://dyvzxlntyqebblewpihj.supabase.co" style="margin-top:4px">
+      <!-- 头像 -->
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="font-size:12px;color:var(--g400);margin-bottom:6px;display:block">头像</label>
+        <div class="avatar-picker" id="profileAvatarPicker" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <input type="hidden" id="profileAvatarIdx" value="0">
       </div>
-
-      <div style="margin-bottom:10px">
-        <label style="font-size:12px;color:var(--g400)">Anon Key（公开键，非 secret）</label>
-        <input type="text" id="syncKey" placeholder="eyJ... 公开 anon key" value="sb_publishable_kSGB8khWFcMSemqJ1m6Rxw_pI4gGrhc" style="margin-top:4px">
-      </div>
-
-      <div style="margin-bottom:10px">
-        <label style="font-size:12px;color:var(--g400)">同步码（两端一致）</label>
-        <input type="text" id="syncCode" placeholder="自定义，例如 yingling2026" style="margin-top:4px">
-      </div>
-
-      <div class="auth-error" id="authError"></div>
 
       <div style="display:flex;gap:10px;margin-bottom:12px">
-        <button class="btn ghost" onclick="testSyncConnection()" style="flex:1;justify-content:center;gap:4px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          连接测试
-        </button>
-        <button class="btn" onclick="syncNowFromSettings('upload')" style="flex:1;justify-content:center;gap:4px;background:var(--c300);color:#fff">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-          上传到云端
-        </button>
-        <button class="btn ghost" onclick="syncNowFromSettings('download')" style="flex:1;justify-content:center;gap:4px" title="从云端下载数据到本地（会覆盖本地数据）">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          从云端加载
-        </button>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">昵称</label>
+          <input type="text" id="profileNickname" placeholder="你的昵称" maxlength="16" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">性别</label>
+          <select id="profileGender" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none;-webkit-appearance:none">
+            <option value="female">女</option>
+            <option value="male">男</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
       </div>
 
-      <div id="syncStatusRow" style="font-size:12px;color:var(--ink-soft);text-align:center;margin-bottom:12px;display:none"></div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">手机号</label>
+          <input type="tel" id="profilePhone" placeholder="138xxxx8888" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">邮箱（找回密码用）</label>
+          <input type="email" id="profileEmail" placeholder="your@email.com" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">生日</label>
+          <input type="date" id="profileBirthday" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">身高 (cm)</label>
+          <input type="number" id="profileHeight" placeholder="165" min="100" max="250" step="1" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+      </div>
+
+      <div id="profileError" style="font-size:12px;color:var(--danger);text-align:center;margin-bottom:8px;min-height:18px"></div>
 
       <div class="btn-row" style="border-top:1px solid var(--line);padding-top:12px;margin-top:0">
-        <button class="btn-ghost" onclick="closeAuth()">关闭</button>
-        <button class="btn-primary" onclick="saveSyncConfig()">保存配置</button>
+        <button class="btn-ghost" onclick="closeProfileEditor()">取消</button>
+        <button class="btn-primary" onclick="saveProfileChanges()">保存修改</button>
       </div>
     </div>
   </div>

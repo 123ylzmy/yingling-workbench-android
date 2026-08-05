@@ -247,6 +247,27 @@
   // 页面加载时自动初始化同步（基于登录用户）
   initSyncConfig();
   if (syncConfig && syncConfig.userId) {
+    // 从云端加载 profile（可能在其他设备修改过）
+    sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent('profile_' + syncConfig.userId) + '&store=eq.wb_user_profile&select=data&limit=1', null)
+      .then(function(arr) {
+        if (arr && arr.length > 0 && arr[0].data) {
+          var cloudProfile = arr[0].data;
+          // 合并到本地 profile
+          var authData = localStorage.getItem('wb_auth_data');
+          if (authData) {
+            try {
+              var parsed = JSON.parse(authData);
+              parsed.profile = Object.assign({}, parsed.profile || {}, cloudProfile);
+              window.__profile = parsed.profile;
+              localStorage.setItem('wb_auth_data', JSON.stringify(parsed));
+            } catch(e) {}
+          }
+        }
+        // 不管有没有更新，都刷新 header
+        if (typeof renderHead === 'function') renderHead();
+      })
+      .catch(function() { /* 网络不可用，使用本地数据 */ });
+
     // 快速测试连接并启动同步
     sbFetch(syncConfig, 'GET', 'sync_store?group_key=eq.' + encodeURIComponent(syncConfig.userId) + '&store=eq.wb_yingling_v2&select=updated_at&limit=1', null)
       .then(function() {
@@ -3460,12 +3481,152 @@
     }
   })();
 
-  // 防止弹窗内回车提交 + 云同步弹窗回车触发验证
+  // 防止弹窗内回车提交
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.target.closest('.auth-modal')) { e.preventDefault(); syncNowFromSettings('upload'); return; }
     if (e.key === 'Enter' && e.target.closest('.modal') && e.target.tagName !== 'TEXTAREA') e.preventDefault();
   });
-  // 点击遮罩关闭
-  document.getElementById('authOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeAuth(); });
   // 刷新后滚动到顶部，避免缓存页面滚动位置
   window.addEventListener('pageshow', function() { setTimeout(function() { window.scrollTo(0, 0); }, 50); });
+
+  /* ===================== 个人资料编辑 ===================== */
+  // 头像完整数据（含背景色，与 auth.html 一致）
+  var AVATAR_FULL = [
+    { emoji:'🌸', bg:'#FFE4E1' }, { emoji:'🌿', bg:'#E8F5E9' },
+    { emoji:'☀️', bg:'#FFF8E1' }, { emoji:'🌙', bg:'#E3F2FD' },
+    { emoji:'⭐', bg:'#FFF3E0' }, { emoji:'🦋', bg:'#E0F7FA' },
+    { emoji:'🐱', bg:'#FCE4EC' }, { emoji:'🌈', bg:'#F3E5F5' },
+    { emoji:'🍀', bg:'#C8E6C9' }, { emoji:'💜', bg:'#EDE7F6' },
+    { emoji:'🌊', bg:'#BBDEFB' }, { emoji:'🔥', bg:'#FFEBEE' },
+    { emoji:'🌻', bg:'#FFF9C4' }, { emoji:'🐼', bg:'#EFEBE9' },
+    { emoji:'🍓', bg:'#F8BBD0' }, { emoji:'🎀', bg:'#F48FB1' },
+    { emoji:'💎', bg:'#B3E5FC' }, { emoji:'🌹', bg:'#FFCDD2' },
+    { emoji:'🦊', bg:'#FFE0B2' }, { emoji:'🐰', bg:'#F5F5F5' }
+  ];
+
+  function openProfileEditor() {
+    var profile = getUserProfile();
+    var overlay = document.getElementById('profileOverlay');
+    if (!overlay) return;
+
+    // 构建头像选择器
+    var ai = profile.avatar_idx !== undefined ? profile.avatar_idx : 0;
+    var html = '';
+    AVATAR_FULL.forEach(function(a, i) {
+      var sel = i === ai ? ' selected' : '';
+      html += '<div class="avatar-option' + sel + '" data-idx="' + i +
+        '" style="background:' + a.bg + '" onclick="selectProfileAvatar(this, ' + i + ')" title="头像' + (i+1) + '">' +
+        a.emoji + '</div>';
+    });
+    var picker = document.getElementById('profileAvatarPicker');
+    if (picker) picker.innerHTML = html;
+
+    // 填入当前值
+    var setVal = function(id, val) { var el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
+    setVal('profileAvatarIdx', ai);
+    setVal('profileNickname', profile.nickname || '');
+    setVal('profileGender', profile.gender || '');
+    setVal('profilePhone', profile.phone || '');
+    setVal('profileEmail', profile.email || '');
+    setVal('profileBirthday', profile.birthday || '');
+    setVal('profileHeight', profile.height || '');
+
+    var errEl = document.getElementById('profileError');
+    if (errEl) errEl.textContent = '';
+    overlay.style.display = 'flex';
+  }
+
+  function selectProfileAvatar(el, idx) {
+    document.querySelectorAll('#profileAvatarPicker .avatar-option').forEach(function(o) { o.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('profileAvatarIdx').value = idx;
+  }
+
+  function closeProfileEditor() {
+    var overlay = document.getElementById('profileOverlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  // 点击遮罩关闭
+  (function() {
+    var overlay = document.getElementById('profileOverlay');
+    if (overlay) overlay.addEventListener('click', function(e) { if (e.target === e.currentTarget) closeProfileEditor(); });
+  })();
+
+  function saveProfileChanges() {
+    var errEl = document.getElementById('profileError');
+    var val = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+    var avatarIdx = parseInt(document.getElementById('profileAvatarIdx').value) || 0;
+    var nickname = val('profileNickname');
+    var gender = val('profileGender');
+    var phone = val('profilePhone').replace(/\D/g, '');
+    var email = val('profileEmail');
+    var birthday = val('profileBirthday');
+    var heightStr = val('profileHeight');
+    var height = heightStr ? parseFloat(heightStr) : null;
+
+    if (!nickname) { if (errEl) errEl.textContent = '请输入昵称'; return; }
+    if (nickname.length > 16) { if (errEl) errEl.textContent = '昵称最多16个字符'; return; }
+
+    var oldProfile = getUserProfile();
+    var newProfile = {
+      nickname: nickname,
+      avatar_idx: avatarIdx,
+      avatar_emoji: AVATAR_FULL[avatarIdx].emoji,
+      avatar_bg: AVATAR_FULL[avatarIdx].bg,
+      gender: gender,
+      phone: phone || oldProfile.phone || '',
+      email: email || oldProfile.email || '',
+      birthday: birthday || oldProfile.birthday || null,
+      height: height !== null ? height : (oldProfile.height || null),
+      session_key: oldProfile.session_key || '',
+      created_at: oldProfile.created_at || '',
+      updated_at: new Date().toISOString()
+    };
+
+    // 更新本地
+    var authData = localStorage.getItem('wb_auth_data');
+    if (authData) {
+      try {
+        var parsed = JSON.parse(authData);
+        parsed.profile = newProfile;
+        parsed.last_active = Date.now();
+        localStorage.setItem('wb_auth_data', JSON.stringify(parsed));
+      } catch(e) {}
+    }
+
+    // 更新全局
+    window.__profile = newProfile;
+
+    // 异步上传到云端 profile store
+    var userId = getUserId();
+    if (userId && syncConfig) {
+      sbFetch(syncConfig, 'POST', 'sync_store', {
+        group_key: 'profile_' + userId,
+        store: 'wb_user_profile',
+        data: newProfile,
+        updated_at: new Date().toISOString()
+      }).then(function() {
+        // 如果手机号变了，更新 phone lookup
+        if (phone && phone !== oldProfile.phone) {
+          return sbFetch(syncConfig, 'POST', 'sync_store', {
+            group_key: 'profile_by_phone_' + phone,
+            store: 'wb_profile_lookup',
+            data: {
+              user_id: userId,
+              email: email || oldProfile.email,
+              session_key: newProfile.session_key
+            },
+            updated_at: new Date().toISOString()
+          });
+        }
+      }).catch(function(e) {
+        console.log('云端 profile 更新失败:', e.message);
+      });
+    }
+
+    // 刷新 UI
+    renderHead();
+    closeProfileEditor();
+    toast('个人资料已更新 ✅');
+  }
