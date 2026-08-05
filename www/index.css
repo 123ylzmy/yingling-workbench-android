@@ -1045,6 +1045,19 @@ input[type=number]::-webkit-inner-spin-button {
   height: 14px
 }
 
+.cal-nav .cal-year-btn {
+  width: 28px;
+  height: 28px;
+  opacity: .6
+}
+.cal-nav .cal-year-btn:hover {
+  opacity: 1
+}
+.cal-nav .cal-year-btn svg {
+  width: 16px;
+  height: 16px
+}
+
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

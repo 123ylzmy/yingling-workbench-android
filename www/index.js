@@ -1083,9 +1083,11 @@
     $('calArea').innerHTML =
       '<div class="cal-card">' +
       '<div class="cal-nav">' +
+      '<button onclick="prevCalYear()" class="cal-year-btn" title="上一年"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/><polyline points="21 18 15 12 21 6"/></svg></button>' +
       '<button onclick="prevCalMonth()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>' +
       '<div class="mnth">' + calYear + '年 ' + calMonth + '月</div>' +
       '<button onclick="nextCalMonth()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' +
+      '<button onclick="nextCalYear()" class="cal-year-btn" title="下一年"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 18 9 12 3 6"/><polyline points="9 18 15 12 9 6"/></svg></button>' +
       '</div>' +
       '<div class="cal-grid">' +
       '<div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>' +
@@ -1251,6 +1253,8 @@
 
   function prevCalMonth() { if (calMonth === 1) { calYear--; calMonth = 12 } else calMonth--; renderCalendar() }
   function nextCalMonth() { if (calMonth === 12) { calYear++; calMonth = 1 } else calMonth++; renderCalendar() }
+  function prevCalYear() { calYear--; renderCalendar() }
+  function nextCalYear() { calYear++; renderCalendar() }
   function delEvent(id) { conf('删除这条记录？', function () { state.events = state.events.filter(function (e) { return e.id !== id }); save(); renderAll() }) }
 
   /* ===================== 习惯打卡（仅健康页使用） ===================== */
