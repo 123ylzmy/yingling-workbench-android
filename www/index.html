@@ -1315,7 +1315,14 @@
 
     // 检查 token 是否过期
     if (session.expires_at && session.expires_at < Date.now() / 1000) {
-      // 尝试刷新
+      if (session._local) {
+        // 本地自签 session 过期 → 直接回到登录页
+        console.log('[Auth] Local session expired, redirecting to login');
+        localStorage.removeItem("wb_auth_data");
+        window.location.replace("auth.html");
+        return;
+      }
+      // 尝试刷新 Supabase token（旧版兼容）
       fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
         method: "POST",
         headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },

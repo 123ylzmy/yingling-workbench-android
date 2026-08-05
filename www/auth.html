@@ -442,11 +442,10 @@ function sendLoginCode() {
   };
   localStorage.setItem('wb_login_code', JSON.stringify(codeData));
 
-  // 【模拟SMS发送】实际生产环境需对接短信服务商（阿里云短信/腾讯云短信等）
-  // 短信模板示例: "【自洽日程】您的验证码是XXXXXX，5分钟内有效。"
-  // 对接后可调用: sendSms(phone, '您的验证码是' + code + '，5分钟内有效。')
+  // 开发阶段无真实短信服务，直接在页面显示验证码
   var phoneTail = phone.slice(-4);
-  showToast('验证码已发送至手机尾号 ' + phoneTail, 'info');
+  showToast('验证码: ' + code + ' — 手机尾号 ' + phoneTail, 'info');
+  console.log('[SMS] Verification code for ' + phone + ': ' + code);
 
   // 60秒冷却
   _sendCooldown = 60;
@@ -536,6 +535,21 @@ $('loginForm').addEventListener('submit', function(e) {
   }
 });
 
+// ==================== 自签本地 session（不再依赖 Supabase Auth） ====================
+function createLocalSession(userId, rememberMe) {
+  var now = Math.floor(Date.now() / 1000);
+  var expiresIn = rememberMe ? 7 * 86400 : 86400; // 7天或1天
+  return {
+    access_token: 'local_' + randomStr(40),
+    token_type: 'bearer',
+    expires_at: now + expiresIn,
+    expires_in: expiresIn,
+    refresh_token: 'local_refresh_' + randomStr(40),
+    user: { id: userId },
+    _local: true  // 标记：index.html 跳过 Supabase token 刷新
+  };
+}
+
 // ==================== 密码登录 ====================
 function loginWithPassword(phone) {
   var password = $('loginPassword').value;
@@ -552,9 +566,9 @@ function loginWithPassword(phone) {
       return;
     }
 
-    console.log('[Login] userData found:', { user_id: userData.user_id, email: userData.email, has_password_hash: !!userData.password_hash, has_session_key: !!userData.session_key });
+    console.log('[Login] userData found:', { user_id: userData.user_id, email: userData.email, has_password_hash: !!userData.password_hash });
 
-    // 2. 验证用户密码（与注册时存储的哈希对比）
+    // 2. 本地验证用户密码（不经过 Supabase Auth，无需邮箱验证！）
     var pwdHash = hashPassword(password);
     console.log('[Login] pwdHash=' + pwdHash + ', stored=' + userData.password_hash);
 
@@ -570,31 +584,12 @@ function loginWithPassword(phone) {
       console.warn('[Login] No password_hash stored — skipping local password check');
     }
 
-    // 3. 用 session_key 登录 Supabase
-    if (!userData.session_key) {
-      setLoading($('loginBtn'), false);
-      showToast('账号数据异常，请联系客服', 'error');
-      console.error('[Login] No session_key in userData');
-      return;
-    }
+    // 3. 自签本地 session，不再调用 Supabase signInWithPassword
+    var session = createLocalSession(userData.user_id, $('rememberMe').checked);
+    console.log('[Login] Local session created, expires_at=' + session.expires_at);
 
-    return supabase.auth.signInWithPassword({
-      email: userData.email,
-      password: userData.session_key
-    }).then(function(res) {
-      setLoading($('loginBtn'), false);
-      if (res.error) {
-        console.error('[Login] Supabase signInWithPassword failed:', res.error.message);
-        var msg = res.error.message;
-        if (msg.indexOf('Invalid login') >= 0 || msg.indexOf('invalid') >= 0) {
-          msg = '账号验证失败——可能是邮箱未验证，请查收验证邮件后重试';
-        }
-        showToast(msg, 'error');
-        return;
-      }
-      console.log('[Login] Supabase auth success ✓');
-      finishLogin(res.data.session, userData.user_id);
-    });
+    setLoading($('loginBtn'), false);
+    finishLogin(session, userData.user_id);
   }).catch(function(err) {
     setLoading($('loginBtn'), false);
     showToast('网络错误，请重试', 'error');
@@ -611,7 +606,7 @@ function loginWithCode(phone) {
     return;
   }
 
-  // 验证验证码
+  // 本地验证验证码
   if (!verifyLoginCode(phone, code)) {
     showToast('验证码错误或已过期', 'error');
     return;
@@ -619,25 +614,16 @@ function loginWithCode(phone) {
 
   setLoading($('loginBtn'), true);
 
-  // 查找用户并用 session_key 登录
+  // 查找用户，自签 session 登录（不经过 Supabase Auth）
   findUserByPhone(phone).then(function(userData) {
+    setLoading($('loginBtn'), false);
     if (!userData) {
-      setLoading($('loginBtn'), false);
       showToast('该手机号未注册，请先注册', 'error');
       return;
     }
 
-    return supabase.auth.signInWithPassword({
-      email: userData.email,
-      password: userData.session_key
-    }).then(function(res) {
-      setLoading($('loginBtn'), false);
-      if (res.error) {
-        showToast('登录失败，请重试', 'error');
-        return;
-      }
-      finishLogin(res.data.session, userData.user_id);
-    });
+    var session = createLocalSession(userData.user_id, $('rememberMe').checked);
+    finishLogin(session, userData.user_id);
   }).catch(function() {
     setLoading($('loginBtn'), false);
     showToast('网络错误，请重试', 'error');
@@ -649,9 +635,8 @@ function finishLogin(session, userId) {
   // 从云端拉取完整用户 profile
   fetchUserProfile(userId).then(function(profile) {
     if (!profile) {
-      // 降级：用 session.user_metadata
-      profile = session.user.user_metadata || {};
-      if (!profile.nickname) profile.nickname = '用户';
+      // 降级：用 session 里的 metadata 或默认值
+      profile = (session.user && session.user.user_metadata) || { nickname: '用户', avatar_idx: 0, gender: '' };
     }
     // 更新 last_active
     profile.last_active = new Date().toISOString();
@@ -669,7 +654,7 @@ function finishLogin(session, userId) {
     setTimeout(function() { window.location.href = 'index.html'; }, 600);
   }).catch(function() {
     // 降级
-    var profile = session.user.user_metadata || {};
+    var profile = (session.user && session.user.user_metadata) || { nickname: '用户', avatar_idx: 0, gender: '' };
     saveAuthData(session, profile);
     showToast('登录成功，即将跳转...', 'success');
     setTimeout(function() { window.location.href = 'index.html'; }, 600);
