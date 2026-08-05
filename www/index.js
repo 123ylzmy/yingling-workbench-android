@@ -1560,7 +1560,7 @@
     const lost = start ? +(start.weight - (cur?.weight || start.weight)).toFixed(1) : 0;
     const tgt = getTargetWeight();
     const toGo = cur && tgt != null ? +(cur.weight - tgt).toFixed(1) : null;
-    const pct = cur ? Math.min(100, Math.round(((start.weight - cur.weight) / (start.weight - tgt)) * 100)) : 0;
+    const pct = cur && start && tgt != null ? Math.min(100, Math.round(((start.weight - cur.weight) / (start.weight - tgt)) * 100)) : 0;
     const streak = calcStreak();
 
     $('healthStats').innerHTML = `
@@ -1574,7 +1574,7 @@
     <div class="prog-ring">${ringSvg(pct, 52, 5, '#7AAA67')}</div>
     <div class="prog-info">
       <div class="t1">本月健康进度</div>
-      <div class="t2">从 ${start?.weight || '—'} → ${tgt} kg</div>
+      <div class="t2">从 ${start?.weight || '—'} → ${tgt != null ? tgt : '—'} kg</div>
       <div class="t3">从「设置健康目标」独立设置，与目标激励无关</div>
     </div>
   </div>`;
