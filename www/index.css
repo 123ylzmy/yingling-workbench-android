@@ -942,12 +942,13 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 .today-cal {
-  flex: 0 1 380px;
-  max-width: 420px
+  flex: 1;
+  min-width: 300px;
+  max-width: 480px
 }
 
 .today-right {
-  flex: 1 1 0;
+  flex: 2;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -5026,10 +5027,10 @@ input[type=range]::-webkit-slider-thumb {
   }
 }
 
-/* ── 桌面宽屏（≥1200px）—— 限制最大宽度，避免卡片过度拉伸 ── */
+/* ── 桌面宽屏（≥1200px）—— 内容区弹性居中，日历:右侧=1:2 ── */
 @media(min-width:1200px) {
   .content {
-    max-width: 1100px;
+    max-width: 1400px;
     margin: 0 auto;
   }
 }
