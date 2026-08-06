@@ -13,6 +13,7 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="shortcut icon" href="favicon.ico">
   <!-- iOS 主屏图标 -->
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
@@ -27,7 +28,7 @@
     <!-- ===== 侧边栏 ===== -->
     <aside class="sidebar" id="sidebar">
       <div class="side-logo">
-        <img src="icons/icon-192.png" class="dot" style="width:32px;height:32px;border-radius:10px;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.08)" alt="自洽日程">
+        <img src="icons/icon-192.png" class="dot" style="width:32px;height:32px;border-radius:10px;object-fit:cover;flex-shrink:0;" alt="自洽日程">
         <div class="name">自洽日程<small>· 记录每一天</small></div>
       </div>
       <nav class="side-nav">
@@ -206,14 +207,12 @@
             </svg>
           </button>
           <span class="sync-indicator offline" id="syncIndicator" style="margin-right:4px">
-            <span class="sync-dot" id="syncDot"></span>
-            <span id="syncLabel">未配置</span>
+            <span class="sync-dot" id="syncDot" title="云同步状态"></span>
           </span>
-          <button class="topbar-btn cloud-btn" id="cloudBtn" onclick="toggleCloudPanel()" title="云同步登录" style="background:var(--g50);color:var(--g400);font-weight:500;gap:4px;border:1.5px solid var(--g200)">
+          <button class="topbar-btn cloud-btn" id="cloudBtn" onclick="toggleCloudPanel()" title="云同步" style="background:var(--g50);color:var(--g400);border:1.5px solid var(--g200)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
               <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path>
             </svg>
-            <span class="cloud-label">云同步</span>
           </button>
           <button class="topbar-btn" id="logoutBtn" onclick="handleLogout()" title="退出登录" style="color:var(--danger);margin-left:4px">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
@@ -221,7 +220,6 @@
               <polyline points="16 17 21 12 16 7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
-            <span class="cloud-label">退出</span>
           </button>
         </div>
       </header>

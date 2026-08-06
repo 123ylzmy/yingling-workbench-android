@@ -25,7 +25,7 @@
   }
 
   // 预设头像（与 auth.html 保持一致）
-  var AVATAR_PRESETS = ['🌸','🌿','☀️','🌙','⭐','🦋','🐱','🌈','🍀','💜','🌊','🔥','🌻','🐼','🍓','🎀','💎','🌹','🦊','🐰'];
+  var AVATAR_PRESETS = ['🌸','🌿','☀️','🌙','⭐','🦋'];
 
   // 性别判断：只有女性才显示经期记录
   function isFemaleUser() {
@@ -115,24 +115,13 @@
 
   /* ---- UI 状态 ---- */
   function updateSyncUI(connected) {
-    var label = document.getElementById('syncLabel');
     var btn = document.getElementById('cloudBtn');
-    if (!btn) return;
-    var btnLabel = btn.querySelector('.cloud-label');
     var dot = document.getElementById('syncDot');
     if (connected) {
-      if (label) label.textContent = '已同步';
-      if (btnLabel) btnLabel.textContent = '已同步';
-      btn.style.background = 'var(--g100)';
-      btn.style.color = 'var(--g500)';
-      btn.style.borderColor = 'var(--g300)';
+      if (btn) { btn.style.background = 'var(--g100)'; btn.style.color = 'var(--g500)'; btn.style.borderColor = 'var(--g300)'; btn.title = '已同步 · 点击手动同步'; }
       if (dot) dot.style.background = 'var(--success)';
     } else {
-      if (label) label.textContent = '离线';
-      if (btnLabel) btnLabel.textContent = '同步中';
-      btn.style.background = 'var(--g50)';
-      btn.style.color = 'var(--g400)';
-      btn.style.borderColor = 'var(--g200)';
+      if (btn) { btn.style.background = 'var(--g50)'; btn.style.color = 'var(--g400)'; btn.style.borderColor = 'var(--g200)'; btn.title = '离线 · 点击同步'; }
       if (dot) dot.style.background = 'var(--g200)';
     }
   }
@@ -2003,6 +1992,12 @@
   let selTimerContent = '';
   let selTimerMode = 'up';
   let selTimerTarget = 25;
+  function updateCustTimer() {
+    var h = parseInt(document.getElementById('tcustH')?.value) || 0;
+    var m = parseInt(document.getElementById('tcustM')?.value) || 0;
+    selTimerTarget = Math.max(1, h * 60 + m);
+    renderStudy();
+  }
   function drawModuleChart(all) {
     var byMod = {};
     all.forEach(function (s) { byMod[s.skill] = (byMod[s.skill] || 0) + (s.duration || 0) });
@@ -2178,9 +2173,11 @@
         '<span class="tmode-opt' + (!modeUp ? ' active' : '') + '" onclick="selTimerMode=\'down\';renderStudy()">倒计时</span>' +
         '</div>' +
         (!modeUp
-          ? '<div class="timer-target-row">' + [15, 25, 30, 45, 60].map(function (v) { return '<span class="tchip' + (selTimerTarget === v ? ' active' : '') + '" onclick="selTimerTarget=' + v + ';renderStudy()">' + v + 'min</span>' }).join('') + '<input class="tchip-inp" type="number" id="tcustMin" placeholder="自定义" min="1" max="180" onchange="selTimerTarget=+this.value||25;renderStudy()"></div>'
+          ? '<div class="timer-target-row">' + [15, 25, 30, 45, 60].map(function (v) { return '<span class="tchip' + (selTimerTarget === v ? ' active' : '') + '" onclick="selTimerTarget=' + v + ';renderStudy()">' + v + 'min</span>' }).join('') +
+            '<div class="tchip-cust-wrap"><input class="tchip-inp tchip-h" type="number" id="tcustH" placeholder="时" min="0" max="23" value="' + Math.floor(selTimerTarget/60) + '" onchange="updateCustTimer();renderStudy()"><span class="tchip-sep">:</span><input class="tchip-inp tchip-m" type="number" id="tcustM" placeholder="分" min="0" max="59" value="' + (selTimerTarget%60) + '" onchange="updateCustTimer();renderStudy()"></div>' +
+            '</div>'
           : '') +
-        '<button class="btn-timer-start" onclick="startStudyTimer()"' + (ready ? '' : ' disabled') + '><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px"><polygon points="6,3 20,12 6,21"/></svg>开始学习</button>' +
+        '<button class="btn-timer-start" onclick="if(!selTimerModule){toast(\'请先选择学习模块\');return;}startStudyTimer()"' + (ready ? '' : ' disabled') + '><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px"><polygon points="6,3 20,12 6,21"/></svg>开始学习</button>' +
         '</div>' +
         '</div>';
     }
@@ -2846,7 +2843,7 @@
     } else {
       b.classList.add('active'); a.classList.remove('active');
       pb.classList.add('active'); pa.classList.remove('active');
-      trainWeekStart = getMonday(new Date());
+      initTrainWeek(); // 首次进入跳到本周，之后记住位置
       renderHabits('healthHabits'); renderTrainLogs('trainRecords');
     }
   }
@@ -3699,14 +3696,7 @@
   var AVATAR_FULL = [
     { emoji:'🌸', bg:'#FFE4E1' }, { emoji:'🌿', bg:'#E8F5E9' },
     { emoji:'☀️', bg:'#FFF8E1' }, { emoji:'🌙', bg:'#E3F2FD' },
-    { emoji:'⭐', bg:'#FFF3E0' }, { emoji:'🦋', bg:'#E0F7FA' },
-    { emoji:'🐱', bg:'#FCE4EC' }, { emoji:'🌈', bg:'#F3E5F5' },
-    { emoji:'🍀', bg:'#C8E6C9' }, { emoji:'💜', bg:'#EDE7F6' },
-    { emoji:'🌊', bg:'#BBDEFB' }, { emoji:'🔥', bg:'#FFEBEE' },
-    { emoji:'🌻', bg:'#FFF9C4' }, { emoji:'🐼', bg:'#EFEBE9' },
-    { emoji:'🍓', bg:'#F8BBD0' }, { emoji:'🎀', bg:'#F48FB1' },
-    { emoji:'💎', bg:'#B3E5FC' }, { emoji:'🌹', bg:'#FFCDD2' },
-    { emoji:'🦊', bg:'#FFE0B2' }, { emoji:'🐰', bg:'#F5F5F5' }
+    { emoji:'⭐', bg:'#FFF3E0' }, { emoji:'🦋', bg:'#E0F7FA' }
   ];
 
   function openProfileEditor() {

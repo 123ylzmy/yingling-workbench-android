@@ -272,6 +272,9 @@ input[type=number]::-webkit-inner-spin-button {
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .topbar .date {
@@ -3672,6 +3675,34 @@ input[type=number]::-webkit-inner-spin-button {
   border-color: var(--g400)
 }
 
+.tchip-cust-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+}
+.tchip-cust-wrap:focus-within {
+  border-color: var(--g400);
+}
+.tchip-h, .tchip-m {
+  width: 36px;
+  padding: 6px 4px;
+  border: none;
+  font-size: 12px;
+  text-align: center;
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+}
+.tchip-sep {
+  font-size: 12px;
+  color: var(--ink-light);
+  font-weight: 600;
+}
+
 .timer-flash {
   animation: timerFlash .5s infinite
 }
@@ -4229,12 +4260,15 @@ input[type=range]::-webkit-slider-thumb {
     display: none
   }
 
-  /* 心情面板移动端 */
+  /* 心情面板移动端 — 矩阵排列 */
   .mood-panel {
     min-width: auto;
     max-width: 92vw;
-    padding: 8px 6px;
-    gap: 3px
+    padding: 10px;
+    gap: 6px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-items: center;
   }
 
   .mood-option {
@@ -4945,6 +4979,17 @@ input[type=range]::-webkit-slider-thumb {
     top: 50px;
     font-size: 11px;
     padding: 8px 18px
+  }
+
+  /* 头像选择器移动端 — 一行6个 */
+  .avatar-picker {
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 6px !important;
+  }
+  .avatar-option {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
   }
 }
 
@@ -5669,6 +5714,35 @@ input[type=range]::-webkit-slider-thumb {
   margin-top: -8px;
   margin-bottom: 8px;
   min-height: 18px;
+}
+
+/* 头像选择器 — 一行6个 */
+.avatar-picker {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px !important;
+  justify-items: center;
+}
+.avatar-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all .15s;
+  border: 3px solid transparent;
+  flex-shrink: 0;
+}
+.avatar-option:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+.avatar-option.selected {
+  border-color: var(--g400);
+  box-shadow: 0 0 0 3px var(--g100);
 }
 
 .cloud-btn {
