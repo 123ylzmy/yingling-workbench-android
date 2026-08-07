@@ -2066,7 +2066,6 @@ input[type=number]::-webkit-inner-spin-button {
   margin-top: 4px;
   max-height: 420px;
   overflow-y: auto;
-  scroll-behavior: smooth;
   padding-right: 4px;
 }
 /* 自定义滚动条 */
