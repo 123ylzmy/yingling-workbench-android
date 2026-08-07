@@ -2174,10 +2174,10 @@
         '</div>' +
         (!modeUp
           ? '<div class="timer-target-row">' + [15, 25, 30, 45, 60].map(function (v) { return '<span class="tchip' + (selTimerTarget === v ? ' active' : '') + '" onclick="selTimerTarget=' + v + ';renderStudy()">' + v + 'min</span>' }).join('') +
-            '<div class="tchip-cust-wrap"><input class="tchip-inp tchip-h" type="number" id="tcustH" placeholder="时" min="0" max="23" value="' + Math.floor(selTimerTarget/60) + '" onchange="updateCustTimer();renderStudy()"><span class="tchip-sep">:</span><input class="tchip-inp tchip-m" type="number" id="tcustM" placeholder="分" min="0" max="59" value="' + (selTimerTarget%60) + '" onchange="updateCustTimer();renderStudy()"></div>' +
+            '<div class="tchip-cust-wrap"><span class="tchip-cust-label">自定义</span><div class="tchip-cust-inputs"><div class="tchip-cust-unit"><input class="tchip-inp" type="number" id="tcustH" placeholder="0" min="0" max="23" value="' + Math.floor(selTimerTarget/60) + '" onchange="updateCustTimer()"><span>时</span></div><div class="tchip-cust-unit"><input class="tchip-inp" type="number" id="tcustM" placeholder="0" min="0" max="59" value="' + (selTimerTarget%60) + '" onchange="updateCustTimer()"><span>分</span></div></div></div>' +
             '</div>'
           : '') +
-        '<button class="btn-timer-start" onclick="if(!selTimerModule){toast(\'请先选择学习模块\');return;}startStudyTimer()"' + (ready ? '' : ' disabled') + '><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px"><polygon points="6,3 20,12 6,21"/></svg>开始学习</button>' +
+        '<button class="btn-timer-start' + (ready ? '' : ' btn-timer-dim') + '" onclick="startStudyTimer()"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px"><polygon points="6,3 20,12 6,21"/></svg>开始学习</button>' +
         '</div>' +
         '</div>';
     }

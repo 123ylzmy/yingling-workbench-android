@@ -3574,6 +3574,17 @@ input[type=number]::-webkit-inner-spin-button {
   transform: none
 }
 
+.btn-timer-dim {
+  opacity: 0.55;
+}
+
+.btn-timer-dim:hover {
+  opacity: 0.85;
+  background: var(--g500);
+  border-color: var(--g500);
+  transform: scale(1.03)
+}
+
 .btn-timer-pause {
   background: #f59e0b;
   color: #fff
@@ -3676,31 +3687,66 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 .tchip-cust-wrap {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 2px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
+  gap: 8px;
+  padding: 4px 12px 4px 14px;
+  border-radius: 24px;
+  border: 1.5px solid var(--line);
   background: var(--bg);
-  overflow: hidden;
+  transition: border-color .15s;
 }
 .tchip-cust-wrap:focus-within {
   border-color: var(--g400);
 }
-.tchip-h, .tchip-m {
-  width: 36px;
-  padding: 6px 4px;
-  border: none;
-  font-size: 12px;
-  text-align: center;
-  background: transparent;
-  color: var(--ink);
-  outline: none;
+.tchip-cust-wrap:has(.tchip-inp.active-cust) {
+  border-color: var(--g400);
+  background: var(--g50);
 }
-.tchip-sep {
+.tchip-cust-label {
   font-size: 12px;
   color: var(--ink-light);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tchip-cust-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tchip-cust-unit {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.tchip-cust-unit .tchip-inp {
+  width: 44px;
+  padding: 6px 6px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14px;
   font-weight: 600;
+  text-align: center;
+  background: var(--g50);
+  color: var(--ink);
+  outline: none;
+  transition: all .15s;
+  -moz-appearance: textfield;
+}
+.tchip-cust-unit .tchip-inp::-webkit-outer-spin-button,
+.tchip-cust-unit .tchip-inp::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.tchip-cust-unit .tchip-inp:focus {
+  border-color: var(--g400);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+}
+.tchip-cust-unit span {
+  font-size: 12px;
+  color: var(--ink-light);
+  font-weight: 500;
 }
 
 .timer-flash {
