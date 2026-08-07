@@ -2981,10 +2981,21 @@
       body: listHtml +
         '<div class="form-group"><label>开始日期</label><input class="inp" type="date" id="periodStart" value="' + today() + '"></div>' +
         '<div class="form-group" style="margin-top:12px"><label>持续天数</label>' +
-        '<select class="inp" id="periodDuration" style="width:100%">' +
-        '<option value="3">3 天</option><option value="4">4 天</option><option value="5" selected>5 天</option>' +
-        '<option value="6">6 天</option><option value="7">7 天</option><option value="8">8 天</option>' +
-        '</select>' +
+        '<input type="hidden" id="periodDuration" value="5">' +
+        '<div class="ex-dropdown" id="periodDropdown">' +
+        '<div class="ex-dropdown-btn" id="periodBtn" onclick="togglePeriodDropdown(event)">' +
+        '<span id="periodBtnText">5 天</span>' +
+        '<span class="ex-dropdown-arrow">&#9660;</span>' +
+        '</div>' +
+        '<div class="ex-dropdown-panel" id="periodPanel">' +
+        '<div class="ex-panel-item" onclick="selectPeriod(3)" data-pp="3">3 天</div>' +
+        '<div class="ex-panel-item" onclick="selectPeriod(4)" data-pp="4">4 天</div>' +
+        '<div class="ex-panel-item sel" onclick="selectPeriod(5)" data-pp="5">5 天</div>' +
+        '<div class="ex-panel-item" onclick="selectPeriod(6)" data-pp="6">6 天</div>' +
+        '<div class="ex-panel-item" onclick="selectPeriod(7)" data-pp="7">7 天</div>' +
+        '<div class="ex-panel-item" onclick="selectPeriod(8)" data-pp="8">8 天</div>' +
+        '</div>' +
+        '</div>' +
         '<div style="font-size:11px;color:var(--ink-light);margin-top:4px">期间自动标记为姨妈期休息日</div>' +
         '</div>',
       foot: '<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" onclick="savePeriod()">记录</button>'
@@ -3128,14 +3139,6 @@
     var target = document.getElementById(containerId);
     if (target) {
       target.innerHTML = html;
-      // 自动滚动到今天在顶端
-      var todayHd = target.querySelector('.train-list-day-hd.today');
-      if (todayHd) {
-        var list = target.querySelector('.train-list');
-        if (list) {
-          list.scrollTop = todayHd.parentElement.offsetTop - 4;
-        }
-      }
     }
   }
 
@@ -3219,7 +3222,65 @@
   // 点击弹窗其他地方关闭下拉
   document.addEventListener('click', function (e) {
     if (_exPanelOpen && !e.target.closest('#exDropdown')) closeExDropdown();
+    if (!e.target.closest('#genderDropdown')) closeGenderDropdown();
+    if (!e.target.closest('#periodDropdown')) closePeriodDropdown();
   });
+
+  /* --- 性别下拉（ex-dropdown 风格）--- */
+  function toggleGenderDropdown(e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById('genderPanel');
+    var btn = document.getElementById('genderBtn');
+    var open = panel.classList.contains('show');
+    if (open) { closeGenderDropdown(); }
+    else {
+      panel.classList.add('show'); btn.classList.add('open');
+    }
+  }
+  function selectGender(val) {
+    document.getElementById('profileGender').value = val;
+    document.getElementById('genderBtnText').textContent = { 'female': '女', 'male': '男', 'other': '其他' }[val] || '请选择';
+    var panel = document.getElementById('genderPanel');
+    panel.querySelectorAll('.ex-panel-item').forEach(function (it) { it.classList.toggle('sel', it.dataset.g === val) });
+    closeGenderDropdown();
+  }
+  function closeGenderDropdown() {
+    var panel = document.getElementById('genderPanel');
+    var btn = document.getElementById('genderBtn');
+    if (panel) panel.classList.remove('show');
+    if (btn) btn.classList.remove('open');
+  }
+  function initGenderDropdown() {
+    var val = document.getElementById('profileGender').value;
+    document.getElementById('genderBtnText').textContent = { 'female': '女', 'male': '男', 'other': '其他' }[val] || '请选择';
+    var panel = document.getElementById('genderPanel');
+    if (panel) panel.querySelectorAll('.ex-panel-item').forEach(function (it) { it.classList.toggle('sel', it.dataset.g === val) });
+  }
+
+  /* --- 姨妈期持续天数下拉（ex-dropdown 风格）--- */
+  function togglePeriodDropdown(e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById('periodPanel');
+    var btn = document.getElementById('periodBtn');
+    var open = panel.classList.contains('show');
+    if (open) { closePeriodDropdown(); }
+    else {
+      panel.classList.add('show'); btn.classList.add('open');
+    }
+  }
+  function selectPeriod(val) {
+    document.getElementById('periodDuration').value = val;
+    document.getElementById('periodBtnText').textContent = val + ' 天';
+    var panel = document.getElementById('periodPanel');
+    panel.querySelectorAll('.ex-panel-item').forEach(function (it) { it.classList.toggle('sel', parseInt(it.dataset.pp) === val) });
+    closePeriodDropdown();
+  }
+  function closePeriodDropdown() {
+    var panel = document.getElementById('periodPanel');
+    var btn = document.getElementById('periodBtn');
+    if (panel) panel.classList.remove('show');
+    if (btn) btn.classList.remove('open');
+  }
 
   function switchTrainCat(el, cat) {
     document.querySelectorAll('#trainCats .train-cat-tab').forEach(function (c) { c.classList.remove('sel') });
@@ -3750,6 +3811,7 @@
     setVal('profileAvatarIdx', ai);
     setVal('profileNickname', profile.nickname || '');
     setVal('profileGender', profile.gender || '');
+    initGenderDropdown();
     setVal('profilePhone', profile.phone || '');
     setVal('profileEmail', profile.email || '');
     setVal('profileBirthday', profile.birthday || '');

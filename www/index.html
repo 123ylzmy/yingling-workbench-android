@@ -1220,11 +1220,18 @@
         </div>
         <div style="flex:1">
           <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">性别</label>
-          <select id="profileGender" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none;-webkit-appearance:none">
-            <option value="female">女</option>
-            <option value="male">男</option>
-            <option value="other">其他</option>
-          </select>
+          <input type="hidden" id="profileGender" value="">
+          <div class="ex-dropdown" id="genderDropdown">
+            <div class="ex-dropdown-btn" id="genderBtn" onclick="toggleGenderDropdown(event)" style="padding:8px 10px;min-height:auto;border-radius:8px">
+              <span id="genderBtnText">请选择</span>
+              <span class="ex-dropdown-arrow">&#9660;</span>
+            </div>
+            <div class="ex-dropdown-panel" id="genderPanel">
+              <div class="ex-panel-item sel" onclick="selectGender('female')" data-g="female">女</div>
+              <div class="ex-panel-item" onclick="selectGender('male')" data-g="male">男</div>
+              <div class="ex-panel-item" onclick="selectGender('other')" data-g="other">其他</div>
+            </div>
+          </div>
         </div>
       </div>
 
