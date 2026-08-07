@@ -3139,6 +3139,17 @@
     var target = document.getElementById(containerId);
     if (target) {
       target.innerHTML = html;
+      // 瞬间定位到今天（不产生滚动动画）
+      var todayHd = target.querySelector('.train-list-day-hd.today');
+      if (todayHd) {
+        var list = target.querySelector('.train-list');
+        if (list) {
+          var prev = list.style.scrollBehavior;
+          list.style.scrollBehavior = 'auto';
+          list.scrollTop = todayHd.parentElement.offsetTop - 4;
+          list.style.scrollBehavior = prev;
+        }
+      }
     }
   }
 
