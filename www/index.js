@@ -1992,11 +1992,39 @@
   let selTimerContent = '';
   let selTimerMode = 'up';
   let selTimerTarget = 25;
-  function updateCustTimer() {
-    var h = parseInt(document.getElementById('tcustH')?.value) || 0;
-    var m = parseInt(document.getElementById('tcustM')?.value) || 0;
-    selTimerTarget = Math.max(1, h * 60 + m);
-    renderStudy();
+  function buildWheelItems(min, max) {
+    var html = '<div class="twheel-spacer"></div>';
+    for (var i = min; i <= max; i++) html += '<div class="twheel-item" data-v="' + i + '">' + i + '</div>';
+    return html + '<div class="twheel-spacer"></div>';
+  }
+  var _twheelIniting = false;
+  function initTimerWheels() {
+    var hWheel = document.getElementById('twheelH');
+    var mWheel = document.getElementById('twheelM');
+    if (!hWheel || !mWheel) return;
+    _twheelIniting = true;
+    hWheel.scrollTop = Math.floor(selTimerTarget / 60) * 32;
+    mWheel.scrollTop = (selTimerTarget % 60) * 32;
+    _twheelIniting = false;
+    var hT, mT;
+    hWheel.onscroll = function () {
+      if (_twheelIniting) return;
+      clearTimeout(hT);
+      hT = setTimeout(function () {
+        var hv = Math.round(hWheel.scrollTop / 32);
+        var mv = Math.round(mWheel.scrollTop / 32);
+        selTimerTarget = Math.max(1, hv * 60 + mv);
+      }, 120);
+    };
+    mWheel.onscroll = function () {
+      if (_twheelIniting) return;
+      clearTimeout(mT);
+      mT = setTimeout(function () {
+        var hv = Math.round(hWheel.scrollTop / 32);
+        var mv = Math.round(mWheel.scrollTop / 32);
+        selTimerTarget = Math.max(1, hv * 60 + mv);
+      }, 120);
+    };
   }
   function drawModuleChart(all) {
     var byMod = {};
@@ -2174,7 +2202,7 @@
         '</div>' +
         (!modeUp
           ? '<div class="timer-target-row">' + [15, 25, 30, 45, 60].map(function (v) { return '<span class="tchip' + (selTimerTarget === v ? ' active' : '') + '" onclick="selTimerTarget=' + v + ';renderStudy()">' + v + 'min</span>' }).join('') +
-            '<div class="tchip-cust-wrap"><span class="tchip-cust-label">自定义</span><div class="tchip-cust-inputs"><div class="tchip-cust-unit"><input class="tchip-inp" type="number" id="tcustH" placeholder="0" min="0" max="23" value="' + Math.floor(selTimerTarget/60) + '" onchange="updateCustTimer()"><span>时</span></div><div class="tchip-cust-unit"><input class="tchip-inp" type="number" id="tcustM" placeholder="0" min="0" max="59" value="' + (selTimerTarget%60) + '" onchange="updateCustTimer()"><span>分</span></div></div></div>' +
+            '<div class="twheel-wrap"><span class="twheel-label">自定义</span><div class="twheel-unit"><div class="twheel-frame"><div class="twheel" id="twheelH">' + buildWheelItems(0, 23) + '</div></div><span class="twheel-suffix">时</span></div><div class="twheel-unit"><div class="twheel-frame"><div class="twheel" id="twheelM">' + buildWheelItems(0, 59) + '</div></div><span class="twheel-suffix">分</span></div></div>' +
             '</div>'
           : '') +
         '<button class="btn-timer-start' + (ready ? '' : ' btn-timer-dim') + '" onclick="startStudyTimer()"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px"><polygon points="6,3 20,12 6,21"/></svg>开始学习</button>' +
@@ -2216,6 +2244,7 @@
       <div class="sa"><span class="sa-btn" onclick="openStudyModal('${s.id}')">编辑</span><span class="sa-btn del" onclick="delStudy('${s.id}')">删除</span></div>
     </div>`).join('') : '<div class="today-empty">还没有学习记录</div>'}
   </div>`;
+    initTimerWheels();
   }
   function manageStudyModules() {
     const modules = state.studyModules || [];

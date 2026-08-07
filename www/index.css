@@ -3686,64 +3686,79 @@ input[type=number]::-webkit-inner-spin-button {
   border-color: var(--g400)
 }
 
-.tchip-cust-wrap {
+.twheel-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 12px 4px 14px;
+  gap: 10px;
+  padding: 6px 14px;
   border-radius: 24px;
   border: 1.5px solid var(--line);
   background: var(--bg);
   transition: border-color .15s;
 }
-.tchip-cust-wrap:focus-within {
-  border-color: var(--g400);
-}
-.tchip-cust-wrap:has(.tchip-inp.active-cust) {
-  border-color: var(--g400);
-  background: var(--g50);
-}
-.tchip-cust-label {
+.twheel-label {
   font-size: 12px;
   color: var(--ink-light);
   font-weight: 500;
   white-space: nowrap;
 }
-.tchip-cust-inputs {
+.twheel-unit {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
-.tchip-cust-unit {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+.twheel-frame {
+  position: relative;
+  width: 40px;
+  height: 96px;
 }
-.tchip-cust-unit .tchip-inp {
-  width: 44px;
-  padding: 6px 6px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
+.twheel-frame::before {
+  content: '';
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: rgba(0,0,0,0.035);
+  border-top: 1.5px solid var(--g300);
+  border-bottom: 1.5px solid var(--g300);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+.twheel {
+  height: 96px;
+  width: 40px;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
   background: var(--g50);
-  color: var(--ink);
-  outline: none;
-  transition: all .15s;
-  -moz-appearance: textfield;
+  position: relative;
+  z-index: 1;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 72%, transparent 100%);
 }
-.tchip-cust-unit .tchip-inp::-webkit-outer-spin-button,
-.tchip-cust-unit .tchip-inp::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.twheel::-webkit-scrollbar {
+  display: none;
 }
-.tchip-cust-unit .tchip-inp:focus {
-  border-color: var(--g400);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+.twheel-spacer {
+  height: 32px;
 }
-.tchip-cust-unit span {
+.twheel-item {
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-light);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  transition: color .1s;
+}
+.twheel-suffix {
   font-size: 12px;
   color: var(--ink-light);
   font-weight: 500;
@@ -4888,6 +4903,25 @@ input[type=range]::-webkit-slider-thumb {
   .tchip {
     padding: 5px 12px;
     font-size: 11px
+  }
+
+  .twheel-wrap {
+    gap: 8px;
+    padding: 4px 10px
+  }
+
+  .twheel-frame,
+  .twheel {
+    height: 80px
+  }
+
+  .twheel-frame::before {
+    top: 24px;
+    height: 32px
+  }
+
+  .twheel-spacer {
+    height: 24px
   }
 
   /* 图表内联区域 */
