@@ -4321,7 +4321,7 @@ input[type=range]::-webkit-slider-thumb {
   }
 
   /* 心情面板移动端 — 矩阵排列 */
-  .mood-panel {
+  .mood-panel.show {
     min-width: auto;
     max-width: 92vw;
     padding: 10px;

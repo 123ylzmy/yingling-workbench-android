@@ -2261,7 +2261,7 @@
         '<div style="margin-top:14px;text-align:center">' +
         '<button class="btn ghost" style="font-size:12px" id="btnShowModInput" onclick="showModInput()">+ 新增模块</button>' +
         '<div id="modInputRow" style="margin-top:8px;display:none;gap:4px">' +
-        '<input class="inp" id="modNew" placeholder="输入模块名称" style="flex:1;font-size:13px">' +
+        '<input class="inp" id="modNew" placeholder="输入模块名称" style="flex:1;font-size:13px;padding:10px 12px">' +
         '<button class="btn ghost" style="padding:6px 14px;white-space:nowrap" onclick="addModuleFromManage()">确认</button>' +
         '</div>' +
         '</div>',
@@ -2328,7 +2328,7 @@
         '<div style="margin-top:14px;text-align:center">' +
         '<button class="btn ghost" style="font-size:12px" id="btnShowTimerModInput" onclick="showTimerModInput()">+ 新增模块</button>' +
         '<div id="timerModInputRow" style="margin-top:8px;display:none;gap:4px">' +
-        '<input class="inp" id="tmodNew" placeholder="输入模块名称" style="flex:1;font-size:13px">' +
+        '<input class="inp" id="tmodNew" placeholder="输入模块名称" style="flex:1;font-size:13px;padding:10px 12px">' +
         '<button class="btn ghost" style="padding:6px 14px;white-space:nowrap" onclick="addTimerModule()">确认</button>' +
         '</div>' +
         '</div>' +
