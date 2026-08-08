@@ -3881,7 +3881,7 @@
     var height = heightStr ? parseFloat(heightStr) : null;
 
     if (!nickname) { if (errEl) errEl.textContent = '请输入昵称'; return; }
-    if (nickname.length > 16) { if (errEl) errEl.textContent = '昵称最多16个字符'; return; }
+    if (nickname.length > 7) { if (errEl) errEl.textContent = '昵称最多7个字符'; return; }
 
     var oldProfile = getUserProfile();
     var newProfile = {

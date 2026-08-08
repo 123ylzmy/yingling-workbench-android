@@ -168,7 +168,7 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="regNickname">昵称 <span style="color:var(--error)">*</span></label>
-          <input type="text" class="form-input" id="regNickname" placeholder="给自己起个名字" required>
+          <input type="text" class="form-input" id="regNickname" placeholder="给自己起个名字" maxlength="7" required>
         </div>
         <div class="form-group">
           <label class="form-label" for="regGender">性别 <span style="color:var(--error)">*</span></label>
@@ -600,7 +600,7 @@ $('registerForm').addEventListener('submit', function(e) {
 
   // 校验
   if (!nickname) { showToast('请输入昵称', 'error'); return; }
-  if (nickname.length > 16) { showToast('昵称最多16个字符', 'error'); return; }
+  if (nickname.length > 7) { showToast('昵称最多7个字符', 'error'); return; }
   if (!gender) { showToast('请选择性别', 'error'); return; }
   if (!name) { showToast('请输入账户名称', 'error'); return; }
   if (name.length < 3 || name.length > 20) { showToast('账户名称需 3-20 个字符', 'error'); return; }
