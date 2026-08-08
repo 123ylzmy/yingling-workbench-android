@@ -3795,7 +3795,10 @@
   var AVATAR_FULL = [
     { emoji:'🌸', bg:'#FFE4E1' }, { emoji:'🌿', bg:'#E8F5E9' },
     { emoji:'☀️', bg:'#FFF8E1' }, { emoji:'🌙', bg:'#E3F2FD' },
-    { emoji:'⭐', bg:'#FFF3E0' }, { emoji:'🦋', bg:'#E0F7FA' }
+    { emoji:'⭐', bg:'#FFF3E0' }, { emoji:'🦋', bg:'#E0F7FA' },
+    { emoji:'🐱', bg:'#FCE4EC' }, { emoji:'🌈', bg:'#F3E5F5' },
+    { emoji:'🍀', bg:'#C8E6C9' }, { emoji:'💜', bg:'#EDE7F6' },
+    { emoji:'🌊', bg:'#BBDEFB' }, { emoji:'🔥', bg:'#FFEBEE' }
   ];
 
   function openProfileEditor() {
