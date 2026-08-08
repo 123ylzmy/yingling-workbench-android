@@ -637,11 +637,10 @@
   }
   function selectMood(v, e) {
     if (e) { e.stopPropagation(); e.preventDefault(); }
+    closeMoodPanel();          // 先同步关闭面板，避免依赖异步时序（WebView/桌面行为一致）
     state.mood.value = v;
     state.mood.date = today();
-    save(); renderMoodIcon();
-    // 用 setTimeout 确保在移动端触摸事件链完成后关闭面板，避免事件冲突
-    setTimeout(function () { closeMoodPanel(); }, 0);
+    save(); renderMoodIcon();   // 重建面板内容，不重新添加 .show，保持关闭
     var cfg = getMoodCfg(v);
     toast('心情：' + cfg.label);
   }
