@@ -8,3 +8,7 @@ android/local.properties
 *.jks
 .jdk/
 .DS_Store
+
+# 构建产物：APK 由 CI 自动发布到 gh-pages，不入库
+www/*.apk
+*.apk

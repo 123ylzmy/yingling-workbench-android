@@ -31,6 +31,10 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
+      # 防止 www 下的 APK 被 cap sync 打进新 APK 造成「套娃」体积膨胀
+      - name: Strip APK files from web assets
+        run: rm -f www/*.apk
+
       - name: Sync Capacitor
         run: npx cap sync android
 
@@ -73,7 +77,8 @@ jobs:
           publish_dir: ./www
           publish_branch: gh-pages
           allow_empty_commit: false
-          force_orphan: true
+          # 保留 gh-pages 上已发布的 APK，避免网页先上线时下载地址短暂 404
+          keep_files: true
 
   # 构建成功后，把最新 APK 自动追加发布到 gh-pages，
   # 覆盖 www/ 里那份兜底 APK，实现「推代码 = APK 自动更新」
@@ -94,7 +99,7 @@ jobs:
           mkdir -p apk-out
           cp apk-download/app-debug.apk "apk-out/自洽日程.apk"
           BUILT_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
-          SIZE_MB="$(du -m "apk-out/自洽日程.apk" | cut -f1)"
+          SIZE_MB="$(awk "BEGIN{printf \"%.1f\", $(stat -c %s "apk-out/自洽日程.apk")/1048576}")"
           printf '{"commit":"%s","shortSha":"%s","builtAt":"%s","sizeMB":%s}\n' \
             "${GITHUB_SHA}" "${GITHUB_SHA:0:7}" "${BUILT_AT}" "${SIZE_MB}" \
             > apk-out/apk-info.json
