@@ -74,3 +74,38 @@ jobs:
           publish_branch: gh-pages
           allow_empty_commit: false
           force_orphan: true
+
+  # 构建成功后，把最新 APK 自动追加发布到 gh-pages，
+  # 覆盖 www/ 里那份兜底 APK，实现「推代码 = APK 自动更新」
+  publish-apk:
+    runs-on: ubuntu-latest
+    needs: [build, deploy-pages]
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: yingling-workbench-debug
+          path: apk-download
+
+      - name: Prepare publish folder
+        run: |
+          mkdir -p apk-out
+          cp apk-download/app-debug.apk "apk-out/自洽日程.apk"
+          BUILT_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+          SIZE_MB="$(du -m "apk-out/自洽日程.apk" | cut -f1)"
+          printf '{"commit":"%s","shortSha":"%s","builtAt":"%s","sizeMB":%s}\n' \
+            "${GITHUB_SHA}" "${GITHUB_SHA:0:7}" "${BUILT_AT}" "${SIZE_MB}" \
+            > apk-out/apk-info.json
+          cat apk-out/apk-info.json
+
+      - name: Publish APK to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apk-out
+          publish_branch: gh-pages
+          keep_files: true
+          allow_empty_commit: false
+          commit_message: "auto: 发布最新 APK (${{ github.sha }})"
