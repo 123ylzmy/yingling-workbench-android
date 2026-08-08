@@ -857,27 +857,26 @@ $('resetBtn').addEventListener('click', function() {
   var code = generateResetCode();
   var expiresAt = Date.now() + 10 * 60 * 1000; // 10分钟有效
 
-  // 存储重置码到 sync_store
-  sbRest('POST', 'sync_store', {
-    group_key: 'reset_code_' + email,
-    store: 'wb_reset_codes',
-    data: { code: code, email: email, expires_at: expiresAt },
-    updated_at: new Date().toISOString()
-  }).then(function() {
-    setLoading($('resetBtn'), false);
-    // 页面上显示重置码
-    $('resetCodeDisplay').textContent = code;
-    $('resetCodeArea').style.display = 'block';
-    showToast('重置码已生成，请在下方查看', 'success');
-    // 同时尝试发邮件（尽力而为，不阻塞）
-    supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://plan.yingling.fun/auth.html?mode=reset'
-    }).catch(function() {});
-  }).catch(function(err) {
+  // 重置码存本地：页面重置码模式本就是同一浏览器的连续流程，
+  // 不需要写后端；之前写 wb_reset_codes 被 RLS 写白名单拦截导致失败。
+  var storeKey = 'wb_reset_code_' + encodeURIComponent(email);
+  try {
+    localStorage.setItem(storeKey, JSON.stringify({ code: code, email: email, expires_at: expiresAt }));
+  } catch (err) {
     setLoading($('resetBtn'), false);
     console.error('Store reset code error:', err);
-    showToast('生成重置码失败，请重试', 'error');
-  });
+    showToast('本地存储失败，请重试', 'error');
+    return;
+  }
+  setLoading($('resetBtn'), false);
+  // 页面上显示重置码
+  $('resetCodeDisplay').textContent = code;
+  $('resetCodeArea').style.display = 'block';
+  showToast('重置码已生成，请在下方查看', 'success');
+  // 尽力发邮件（国内常被墙，失败不影响页面码流程）
+  supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://plan.yingling.fun/auth.html?mode=reset'
+  }).catch(function() {});
 });
 
 // "去设置新密码"按钮
@@ -950,20 +949,22 @@ async function submitNewPassword() {
         setLoading($('resetSubmitBtn'), false);
         showResetError('请输入6位数字重置码。'); return;
       }
-      // 从 sync_store 取出存储的重置码
-      var codeRows = await sbRest('GET', 'sync_store?store=eq.wb_reset_codes&group_key=eq.reset_code_' + encodeURIComponent(resetEmail) + '&select=data');
-      if (!codeRows || !codeRows.length) {
+      // 从本地取出存储的重置码（与生成端同源 localStorage）
+      var storeKey = 'wb_reset_code_' + encodeURIComponent(resetEmail);
+      var raw = null;
+      try { raw = localStorage.getItem(storeKey); } catch (_) {}
+      if (!raw) {
         setLoading($('resetSubmitBtn'), false);
         showResetError('未找到重置码记录，可能已过期或不存在。'); return;
       }
-      var cd = codeRows[0].data;
-      if (typeof cd === 'string') { try { cd = JSON.parse(cd); } catch (_) {} }
+      var cd = null;
+      try { cd = JSON.parse(raw); } catch (_) {}
       if (!cd || cd.code !== userCode || Date.now() > cd.expires_at) {
         setLoading($('resetSubmitBtn'), false);
         showResetError('重置码错误或已过期（10分钟有效），请重新获取。'); return;
       }
       // 验证通过，删除已使用的重置码
-      sbRest('DELETE', 'sync_store?group_key=eq.reset_code_' + encodeURIComponent(resetEmail) + '&store=eq.wb_reset_codes').catch(function(){});
+      try { localStorage.removeItem(storeKey); } catch (_) {}
     }
 
     // 查找用户并更新 password_hash
