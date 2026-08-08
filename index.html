@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-font="m" data-accent="green">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="自洽日程">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="shortcut icon" href="favicon.ico">
+  <!-- iOS 主屏图标 -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+  <!-- 主题色（Android 状态栏 + PWA 标题栏） -->
+  <meta name="theme-color" content="#7EB89A">
+  <title>自洽日程</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <div class="app">
+    <!-- ===== 侧边栏 ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="side-logo">
+        <img src="icons/icon-192.png" class="dot" style="width:32px;height:32px;border-radius:10px;object-fit:cover;flex-shrink:0;" alt="自洽日程">
+        <div class="name">自洽日程<small>· 记录每一天</small></div>
+      </div>
+      <nav class="side-nav">
+        <div class="side-nav-item active" data-tab="today" onclick="switchPage(&#39;today&#39;)">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg></div>
+          今日
+          <span class="badge" id="todayBadge" style="display: inline;">3</span>
+        </div>
+        <div class="side-nav-item" data-tab="health" onclick="switchPage(&#39;health&#39;)">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z">
+              </path>
+            </svg></div>
+          健康生活
+        </div>
+        <div class="side-nav-item" data-tab="goal" onclick="switchPage(&#39;goal&#39;)">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg></div>
+          目标激励
+        </div>
+        <div class="side-nav-item" data-tab="study" onclick="switchPage(&#39;study&#39;)">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"></path>
+            </svg></div>
+          学习技能
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ===== 主内容 ===== -->
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-main">
+          <div>
+            <div class="greet" id="greetLine">欢迎使用自洽日程<span class="mood-wrap" style="margin-left:2px"><span
+                  class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="心情：平静（点击选择）"><svg
+                    id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22" style="color: rgb(168, 216, 234);">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                    <path d="M6 11 Q8 9 10 11" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round"></path>
+                    <path d="M14 11 Q16 9 18 11" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round"></path>
+                    <path d="M8 17 Q12 19 16 17" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round"></path>
+                  </svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()"></span><span
+                  class="mood-panel" id="moodPanel">
+                  <div class="mood-option" onclick="selectMood(&#39;excited&#39;,event)" title="兴奋"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#FFB347">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <circle cx="7.5" cy="10" r="2" fill="currentColor"></circle>
+                      <circle cx="16.5" cy="10" r="2" fill="currentColor"></circle>
+                      <path d="M7 16 Q12 22 17 16" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                    </svg><span class="mood-lbl">兴奋</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;happy&#39;,event)" title="开心"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#77DD77">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <path d="M5.5 10 Q7.5 7 9.5 10" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M14.5 10 Q16.5 7 18.5 10" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M7 16 Q12 21 17 16" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                    </svg><span class="mood-lbl">开心</span></div>
+                  <div class="mood-option active" onclick="selectMood(&#39;calm&#39;,event)" title="平静"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#A8D8EA">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <path d="M6 11 Q8 9 10 11" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M14 11 Q16 9 18 11" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M8 17 Q12 19 16 17" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                    </svg><span class="mood-lbl">平静</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;neutral&#39;,event)" title="一般"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#C5C5C5">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <circle cx="8" cy="10" r="1.2" fill="currentColor"></circle>
+                      <circle cx="16" cy="10" r="1.2" fill="currentColor"></circle>
+                      <line x1="8" y1="17" x2="16" y2="17" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></line>
+                    </svg><span class="mood-lbl">一般</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;tired&#39;,event)" title="好累"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#B8A9C9">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <line x1="7" y1="10" x2="10.5" y2="10" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round"></line>
+                      <line x1="13.5" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round"></line>
+                      <ellipse cx="12" cy="17" rx="2.5" ry="2" fill="currentColor"></ellipse>
+                    </svg><span class="mood-lbl">好累</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;annoyed&#39;,event)" title="烦躁"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#E8A87C">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <line x1="6" y1="9" x2="10" y2="11" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></line>
+                      <line x1="14" y1="11" x2="18" y2="9" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></line>
+                      <path d="M7 17 Q12 14 17 17" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                    </svg><span class="mood-lbl">烦躁</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;sad&#39;,event)" title="难过"><svg viewBox="0 0 24 24"
+                      width="28" height="28" style="color:#A8C4E0">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <circle cx="8" cy="10" r="1.8" fill="currentColor"></circle>
+                      <circle cx="16" cy="10" r="1.8" fill="currentColor"></circle>
+                      <path d="M7 18 Q12 14 17 18" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <circle cx="14" cy="15" r="1.5" fill="#A8D8EA"></circle>
+                    </svg><span class="mood-lbl">难过</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;love&#39;,event)" title="幸福"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#F8A4C8">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <path d="M5.5 10 Q7.5 7 9.5 10" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M14.5 10 Q16.5 7 18.5 10" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M7 15 Q12 20 17 15" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M12 18 Q13 15 16 16 Q13 14 12 18" fill="#E8739A"></path>
+                      <path d="M4 6 Q2 3 1 5 Q3 2 4 6" fill="#E8739A"></path>
+                      <path d="M18 5 Q16 2 15 4 Q17 1 18 5" fill="#E8739A"></path>
+                    </svg><span class="mood-lbl">幸福</span></div>
+                  <div class="mood-option" onclick="selectMood(&#39;anxious&#39;,event)" title="焦虑"><svg
+                      viewBox="0 0 24 24" width="28" height="28" style="color:#E0B070">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+                      <path d="M6.5 9 Q8.5 7 10 9" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <path d="M14 9 Q15.5 7 17.5 9" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round"></path>
+                      <ellipse cx="12" cy="16" rx="3" ry="2.5" fill="currentColor"></ellipse>
+                      <line x1="17" y1="6" x2="19" y2="5" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+                      </line>
+                      <line x1="5" y1="6" x2="7" y2="5" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+                      </line>
+                    </svg><span class="mood-lbl">焦虑</span></div>
+                </span></span></div>
+            <div class="date" id="dateLine">2026年8月3日 · 星期一</div>
+          </div>
+          <div class="weather-inline" id="weatherWidget" style="display: flex; cursor: default;">
+            <svg class="wi-icon" id="wIcon2" viewBox="0 0 24 24" width="22" height="22"><svg viewBox="0 0 24 24"
+                fill="none">
+                <path d="M4 13 Q8 9 12 10 Q16 8 20 13" fill="#B0C4DE" stroke="#8BA4BC" stroke-width="1"
+                  stroke-linecap="round"></path>
+                <g stroke="#7EB8DA" stroke-width="1.5" stroke-linecap="round">
+                  <line x1="8" y1="15" x2="7" y2="19"></line>
+                  <line x1="12" y1="15" x2="11" y2="19"></line>
+                  <line x1="16" y1="15" x2="15" y2="19"></line>
+                </g>
+              </svg></svg>
+            <span class="wi-city" id="wCity2">枝江市</span>
+            <span class="wi-temp" id="wTemp2">28°C</span>
+            <span class="wi-clothes" id="wClothes2">建议：凉爽短袖 + 防晒</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <button class="topbar-btn" onclick="openSettings()" title="设置">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" width="16" height="16">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42">
+              </path>
+            </svg>
+          </button>
+          <span class="sync-indicator offline" id="syncIndicator" style="margin-right:4px">
+            <span class="sync-dot" id="syncDot" title="云同步状态"></span>
+          </span>
+          <button class="topbar-btn cloud-btn" id="cloudBtn" onclick="toggleCloudPanel()" title="云同步" style="background:var(--g50);color:var(--g400);border:1.5px solid var(--g200)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path>
+            </svg>
+          </button>
+          <button class="topbar-btn" id="logoutBtn" onclick="handleLogout()" title="退出登录" style="color:var(--danger);margin-left:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- 备份提示 -->
+      <div class="bk-hint" id="bkHint" style="margin:12px 20px 0;display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" width="14" height="14">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span id="bkHintText"></span>
+      </div>
+
+      <div class="content">
+
+        <!-- ===== 今日 ===== -->
+        <div class="page active" id="page-today">
+          <div class="today-split">
+            <!-- 日历（含特殊日子集成） -->
+            <div class="card today-cal" id="calendarCard">
+              <div class="card-hd">
+                <span
+                  style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--c50);color:var(--c300);margin-right:6px;flex-shrink:0">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </span>日历
+              </div>
+              <div class="card-bd" id="calArea">
+                <div class="cal-card">
+                  <div class="cal-nav"><button onclick="prevCalMonth()"><svg viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg></button>
+                    <div class="mnth">2026年 8月</div><button onclick="nextCalMonth()"><svg viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg></button>
+                  </div>
+                  <div class="cal-grid">
+                    <div class="cal-dow">日</div>
+                    <div class="cal-dow">一</div>
+                    <div class="cal-dow">二</div>
+                    <div class="cal-dow">三</div>
+                    <div class="cal-dow">四</div>
+                    <div class="cal-dow">五</div>
+                    <div class="cal-dow">六</div>
+                    <div class="cal-day other">
+                      <div class="cal-num">26</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">27</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">28</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">29</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">30</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">31</div>
+                    </div>
+                    <div class="cal-day weekend sat" onclick="pickCalDay(1)">
+                      <div class="cal-num">1</div>
+                      <div class="cal-dots"><span class="cal-dot work"></span></div>
+                    </div>
+                    <div class="cal-day weekend sun" onclick="pickCalDay(2)">
+                      <div class="cal-num">2</div>
+                      <div class="cal-dots"><span class="cal-dot exercise"></span><span class="cal-dot study"></span>
+                      </div>
+                    </div>
+                    <div class="cal-day today" onclick="pickCalDay(3)">
+                      <div class="cal-num">3</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(4)">
+                      <div class="cal-num">4</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(5)">
+                      <div class="cal-num">5</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(6)">
+                      <div class="cal-num">6</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(7)">
+                      <div class="cal-num">7</div>
+                    </div>
+                    <div class="cal-day weekend sat" onclick="pickCalDay(8)">
+                      <div class="cal-num">8</div>
+                    </div>
+                    <div class="cal-day weekend sun" onclick="pickCalDay(9)">
+                      <div class="cal-num">9</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(10)">
+                      <div class="cal-num">10</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(11)">
+                      <div class="cal-num">11</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(12)">
+                      <div class="cal-num">12</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(13)">
+                      <div class="cal-num">13</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(14)">
+                      <div class="cal-num">14</div>
+                    </div>
+                    <div class="cal-day special-day birthday weekend sat" onclick="pickCalDay(15)">
+                      <div class="cal-num">15</div>
+                      <div class="cal-dots"><span class="cal-dot birthday"></span></div>
+                    </div>
+                    <div class="cal-day weekend sun" onclick="pickCalDay(16)">
+                      <div class="cal-num">16</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(17)">
+                      <div class="cal-num">17</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(18)">
+                      <div class="cal-num">18</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(19)">
+                      <div class="cal-num">19</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(20)">
+                      <div class="cal-num">20</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(21)">
+                      <div class="cal-num">21</div>
+                    </div>
+                    <div class="cal-day weekend sat" onclick="pickCalDay(22)">
+                      <div class="cal-num">22</div>
+                    </div>
+                    <div class="cal-day weekend sun" onclick="pickCalDay(23)">
+                      <div class="cal-num">23</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(24)">
+                      <div class="cal-num">24</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(25)">
+                      <div class="cal-num">25</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(26)">
+                      <div class="cal-num">26</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(27)">
+                      <div class="cal-num">27</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(28)">
+                      <div class="cal-num">28</div>
+                    </div>
+                    <div class="cal-day weekend sat" onclick="pickCalDay(29)">
+                      <div class="cal-num">29</div>
+                    </div>
+                    <div class="cal-day weekend sun" onclick="pickCalDay(30)">
+                      <div class="cal-num">30</div>
+                    </div>
+                    <div class="cal-day" onclick="pickCalDay(31)">
+                      <div class="cal-num">31</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">1</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">2</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">3</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">4</div>
+                    </div>
+                    <div class="cal-day other">
+                      <div class="cal-num">5</div>
+                    </div>
+                  </div>
+                  <div class="cal-legend">
+                    <div class="cal-legend-item"><span class="cal-legend-dot life"></span>生活</div>
+                    <div class="cal-legend-item"><span class="cal-legend-dot work"></span>工作</div>
+                    <div class="cal-legend-item"><span class="cal-legend-dot exercise"></span>锻炼</div>
+                    <div class="cal-legend-item"><span class="cal-legend-dot study"></span>学习</div>
+                    <div class="cal-legend-item"><span class="cal-legend-dot birthday"></span>生日</div>
+                    <div class="cal-legend-item"><span class="cal-legend-dot special"></span>纪念日</div>
+                    <div class="cal-legend-item"><span class="cal-legend-dot holiday"></span>假期</div>
+                  </div>
+                </div>
+                <div class="cal-ev-list">
+                  <div class="cal-ev-list-title">8月纪念日 <span>1个</span></div>
+                  <div class="cal-ev">
+                    <div class="cico birthday"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path>
+                        <path d="M4 16s1.5-2 4-2 4 2 4 2 1.5-2 4-2 4 2 4 2"></path>
+                        <path d="M12 4a2 2 0 0 0-2 2v2h4V6a2 2 0 0 0-2-2z"></path>
+                      </svg></div>
+                    <div class="ctext">妈妈的生日<span class="ev-label birthday">生日</span>
+                      <div style="font-size:10px;color:var(--ink-light);font-weight:400">记得打电话</div>
+                    </div>
+                    <div class="cdt">15日</div>
+                    <div class="cdel" onclick="delEvent(&#39;e1&#39;)">删除</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="today-right">
+              <!-- 每日心灵语录 -->
+              <div class="card soul-card" id="soulCard" style="background:linear-gradient(135deg,var(--g50) 0%,var(--bg) 100%);border-left:3px solid var(--g400)">
+                <div class="card-bd" style="padding:14px 16px">
+                  <div style="display:flex;align-items:flex-start;gap:10px">
+                    <span style="font-size:20px;flex-shrink:0">✨</span>
+                    <div style="flex:1">
+                      <div style="font-size:12px;font-weight:600;color:var(--g400);margin-bottom:4px">此刻 · 心灵语录</div>
+                      <div id="soulQuote" style="font-size:14px;line-height:1.6;color:var(--ink);font-weight:500"></div>
+                    </div>
+                    <span class="fn-btn" onclick="refreshSoulQuote()" title="换一句" style="flex-shrink:0;font-size:11px">🔄</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 今日要处理 -->
+              <div class="card">
+                <div class="card-hd">
+                  <span class="dot g"></span>今日要处理
+                  <button class="hd-arrow" onclick="prevTodoDay()" title="前一天"><svg viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg></button>
+                  <span class="hd-date is-today" id="todoHdDate">8月3日 · 星期一</span>
+                  <button class="hd-arrow" onclick="nextTodoDay()" title="后一天"><svg viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg></button>
+                  <a class="hd-back-today" onclick="goTodayTodoDay()" id="todoBackToday" style="display: none;">回今天</a>
+                  <span style="font-size:11px;color:var(--ink-light);font-weight:400" id="todayCount">3 项待办（含逾期
+                    3）</span>
+                  <button class="add-btn" onclick="openTodoModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    添加待办
+                  </button>
+                </div>
+                <div class="card-bd" id="todayList">
+                  <div class="today-overdue-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" width="13" height="13">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z">
+                      </path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>逾期未完成 · 3 项</div>
+                  <div class="today-item overdue">
+                    <div class="today-cb" onclick="finishTodo(&#39;t1&#39;)"><svg viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg></div>
+                    <div class="today-txt"><span
+                        style="font-size:9px;padding:1px 5px;border-radius:6px;background:var(--pu50);color:var(--pu300);margin-right:4px;vertical-align:middle">工作</span>整理本周工作复盘笔记<small>⚠
+                        逾期（2026-08-01）</small></div>
+                    <div class="today-act-group"><span class="today-act-icon" onclick="editTodo(&#39;t1&#39;)"
+                        title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg></span><span class="today-act-icon del" onclick="delTodo(&#39;t1&#39;)" title="删除"><svg
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                          </path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg></span><span class="today-act-move" onclick="moveTodo(&#39;t1&#39;)">顺延</span></div>
+                  </div>
+                  <div class="today-item overdue">
+                    <div class="today-cb" onclick="finishTodo(&#39;t2&#39;)"><svg viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg></div>
+                    <div class="today-txt"><span
+                        style="font-size:9px;padding:1px 5px;border-radius:6px;background:var(--g50);color:var(--g300);margin-right:4px;vertical-align:middle">锻炼</span>运动打卡：瘦腰腹
+                      15分钟<small>⚠ 逾期（2026-08-02）</small></div>
+                    <div class="today-act-group"><span class="today-act-icon" onclick="editTodo(&#39;t2&#39;)"
+                        title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg></span><span class="today-act-icon del" onclick="delTodo(&#39;t2&#39;)" title="删除"><svg
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                          </path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg></span><span class="today-act-move" onclick="moveTodo(&#39;t2&#39;)">顺延</span></div>
+                  </div>
+                  <div class="today-item overdue">
+                    <div class="today-cb" onclick="finishTodo(&#39;t3&#39;)"><svg viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg></div>
+                    <div class="today-txt"><span
+                        style="font-size:9px;padding:1px 5px;border-radius:6px;background:var(--c50);color:var(--c300);margin-right:4px;vertical-align:middle">学习</span>学习
+                      HTML 一节课程<small>⚠ 逾期（2026-08-02）</small></div>
+                    <div class="today-act-group"><span class="today-act-icon" onclick="editTodo(&#39;t3&#39;)"
+                        title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg></span><span class="today-act-icon del" onclick="delTodo(&#39;t3&#39;)" title="删除"><svg
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                          </path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg></span><span class="today-act-move" onclick="moveTodo(&#39;t3&#39;)">顺延</span></div>
+                  </div>
+                </div>
+              </div>
+              <!-- 工作任务进度 -->
+              <div class="card">
+                <div class="card-hd">
+                  <span class="dot pu"></span>工作任务进度
+                  <button class="hd-arrow" id="taskPrevBtn" onclick="prevWorkTaskDoneDate()" style="display:none"
+                    title="前一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                      stroke-linecap="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg></button>
+                  <span class="hd-date" id="taskHdDate"></span>
+                  <button class="hd-arrow" id="taskNextBtn" onclick="nextWorkTaskDoneDate()" style="display:none"
+                    title="后一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                      stroke-linecap="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg></button>
+                  <a class="hd-back-today" id="taskBackToday" onclick="goTodayWorkTaskDoneDate()"
+                    style="display:none">回今天</a>
+                  <button class="add-btn" onclick="openTaskModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    新任务
+                  </button>
+                </div>
+                <div class="card-bd" id="todayTasks">
+                  <div class="wtask-tabs">
+                    <div class="wtask-tab active" onclick="switchWorkTaskTab(&#39;active&#39;)">进行中 (2)</div>
+                    <div class="wtask-tab " onclick="switchWorkTaskTab(&#39;done&#39;)">已完成 (1)</div>
+                  </div>
+                  <div class="wtask-item">
+                    <div class="wtask-cb" onclick="completeWorkTask(&#39;wt3&#39;,event)" title="标记完成"></div>
+                    <div class="wtask-info">
+                      <div class="wtask-title">学习新课第一章</div>
+                      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span
+                          class="wtask-deadline over">今天截止</span></div>
+                      <div class="wtask-progress-wrap" onclick="openProgressEdit(&#39;wt3&#39;,event)">
+                        <div class="wtask-progress-bar">
+                          <div class="wtask-progress-fill low" style="width:20%"></div>
+                        </div><span class="wtask-progress-pct low">20%</span><span class="wtask-progress-edit"
+                          title="快速调整进度">⋯</span>
+                      </div>
+                    </div><button class="task-btn del" onclick="delWorkTask(&#39;wt3&#39;)" title="删除"><svg
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        width="12" height="12">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg></button>
+                  </div>
+                  <div class="wtask-item">
+                    <div class="wtask-cb stage" style="background:var(--g50);border-color:var(--g200);cursor:default"
+                      title="阶段任务，逐阶段完成"></div>
+                    <div class="wtask-info">
+                      <div class="wtask-title">完成本周需求文档</div>
+                      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span
+                          class="wtask-deadline over">还剩 2 天 · 截止 2026-08-05</span></div>
+                      <div class="wtask-stages">
+                        <div class="wtask-stage-seg done"></div>
+                        <div class="wtask-stage-seg current"></div>
+                        <div class="wtask-stage-seg "></div>
+                        <div class="wtask-stage-plus" onclick="advanceTaskStage(&#39;wt1&#39;,event)" title="完成一个阶段">+
+                        </div>
+                      </div><span class="wtask-stage-label">1/3</span>
+                    </div><button class="task-btn del" onclick="delWorkTask(&#39;wt1&#39;)" title="删除"><svg
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        width="12" height="12">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 健康生活 ===== -->
+        <div class="page" id="page-health">
+          <div class="health-subtabs">
+            <div class="health-subtab active" id="hstabHealth" onclick="switchHealthTab(&#39;health&#39;)">健康数据</div>
+            <div class="health-subtab" id="hstabTrain" onclick="switchHealthTab(&#39;train&#39;)">训练计划</div>
+          </div>
+
+          <!-- 健康数据面板 -->
+          <div class="health-panel active" id="hpanelHealth">
+            <div class="card">
+              <div class="card-hd"><span class="dot g"></span>本月健康进度
+                <button class="add-btn" onclick="openHealthTargetModal()" title="设置健康目标">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  设置健康目标
+                </button>
+              </div>
+              <div class="card-bd" id="healthStats">
+                <div class="stat-row">
+                  <div class="stat">
+                    <div class="v">61</div>
+                    <div class="l">当前体重 kg</div>
+                  </div>
+                  <div class="stat">
+                    <div class="v">27.2%</div>
+                    <div class="l">体脂率</div>
+                  </div>
+                  <div class="stat">
+                    <div class="v g">-1.5</div>
+                    <div class="l">已减重 kg</div>
+                  </div>
+                  <div class="stat">
+                    <div class="v c">6</div>
+                    <div class="l">距目标 kg</div>
+                  </div>
+                </div>
+                <div class="prog-card">
+                  <div class="prog-ring"><svg width="52" height="52" viewBox="0 0 52 52">
+                      <circle cx="26" cy="26" r="23.5" stroke="#E5E8E0" stroke-width="5" fill="none"></circle>
+                      <circle cx="26" cy="26" r="23.5" stroke="#7AAA67" stroke-width="5" fill="none"
+                        stroke-dasharray="147.6548547187203" stroke-dashoffset="118.12388377497624"
+                        stroke-linecap="round" transform="rotate(-90 26 26)"></circle><text x="26" y="26"
+                        text-anchor="middle" dominant-baseline="central" font-size="14.560000000000002"
+                        font-weight="700" fill="#4A4A4A">20%</text>
+                    </svg></div>
+                  <div class="prog-info">
+                    <div class="t1">本月健康进度</div>
+                    <div class="t2">从 62.5 → 55 kg</div>
+                    <div class="t3">从「设置健康目标」独立设置，与目标激励无关</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd"><span class="dot g"></span>体重记录
+                <button class="add-btn" onclick="openWeightModal()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  记体重
+                </button>
+              </div>
+              <div class="card-bd" id="weightRecords">
+                <div class="rec-list">
+                  <div class="rec-row">
+                    <div class="rec-d">2026-08-01</div>
+                    <div class="rec-v">61 kg · 体脂 27.2%</div>
+                    <div class="rec-del" onclick="event.stopPropagation();delWeight(&#39;w4&#39;)">删除</div>
+                  </div>
+                  <div class="rec-row">
+                    <div class="rec-d">2026-07-29</div>
+                    <div class="rec-v">61.4 kg · 体脂 27.8%</div>
+                    <div class="rec-del" onclick="event.stopPropagation();delWeight(&#39;w3&#39;)">删除</div>
+                  </div>
+                  <div class="rec-row">
+                    <div class="rec-d">2026-07-22</div>
+                    <div class="rec-v">62 kg · 体脂 28.5%</div>
+                    <div class="rec-del" onclick="event.stopPropagation();delWeight(&#39;w2&#39;)">删除</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-fn" id="weightExpandFn"><span class="fn-btn" onclick="toggleWeightExpand()">查看全部
+                  (4条)</span></div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd"><span class="dot g"></span>围度记录
+                <button class="add-btn" onclick="openMeasureModal()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  记围度
+                </button>
+              </div>
+              <div class="card-bd" id="measureRecords">
+                <div class="rec-list">
+                  <div class="rec-row">
+                    <div class="rec-d">2026-07-29</div>
+                    <div class="rec-v">腰 72 · 臀 96 · 大腿 56 · 小腿 36 · 手臂 28 cm</div>
+                    <div class="rec-del" onclick="event.stopPropagation();delMeasure(&#39;m1&#39;)">删除</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-fn" id="measureExpandFn"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd"><span class="dot g"></span>趋势数据
+                <span style="font-size:11px;color:var(--ink-light);font-weight:400;margin-left:4px">· 可切换维度</span>
+              </div>
+              <div class="card-bd" id="chartArea">
+                <div class="chart-tabs">
+                  <div class="chart-tab active" onclick="setChartType(&#39;weight&#39;)">体重</div>
+                  <div class="chart-tab " onclick="setChartType(&#39;bodyFat&#39;)">体脂率</div>
+                  <div class="chart-tab " onclick="setChartType(&#39;waist&#39;)">腰围</div>
+                  <div class="chart-tab " onclick="setChartType(&#39;thigh&#39;)">大腿</div>
+                  <div class="chart-tab " onclick="setChartType(&#39;calf&#39;)">小腿</div>
+                  <div class="chart-tab " onclick="setChartType(&#39;arm&#39;)">手臂</div>
+                </div>
+                <div class="chart-wrap"><svg viewBox="0 0 600 160" preserveAspectRatio="xMidYMid meet"
+                    style="width:100%;height:auto">
+                    <line x1="38" y1="16" x2="38" y2="136" stroke="#e5e5e5" stroke-width="1"></line>
+                    <line x1="38" y1="136" x2="588" y2="136" stroke="#e5e5e5" stroke-width="1"></line>
+                    <text x="32" y="20" text-anchor="end" font-size="10" fill="#B4B4B4">64.5</text><text x="32" y="80"
+                      text-anchor="end" font-size="10" fill="#B4B4B4">59.3</text><text x="32" y="140" text-anchor="end"
+                      font-size="10" fill="#B4B4B4">54.0</text>
+                    <line x1="38" y1="124.57142857142857" x2="588" y2="124.57142857142857" stroke="#D9BD5E"
+                      stroke-width="1" stroke-dasharray="4 3"></line>
+                    <text x="584" y="120.57142857142857" text-anchor="end" font-size="10" fill="#D9BD5E">目标 55kg</text>
+                    <defs>
+                      <lineargradient id="grd" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#7AAA67" stop-opacity="0.3"></stop>
+                        <stop offset="100%" stop-color="#7AAA67" stop-opacity="0"></stop>
+                      </lineargradient>
+                    </defs>
+                    <path
+                      d="M38,38.857142857142854 L221.33333333333334,44.57142857142858 L404.6666666666667,51.42857142857145 L588,56.00000000000001 L588,136 L38,136 Z"
+                      fill="url(#grd)"></path>
+                    <path
+                      d="M38,38.857142857142854 L221.33333333333334,44.57142857142858 L404.6666666666667,51.42857142857145 L588,56.00000000000001"
+                      fill="none" stroke="#7AAA67" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    </path>
+                    <circle cx="38" cy="38.857142857142854" r="3.5" fill="#fff" stroke="#7AAA67" stroke-width="2">
+                    </circle>
+                    <circle cx="221.33333333333334" cy="44.57142857142858" r="3.5" fill="#fff" stroke="#7AAA67"
+                      stroke-width="2"></circle>
+                    <circle cx="404.6666666666667" cy="51.42857142857145" r="3.5" fill="#fff" stroke="#7AAA67"
+                      stroke-width="2"></circle>
+                    <circle cx="588" cy="56.00000000000001" r="3.5" fill="#fff" stroke="#7AAA67" stroke-width="2">
+                    </circle>
+                  </svg></div>
+                <div class="chart-actions">
+                  <button onclick="openWeightModal()">记录体重</button>
+                  <button onclick="openMeasureModal()">记录围度</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 训练计划面板 -->
+          <div class="health-panel" id="hpanelTrain">
+            <div class="card">
+              <div class="card-hd">
+                <span class="dot c"></span>今日健康打卡
+                <button class="add-btn" onclick="openCustomHabitModal()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  添加习惯
+                </button>
+              </div>
+              <div class="card-bd" id="healthHabits">
+                <div
+                  style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--ink-soft)">
+                  完成 <b style="color:var(--g500);font-size:14px">0</b>/3 项
+                </div>
+                <div class="habit-grid">
+                  <div class="habit-card  " onclick="toggleHabit(&#39;early&#39;)">
+                    <div class="hico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41"></path>
+                      </svg></div>
+                    <div class="hlbl">早起</div>
+
+                  </div>
+                  <div class="habit-card  " onclick="toggleHabit(&#39;water&#39;)">
+                    <div class="hico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"></path>
+                      </svg></div>
+                    <div class="hlbl">喝水</div>
+
+                  </div>
+                  <div class="habit-card  " onclick="toggleHabit(&#39;sleep&#39;)">
+                    <div class="hico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                      </svg></div>
+                    <div class="hlbl">早睡</div>
+
+                  </div>
+                  <div class="habit-card habit-add" onclick="openCustomHabitModal()">
+                    <div class="hico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg></div>
+                    <div class="hlbl">添加</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><span class="dot g"></span>训练计划
+                <span class="hd-date" id="trainHdDate">· 8/3 - 8/9（本周）</span>
+                <a class="subtle-link" id="periodLink" onclick="openPeriodModal()" title="记录姨妈期" style="display:none">记录姨妈</a>
+                <button class="add-btn" onclick="openTrainModal()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  添加训练
+                </button>
+              </div>
+              <div class="train-week-nav" id="trainWeekNav"><button onclick="prevTrainWeek()" title="上一周">←</button>
+                <div class="week-label">8/3 - 8/9（本周）</div><button onclick="nextTrainWeek()" title="下一周">→</button>
+                <div class="week-btn" onclick="copyLastWeekTrain()" style="background:var(--pu50);color:var(--pu300)">
+                  复制上周</div>
+              </div>
+              <div class="card-bd" id="trainRecords">
+                <div class="train-list">
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd today"><span class="train-list-day-label">周一</span><span
+                        class="train-list-day-date">8月3日 · 今天</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-03&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-03&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd"><span class="train-list-day-label">周二</span><span
+                        class="train-list-day-date">8月4日</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-04&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-04&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd"><span class="train-list-day-label">周三</span><span
+                        class="train-list-day-date">8月5日</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-05&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-05&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd"><span class="train-list-day-label">周四</span><span
+                        class="train-list-day-date">8月6日</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-06&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-06&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd"><span class="train-list-day-label">周五</span><span
+                        class="train-list-day-date">8月7日</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-07&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-07&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd"><span class="train-list-day-label">周六</span><span
+                        class="train-list-day-date">8月8日</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-08&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-08&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                  <div class="train-list-day">
+                    <div class="train-list-day-hd"><span class="train-list-day-label">周日</span><span
+                        class="train-list-day-date">8月9日</span>
+                      <div class="train-rest-toggle"
+                        onclick="event.stopPropagation();toggleRestDay(&#39;2026-08-09&#39;)">设休息</div>
+                    </div>
+                    <div class="train-list-empty">暂无训练安排</div>
+                    <div class="train-list-add" onclick="event.stopPropagation();quickTrainAdd(&#39;2026-08-09&#39;)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" width="12" height="12">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>添加训练
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 目标激励 ===== -->
+        <div class="page" id="page-goal">
+          <div class="card">
+            <div class="card-hd">
+              <span class="dot c"></span>目标激励 · 进度看板
+              <button class="add-btn" style="background:var(--c50);color:var(--c300)" onclick="openGoalModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                新目标
+              </button>
+            </div>
+            <div class="card-bd" id="goalSummary" style="display: block; padding: 0px 16px 8px;">
+              <div class="goal-summary-done" onclick="showCompletedGoals()" title="点击查看已完成的目标">
+                <div class="goal-summary-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 22V8c0-1.1.9-2 2-2h0c1.1 0 2 .9 2 2v14"></path>
+                    <path d="M8 22V8"></path>
+                    <path d="M16 22V8"></path>
+                    <circle cx="12" cy="4" r="3"></circle>
+                  </svg></div>
+                <div class="goal-summary-info">
+                  <div class="goal-summary-label">目标已完成</div>
+                  <div class="goal-summary-sub">2 个目标 · 50% 达成率</div>
+                </div>
+                <span class="goal-summary-num">1</span>
+                <span class="goal-summary-arrow">▶</span>
+              </div>
+            </div>
+            <div class="card-bd" id="goalList" style="padding-top:4px">
+              <div class="goal-card">
+                <div class="goal-top">
+                  <span class="goal-tag skill">技能</span>
+                  <span class="goal-type-tag task">📋 任务</span>
+                  <div class="goal-title">学会 HTML+CSS+JS 做页面</div>
+                  <div class="goal-pct" style="color:var(--c300)">100%</div>
+                </div>
+                <div class="goal-bar">
+                  <div class="goal-bar-fill c" style="width:100%"></div>
+                </div>
+                <div class="goal-meta">
+                  <span>3/3 个任务</span>
+                  <span class="">还剩 150 天</span>
+                </div>
+                <div class="goal-kr">
+                  <div class="goal-kr-item done" onclick="toggleKR(&#39;g2&#39;,0)"><span class="kdot"></span>完成 HTML 基础
+                  </div>
+                  <div class="goal-kr-item done" onclick="toggleKR(&#39;g2&#39;,1)"><span class="kdot"></span>完成 CSS 基础
+                  </div>
+                  <div class="goal-kr-item done" onclick="toggleKR(&#39;g2&#39;,2)"><span class="kdot"></span>独立完成1个作品
+                  </div>
+                </div>
+                <div class="goal-reward-done" onclick="redeemGoalReward(&#39;g2&#39;,event)" title="点击兑换奖励">🎁
+                  <b>已达成！</b> 点击兑换：去吃一顿日料大餐
+                </div>
+
+                <div class="goal-actions">
+                  <button onclick="openGoalModal(&#39;g2&#39;)">编辑</button>
+                  <button class="dg" data-del-goal="g2">删除</button>
+                </div>
+              </div>
+              <div class="goal-card">
+                <div class="goal-top">
+                  <span class="goal-tag love">情感</span>
+                  <span class="goal-type-tag task">📋 任务</span>
+                  <div class="goal-title">经营一段稳定的亲密关系</div>
+                  <div class="goal-pct" style="color:var(--p300)">0%</div>
+                </div>
+                <div class="goal-bar">
+                  <div class="goal-bar-fill p" style="width:0%"></div>
+                </div>
+                <div class="goal-meta">
+                  <span>0/4 个任务</span>
+                  <span class="">还剩 150 天</span>
+                </div>
+                <div class="goal-kr">
+                  <div class="goal-kr-item " onclick="toggleKR(&#39;g3&#39;,0)"><span class="kdot"></span>每周一次深度交流</div>
+                  <div class="goal-kr-item " onclick="toggleKR(&#39;g3&#39;,1)"><span class="kdot"></span>每月一次专属活动</div>
+                  <div class="goal-kr-item " onclick="toggleKR(&#39;g3&#39;,2)"><span class="kdot"></span>一起规划一次旅行</div>
+                  <div class="goal-kr-item " onclick="toggleKR(&#39;g3&#39;,3)"><span class="kdot"></span>学习1本亲密关系书籍
+                  </div>
+                </div>
+
+                <div class="goal-reward-hint">🎁 还有 <b>100%</b> 就可以 一起去旅行！ 啦</div>
+                <div class="goal-actions">
+                  <button onclick="openGoalModal(&#39;g3&#39;)">编辑</button>
+                  <button class="dg" data-del-goal="g3">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 学习技能 ===== -->
+        <div class="page" id="page-study">
+          <div class="card">
+            <div class="card-hd">
+              <span class="dot p"></span>学习技能
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <button class="add-btn" style="flex:1;background:var(--p50);color:var(--p300);justify-content:center"
+                  onclick="manageStudyModules()">管理模块</button>
+                <button class="add-btn" style="flex:1;background:var(--p50);color:var(--p300);justify-content:center"
+                  onclick="openStudyModal()">手动记录</button>
+              </div>
+            </div>
+            <div class="card-bd" id="studyArea">
+              <div class="study-timer" style="background:var(--bg);padding:28px 20px">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:10px"><button
+                    class="btn-timer-pick" onclick="openTimerModuleModal()">+ 选择学习模块</button>
+                  <div class="timer-mode-toggle"><span class="tmode-opt active"
+                      onclick="selTimerMode=&#39;up&#39;;renderStudy()">正计时</span><span class="tmode-opt"
+                      onclick="selTimerMode=&#39;down&#39;;renderStudy()">倒计时</span></div><button
+                    class="btn-timer-start" onclick="startStudyTimer()" disabled=""><svg viewBox="0 0 24 24"
+                      fill="currentColor" width="13" height="13" style="vertical-align:-1px;margin-right:2px">
+                      <polygon points="6,3 20,12 6,21"></polygon>
+                    </svg>开始学习</button>
+                </div>
+              </div>
+              <div class="study-stats">
+                <div class="study-stat">
+                  <div class="v">0.0</div>
+                  <div class="l">本周累计小时</div>
+                </div>
+                <div class="study-stat">
+                  <div class="v">0</div>
+                  <div class="l">本周学习次数</div>
+                </div>
+              </div>
+              <div class="study-tabs">
+                <div class="study-tab active" onclick="skillFilter=&#39;all&#39;;renderStudy()">全部</div>
+
+
+                <a class="study-manage" onclick="manageStudyModules()" title="管理学习模块">⚙</a>
+              </div>
+
+              <div class="study-list">
+                <div class="today-empty">还没有学习记录</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部 Tab（移动端） -->
+  <nav class="bottom-nav">
+    <div class="bn-item active" data-tab="today" onclick="switchPage(&#39;today&#39;)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      今日
+    </div>
+    <div class="bn-item" data-tab="health" onclick="switchPage(&#39;health&#39;)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z">
+        </path>
+      </svg>
+      健康
+    </div>
+    <div class="bn-item" data-tab="goal" onclick="switchPage(&#39;goal&#39;)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="6"></circle>
+        <circle cx="12" cy="12" r="2"></circle>
+      </svg>
+      目标
+    </div>
+    <div class="bn-item" data-tab="study" onclick="switchPage(&#39;study&#39;)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"></path>
+      </svg>
+      学习
+    </div>
+  </nav>
+
+  <!-- 弹窗 -->
+  <div class="modal-mask" id="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="modalTitle">标题</h3>
+        <button class="modal-close" onclick="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-bd" id="modalBody"></div>
+      <div class="modal-ft" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <!-- ============ 个人资料编辑弹窗 ============ -->
+  <div class="auth-modal-overlay" id="profileOverlay" style="display:none">
+    <div class="auth-modal" style="max-width:440px;text-align:left">
+      <h3 style="text-align:center">👤 个人资料</h3>
+      <p class="sub" style="text-align:center;margin-bottom:16px">修改后自动同步到云端，所有设备更新</p>
+
+      <!-- 头像 -->
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="font-size:12px;color:var(--g400);margin-bottom:6px;display:block">头像</label>
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px">
+          <div id="profileAvatarPreview" style="width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--line)"></div>
+          <div style="flex:1">
+            <button class="btn-ghost" style="width:100%;margin-bottom:4px;font-size:12px;padding:6px 10px" onclick="document.getElementById('avatarFileInput').click()">📷 上传图片</button>
+            <button class="btn-ghost" style="width:100%;font-size:12px;padding:6px 10px;color:var(--g300)" id="profileAvatarClearBtn" onclick="clearCustomAvatar()">↩ 使用默认头像</button>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
+          </div>
+        </div>
+        <div class="avatar-picker" id="profileAvatarPicker" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <input type="hidden" id="profileAvatarIdx" value="0">
+        <input type="hidden" id="profileAvatarUrl" value="">
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">昵称</label>
+          <input type="text" id="profileNickname" placeholder="你的昵称" maxlength="16" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">性别</label>
+          <input type="hidden" id="profileGender" value="">
+          <div class="ex-dropdown" id="genderDropdown">
+            <div class="ex-dropdown-btn" id="genderBtn" onclick="toggleGenderDropdown(event)" style="padding:8px 10px;min-height:auto;border-radius:8px">
+              <span id="genderBtnText">请选择</span>
+              <span class="ex-dropdown-arrow">&#9660;</span>
+            </div>
+            <div class="ex-dropdown-panel" id="genderPanel">
+              <div class="ex-panel-item sel" onclick="selectGender('female')" data-g="female">女</div>
+              <div class="ex-panel-item" onclick="selectGender('male')" data-g="male">男</div>
+              <div class="ex-panel-item" onclick="selectGender('other')" data-g="other">其他</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">手机号</label>
+          <input type="tel" id="profilePhone" placeholder="138xxxx8888" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">邮箱（找回密码用）</label>
+          <input type="email" id="profileEmail" placeholder="your@email.com" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">生日</label>
+          <input type="date" id="profileBirthday" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">身高 (cm)</label>
+          <input type="number" id="profileHeight" placeholder="165" min="100" max="250" step="1" style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:var(--input-bg);color:var(--text);outline:none">
+        </div>
+      </div>
+
+      <div id="profileError" style="font-size:12px;color:var(--danger);text-align:center;margin-bottom:8px;min-height:18px"></div>
+
+      <div class="btn-row" style="border-top:1px solid var(--line);padding-top:12px;margin-top:0">
+        <button class="btn-ghost" onclick="closeProfileEditor()">取消</button>
+        <button class="btn-primary" onclick="saveProfileChanges()">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+
+<div style="text-align:center;padding:6px 0 12px;font-size:10px;color:var(--g200);font-family:system-ui">v2026.08.05 — PWA 可安装版 · Android/iOS 支持</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ===== 认证守卫 ===== */
+(function() {
+  var SUPABASE_URL = "https://dyvzxlntyqebblewpihj.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_kSGB8khWFcMSemqJ1m6Rxw_pI4gGrhc";
+  var SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+
+  // 读取新版 auth data
+  var authStr = localStorage.getItem("wb_auth_data");
+  if (!authStr) {
+    // 兼容旧版 sb_session
+    var oldSession = localStorage.getItem("sb_session") || sessionStorage.getItem("sb_session");
+    if (!oldSession) { window.location.replace("auth.html"); return; }
+    try {
+      var old = JSON.parse(oldSession);
+      if (old && old.access_token && old.user) {
+        // 迁移到新版格式
+        var profile = old.user.user_metadata || {};
+        if (!profile.nickname) profile.nickname = (old.user.email || "").split("@")[0];
+        if (profile.avatar_idx === undefined) profile.avatar_idx = 0;
+        authStr = JSON.stringify({
+          session: old,
+          profile: profile,
+          last_active: Date.now()
+        });
+        localStorage.setItem("wb_auth_data", authStr);
+        localStorage.removeItem("sb_session");
+      } else {
+        window.location.replace("auth.html"); return;
+      }
+    } catch(e) { window.location.replace("auth.html"); return; }
+  }
+
+  try {
+    var auth = JSON.parse(authStr);
+    var session = auth.session;
+
+    // 检查7天未活跃 → 重新登录
+    if (!auth.last_active || (Date.now() - auth.last_active) >= SEVEN_DAYS) {
+      localStorage.removeItem("wb_auth_data");
+      localStorage.removeItem("sb_session");
+      sessionStorage.removeItem("sb_session");
+      window.location.replace("auth.html");
+      return;
+    }
+
+    // 更新活跃时间
+    auth.last_active = Date.now();
+    localStorage.setItem("wb_auth_data", JSON.stringify(auth));
+
+    // 检查 token 是否过期
+    if (session.expires_at && session.expires_at < Date.now() / 1000) {
+      if (session._local) {
+        // 本地自签 session 过期 → 直接回到登录页
+        console.log('[Auth] Local session expired, redirecting to login');
+        localStorage.removeItem("wb_auth_data");
+        window.location.replace("auth.html");
+        return;
+      }
+      // 尝试刷新 Supabase token（旧版兼容）
+      fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      }).then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.access_token) {
+            session.access_token = data.access_token;
+            session.refresh_token = data.refresh_token;
+            session.expires_at = Math.floor(Date.now() / 1000) + data.expires_in;
+            auth.session = session;
+            auth.last_active = Date.now();
+            localStorage.setItem("wb_auth_data", JSON.stringify(auth));
+            window.__auth = session;
+            window.__profile = auth.profile;
+          } else {
+            localStorage.removeItem("wb_auth_data");
+            window.location.replace("auth.html");
+          }
+        }).catch(function() { window.location.replace("auth.html"); });
+    } else {
+      window.__auth = session;
+      window.__profile = auth.profile || {};
+    }
+  } catch(e) {
+    localStorage.removeItem("wb_auth_data");
+    window.location.replace("auth.html");
+  }
+})();
+</script>
+<script src="index.js"></script>
+
+<!-- PWA: 注册 Service Worker（离线缓存 + 可安装） -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(function(reg) {
+      console.log('[PWA] Service Worker 已注册', reg.scope);
+    })
+    .catch(function(err) {
+      console.warn('[PWA] Service Worker 注册失败:', err);
+    });
+}
+
+// 安卓安装提示
+var _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _deferredPrompt = e;
+  setTimeout(function() {
+    if (_deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+      _deferredPrompt.prompt();
+      _deferredPrompt.userChoice.then(function() { _deferredPrompt = null; });
+    }
+  }, 5000);
+});
+window.addEventListener('appinstalled', function() {
+  _deferredPrompt = null;
+  console.log('[PWA] 应用已安装');
+});
+</script>
+
+
+</body>
+
+</html>

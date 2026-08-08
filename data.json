@@ -1,0 +1,323 @@
+{
+  "defaultSettings": {
+    "theme": "light",
+    "accent": "green",
+    "accentColor": "#7AAA67",
+    "fontSize": "m"
+  },
+  "accentPresets": [
+    {
+      "id": "green",
+      "label": "薄荷绿",
+      "c": "#7AAA67"
+    },
+    {
+      "id": "blue",
+      "label": "天空蓝",
+      "c": "#6A98C0"
+    },
+    {
+      "id": "orange",
+      "label": "暖橘橙",
+      "c": "#D88E48"
+    }
+  ],
+  "fontSizes": [
+    {
+      "id": "s",
+      "label": "小"
+    },
+    {
+      "id": "m",
+      "label": "中"
+    },
+    {
+      "id": "l",
+      "label": "大"
+    }
+  ],
+  "weatherCodes": [
+    [
+      0,
+      "晴",
+      "sunny"
+    ],
+    [
+      1,
+      "少云",
+      "cloudy"
+    ],
+    [
+      2,
+      "多云",
+      "cloudy"
+    ],
+    [
+      3,
+      "阴",
+      "cloudy"
+    ],
+    [
+      45,
+      "雾",
+      "fog"
+    ],
+    [
+      48,
+      "雾凇",
+      "fog"
+    ],
+    [
+      51,
+      "小毛毛雨",
+      "drizzle"
+    ],
+    [
+      53,
+      "毛毛雨",
+      "drizzle"
+    ],
+    [
+      55,
+      "大毛毛雨",
+      "drizzle"
+    ],
+    [
+      56,
+      "冻毛毛雨",
+      "sleet"
+    ],
+    [
+      57,
+      "冻毛毛雨",
+      "sleet"
+    ],
+    [
+      61,
+      "小雨",
+      "rain"
+    ],
+    [
+      63,
+      "中雨",
+      "rain"
+    ],
+    [
+      65,
+      "大雨",
+      "rain"
+    ],
+    [
+      66,
+      "冻雨",
+      "sleet"
+    ],
+    [
+      67,
+      "冻雨",
+      "sleet"
+    ],
+    [
+      71,
+      "小雪",
+      "snow"
+    ],
+    [
+      73,
+      "中雪",
+      "snow"
+    ],
+    [
+      75,
+      "大雪",
+      "snow"
+    ],
+    [
+      77,
+      "雪粒",
+      "snow"
+    ],
+    [
+      80,
+      "阵雨",
+      "rain"
+    ],
+    [
+      81,
+      "中阵雨",
+      "rain"
+    ],
+    [
+      82,
+      "大阵雨",
+      "rain"
+    ],
+    [
+      85,
+      "小阵雪",
+      "snow"
+    ],
+    [
+      86,
+      "大阵雪",
+      "snow"
+    ],
+    [
+      95,
+      "雷暴",
+      "thunder"
+    ],
+    [
+      96,
+      "雷暴+小冰雹",
+      "thunder"
+    ],
+    [
+      99,
+      "雷暴+大冰雹",
+      "thunder"
+    ]
+  ],
+  "habits": [
+    {
+      "key": "early",
+      "label": "早起",
+      "ico": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.93 4.93l1.41 1.41\"/>"
+    },
+    {
+      "key": "water",
+      "label": "喝水",
+      "ico": "<path d=\"M12 2.69l5.66 5.66a8 8 0 11-11.31 0z\"/>"
+    },
+    {
+      "key": "sleep",
+      "label": "早睡",
+      "ico": "<path d=\"M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z\"/>"
+    }
+  ],
+  "categories": [
+    {
+      "id": "health",
+      "label": "健康",
+      "cls": ""
+    },
+    {
+      "id": "skill",
+      "label": "技能",
+      "cls": "cream"
+    },
+    {
+      "id": "love",
+      "label": "情感",
+      "cls": "pink"
+    },
+    {
+      "id": "work",
+      "label": "事业",
+      "cls": ""
+    },
+    {
+      "id": "life",
+      "label": "生活",
+      "cls": ""
+    },
+    {
+      "id": "finance",
+      "label": "财务",
+      "cls": ""
+    },
+    {
+      "id": "travel",
+      "label": "旅行",
+      "cls": ""
+    },
+    {
+      "id": "hobby",
+      "label": "兴趣爱好",
+      "cls": ""
+    }
+  ],
+  "moods": [
+    {
+      "value": "excited",
+      "label": "兴奋",
+      "color": "#FFB347",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"7.5\" cy=\"10\" r=\"2\" fill=\"currentColor\"/><circle cx=\"16.5\" cy=\"10\" r=\"2\" fill=\"currentColor\"/><path d=\"M7 16 Q12 22 17 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>"
+    },
+    {
+      "value": "happy",
+      "label": "开心",
+      "color": "#77DD77",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M5.5 10 Q7.5 7 9.5 10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M14.5 10 Q16.5 7 18.5 10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M7 16 Q12 21 17 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>"
+    },
+    {
+      "value": "calm",
+      "label": "平静",
+      "color": "#A8D8EA",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M6 11 Q8 9 10 11\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M14 11 Q16 9 18 11\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M8 17 Q12 19 16 17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>"
+    },
+    {
+      "value": "neutral",
+      "label": "一般",
+      "color": "#C5C5C5",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"8\" cy=\"10\" r=\"1.2\" fill=\"currentColor\"/><circle cx=\"16\" cy=\"10\" r=\"1.2\" fill=\"currentColor\"/><line x1=\"8\" y1=\"17\" x2=\"16\" y2=\"17\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>"
+    },
+    {
+      "value": "tired",
+      "label": "好累",
+      "color": "#B8A9C9",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><line x1=\"7\" y1=\"10\" x2=\"10.5\" y2=\"10\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><line x1=\"13.5\" y1=\"10\" x2=\"17\" y2=\"10\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><ellipse cx=\"12\" cy=\"17\" rx=\"2.5\" ry=\"2\" fill=\"currentColor\"/>"
+    },
+    {
+      "value": "annoyed",
+      "label": "烦躁",
+      "color": "#E8A87C",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><line x1=\"6\" y1=\"9\" x2=\"10\" y2=\"11\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><line x1=\"14\" y1=\"11\" x2=\"18\" y2=\"9\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M7 17 Q12 14 17 17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>"
+    },
+    {
+      "value": "sad",
+      "label": "难过",
+      "color": "#A8C4E0",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"8\" cy=\"10\" r=\"1.8\" fill=\"currentColor\"/><circle cx=\"16\" cy=\"10\" r=\"1.8\" fill=\"currentColor\"/><path d=\"M7 18 Q12 14 17 18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><circle cx=\"14\" cy=\"15\" r=\"1.5\" fill=\"#A8D8EA\"/>"
+    },
+    {
+      "value": "love",
+      "label": "幸福",
+      "color": "#F8A4C8",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M5.5 10 Q7.5 7 9.5 10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M14.5 10 Q16.5 7 18.5 10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M7 15 Q12 20 17 15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M12 18 Q13 15 16 16 Q13 14 12 18\" fill=\"#E8739A\"/><path d=\"M4 6 Q2 3 1 5 Q3 2 4 6\" fill=\"#E8739A\"/><path d=\"M18 5 Q16 2 15 4 Q17 1 18 5\" fill=\"#E8739A\"/>"
+    },
+    {
+      "value": "anxious",
+      "label": "焦虑",
+      "color": "#E0B070",
+      "face": "<circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M6.5 9 Q8.5 7 10 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M14 9 Q15.5 7 17.5 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><ellipse cx=\"12\" cy=\"16\" rx=\"3\" ry=\"2.5\" fill=\"currentColor\"/><line x1=\"17\" y1=\"6\" x2=\"19\" y2=\"5\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\"/><line x1=\"5\" y1=\"6\" x2=\"7\" y2=\"5\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\"/>"
+    }
+  ],
+  "defaultData": {
+    "meta": {
+      "version": 2,
+      "created": "__TODAY__"
+    },
+    "weight": [],
+    "measure": [],
+    "habits": {},
+    "customHabits": [],
+    "goals": [],
+    "study": [],
+    "studyModules": [],
+    "todos": [],
+    "workouts": [],
+    "trainLogs": [],
+    "mood": {
+      "date": "__TODAY__",
+      "value": "happy"
+    },
+    "weather": null,
+    "workTasks": [],
+    "events": [],
+    "restDays": [],
+    "periods": [],
+    "holidays": [],
+    "healthTarget": null
+  }
+}
