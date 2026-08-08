@@ -133,14 +133,33 @@
 
     <!-- ============ 登录表单 ============ -->
     <form class="form active" id="loginForm" autocomplete="on">
+      <div class="login-modes">
+        <button type="button" class="mode-btn active" data-mode="password">密码登录</button>
+        <button type="button" class="mode-btn" data-mode="sms">验证码登录</button>
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="loginPhone">手机号</label>
         <input type="tel" class="form-input" id="loginPhone" placeholder="请输入手机号" autocomplete="tel" required>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="loginPassword">密码</label>
-        <input type="password" class="form-input" id="loginPassword" placeholder="输入密码" autocomplete="current-password" required>
+      <!-- 密码模式 -->
+      <div id="loginPasswordMode">
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">密码</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="输入密码" autocomplete="current-password">
+        </div>
+      </div>
+
+      <!-- 验证码模式（默认隐藏） -->
+      <div id="loginSmsMode" style="display:none">
+        <div class="form-group">
+          <label class="form-label" for="loginCode">验证码</label>
+          <div class="code-row">
+            <input type="text" class="form-input" id="loginCode" placeholder="6位验证码" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+            <button type="button" class="code-btn" id="sendLoginCodeBtn" onclick="sendLoginCode()">获取验证码</button>
+          </div>
+        </div>
       </div>
 
       <div class="remember-row">
@@ -149,6 +168,7 @@
       </div>
 
       <button type="submit" class="btn-primary" id="loginBtn">登录</button>
+      <span class="form-link" id="showForgot">忘记密码？</span>
     </form>
 
     <!-- ============ 注册表单 ============ -->
@@ -181,8 +201,8 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regEmail">邮箱（选填，用于找回密码）</label>
-        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com（选填）" autocomplete="email">
+        <label class="form-label" for="regEmail">邮箱（用于找回密码）<span style="color:var(--error)">*</span></label>
+        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" autocomplete="email" required>
       </div>
 
       <div class="form-row">
@@ -211,6 +231,16 @@
       <span class="form-link" id="switchToLogin">已有账号？去登录</span>
     </form>
 
+    <!-- ============ 忘记密码 ============ -->
+    <div class="forgot-view" id="forgotView">
+      <button class="back-btn" id="backToLogin">← 返回登录</button>
+      <div class="form-group">
+        <label class="form-label" for="forgotEmail">注册邮箱</label>
+        <input type="email" class="form-input" id="forgotEmail" placeholder="your@email.com" required>
+      </div>
+      <p class="hint-text">输入注册时填写的邮箱，我们将发送密码重置链接。</p>
+      <button class="btn-primary" id="resetBtn">发送重置链接</button>
+    </div>
   </div>
 
   <div class="footer">v2026.08.05 — 自洽日程</div>
@@ -337,6 +367,7 @@ buildAvatarPicker();
 // ==================== Tab 切换 ====================
 var tabsEl = $('tabs');
 var forms = document.querySelectorAll('.form');
+var forgotView = $('forgotView');
 
 tabsEl.addEventListener('click', function(e) {
   if (!e.target.classList.contains('tab-btn')) return;
@@ -344,7 +375,7 @@ tabsEl.addEventListener('click', function(e) {
   tabsEl.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
   e.target.classList.add('active');
   forms.forEach(function(f) { f.classList.remove('active'); });
-  if (forgotView) forgotView.classList.remove('active');
+  forgotView.classList.remove('active');
   if (tab === 'login') $('loginForm').classList.add('active');
   else $('registerForm').classList.add('active');
 });
@@ -353,9 +384,37 @@ $('switchToLogin').addEventListener('click', function() {
   tabsEl.querySelector('[data-tab="login"]').click();
 });
 
-// ==================== 登录方式 ====================
-// 仅保留密码登录（手机号+密码），不依赖短信/邮箱验证
+$('showForgot').addEventListener('click', function() {
+  forms.forEach(function(f) { f.classList.remove('active'); });
+  forgotView.classList.add('active');
+});
+
+$('backToLogin').addEventListener('click', function() {
+  forgotView.classList.remove('active');
+  $('loginForm').classList.add('active');
+});
+
+// ==================== 登录方式切换 ====================
 var currentLoginMode = 'password';
+document.querySelector('.login-modes').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('mode-btn')) return;
+  var mode = e.target.dataset.mode;
+  if (mode === currentLoginMode) return;
+  currentLoginMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
+  e.target.classList.add('active');
+  if (mode === 'password') {
+    $('loginPasswordMode').style.display = 'block';
+    $('loginSmsMode').style.display = 'none';
+    $('loginPassword').required = true;
+    $('loginCode').required = false;
+  } else {
+    $('loginPasswordMode').style.display = 'none';
+    $('loginSmsMode').style.display = 'block';
+    $('loginPassword').required = false;
+    $('loginCode').required = true;
+  }
+});
 
 // ==================== 发送验证码 ====================
 var _sendCooldown = 0;
@@ -617,7 +676,8 @@ $('registerForm').addEventListener('submit', function(e) {
   if (nickname.length > 16) { showToast('昵称最多16个字符', 'error'); return; }
   if (!gender) { showToast('请选择性别', 'error'); return; }
   if (!phone || phone.length !== 11) { showToast('请输入正确的11位手机号', 'error'); return; }
-  if (email && (email.indexOf('@') < 0 || email.indexOf('.') < 0)) { showToast('请输入有效的邮箱地址', 'error'); return; }
+  if (!email) { showToast('请输入邮箱（用于找回密码）', 'error'); return; }
+  if (email.indexOf('@') < 0 || email.indexOf('.') < 0) { showToast('请输入有效的邮箱地址', 'error'); return; }
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
@@ -653,10 +713,8 @@ $('registerForm').addEventListener('submit', function(e) {
     }
 
     // 创建 Supabase 账号 — 密码用 sessionKey！
-    // 邮箱选填：未填写时用手机号生成占位邮箱，仅用于满足 Supabase 必填要求（实际登录走本地手机号+密码）
-    var signUpEmail = email || (phone + '@local.user');
     return supabase.auth.signUp({
-      email: signUpEmail,
+      email: email,
       password: sessionKey,
       options: { data: profile }
     });
@@ -715,15 +773,42 @@ function saveRegistrationData(userId, profile, phone, email, sessionKey, passwor
     });
   }).then(function() {
     setLoading($('regBtn'), false);
-    // 登录走本地手机号+密码，不依赖 Supabase 邮箱验证
-    showToast('注册成功，请用手机号和密码登录', 'success');
-    setTimeout(function() { tabsEl.querySelector('[data-tab="login"]').click(); }, 800);
+
+    if (session && session.access_token) {
+      // 邮箱验证关闭 → 自动登录
+      saveAuthData(session, profile);
+      showToast('注册成功，欢迎加入！', 'success');
+      setTimeout(function() { window.location.href = 'index.html'; }, 600);
+    } else {
+      // 邮箱验证开启 → 提示用户去验证邮箱
+      showToast('注册成功！请查收邮箱验证邮件后登录', 'success');
+      setTimeout(function() { tabsEl.querySelector('[data-tab="login"]').click(); }, 1000);
+    }
   }).catch(function(err) {
     setLoading($('regBtn'), false);
     console.error('Save registration data error:', err);
     showToast('数据保存失败，请重试', 'error');
   });
 }
+
+// ==================== 忘记密码 ====================
+$('resetBtn').addEventListener('click', function() {
+  var email = $('forgotEmail').value.trim();
+  if (!email) { showToast('请输入注册邮箱', 'error'); return; }
+
+  setLoading($('resetBtn'), true);
+  supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/auth.html#reset'
+  }).then(function(res) {
+    setLoading($('resetBtn'), false);
+    if (res.error) { showToast(res.error.message, 'error'); return; }
+    showToast('重置链接已发送，请查收邮件', 'success');
+    setTimeout(function() { $('backToLogin').click(); }, 2000);
+  }).catch(function() {
+    setLoading($('resetBtn'), false);
+    showToast('网络错误，请重试', 'error');
+  });
+});
 
 // ==================== 自动检查登录态 ====================
 (function() {
