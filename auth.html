@@ -240,8 +240,14 @@
         <label class="form-label" for="forgotEmail">注册邮箱</label>
         <input type="email" class="form-input" id="forgotEmail" placeholder="your@email.com" required>
       </div>
-      <p class="hint-text">输入注册时填写的邮箱，我们将发送密码重置链接。</p>
-      <button class="btn-primary" id="resetBtn">发送重置链接</button>
+      <p class="hint-text">输入注册时填写的邮箱，获取密码重置码。</p>
+      <button class="btn-primary" id="resetBtn">获取重置码</button>
+      <div id="resetCodeArea" style="display:none;margin-top:16px;padding:14px;background:#f0f7ff;border:1px solid #b3d9ff;border-radius:8px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:13px;color:#555;">你的重置码（有效期 10 分钟）：</p>
+        <p id="resetCodeDisplay" style="margin:0;font-size:28px;font-weight:bold;letter-spacing:6px;color:#1a73e8;font-family:monospace;"></p>
+        <p style="margin:10px 0 0;font-size:12px;color:#888;">请复制此码，然后点击下方按钮前往设置新密码</p>
+        <button type="button" class="btn-primary" id="goToResetBtn" style="margin-top:10px;">去设置新密码 →</button>
+      </div>
     </div>
 
     <!-- ============ 设置新密码 ============ -->
@@ -250,6 +256,10 @@
       <h2 style="font-size:18px;margin:8px 0 4px;">设置新密码</h2>
       <p class="hint-text" id="resetEmailHint" style="text-align:left;"></p>
       <form id="resetForm">
+        <div class="form-group">
+          <label class="form-label" for="resetCodeInput">重置码（6位数字）</label>
+          <input type="text" class="form-input" id="resetCodeInput" placeholder="输入页面显示的6位重置码" maxlength="6" autocomplete="off" inputmode="numeric" pattern="[0-9]{6}">
+        </div>
         <div class="form-group">
           <label class="form-label" for="resetNewPwd">新密码（至少6位）</label>
           <input type="password" class="form-input" id="resetNewPwd" placeholder="至少6位密码" autocomplete="new-password" minlength="6">
@@ -832,26 +842,52 @@ function saveRegistrationData(userId, profile, phone, email, sessionKey, passwor
   });
 }
 
-// ==================== 忘记密码 ====================
+// ==================== 忘记密码（页面重置码模式） ====================
+function generateResetCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+var _resetPendingEmail = '';
+
 $('resetBtn').addEventListener('click', function() {
   var email = $('forgotEmail').value.trim();
   if (!email) { showToast('请输入注册邮箱', 'error'); return; }
 
   setLoading($('resetBtn'), true);
-  supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://plan.yingling.fun/auth.html?mode=reset'
-  }).then(function(res) {
+  _resetPendingEmail = email;
+  var code = generateResetCode();
+  var expiresAt = Date.now() + 10 * 60 * 1000; // 10分钟有效
+
+  // 存储重置码到 sync_store
+  sbRest('POST', 'sync_store', {
+    group_key: 'reset_code_' + email,
+    store: 'wb_reset_codes',
+    data: { code: code, email: email, expires_at: expiresAt },
+    updated_at: new Date().toISOString()
+  }).then(function() {
     setLoading($('resetBtn'), false);
-    if (res.error) { showToast(res.error.message, 'error'); return; }
-    showToast('重置链接已发送，请查收邮件', 'success');
-    setTimeout(function() { $('backToLogin').click(); }, 2000);
-  }).catch(function() {
+    // 页面上显示重置码
+    $('resetCodeDisplay').textContent = code;
+    $('resetCodeArea').style.display = 'block';
+    showToast('重置码已生成，请在下方查看', 'success');
+    // 同时尝试发邮件（尽力而为，不阻塞）
+    supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://plan.yingling.fun/auth.html?mode=reset'
+    }).catch(function() {});
+  }).catch(function(err) {
     setLoading($('resetBtn'), false);
-    showToast('网络错误，请重试', 'error');
+    console.error('Store reset code error:', err);
+    showToast('生成重置码失败，请重试', 'error');
   });
 });
 
-// ==================== 密码重置回调 ====================
+// "去设置新密码"按钮
+$('goToResetBtn').addEventListener('click', function() {
+  sessionStorage.setItem('resetMode', '1');
+  sessionStorage.setItem('resetEmail', _resetPendingEmail);
+  window.location.href = 'auth.html?mode=reset';
+});
+
+// ==================== 密码重置回调（支持邮件链接 + 页面重置码两种模式） ====================
 function showResetError(msg) {
   var el = $('resetError');
   el.textContent = msg;
@@ -859,29 +895,37 @@ function showResetError(msg) {
 }
 
 async function handlePasswordReset() {
-  // 链接已直接指向本站（不经过 supabase.co 验证页），从 URL 读取恢复令牌
-  var params = new URLSearchParams(window.location.search);
-  var tokenHash = params.get('token_hash');
-  var type = params.get('type');
-  if (!tokenHash || type !== 'recovery') {
-    showResetError('重置链接无效或已过期，请重新获取重置邮件。');
-    return;
-  }
   sessionStorage.setItem('resetMode', '1');
   showResetView();
   $('resetError').style.display = 'none';
   $('resetSubmitBtn').disabled = false;
-  try {
-    var res = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
-    if (res.error || !res.data.session) {
-      showResetError('重置链接无效或已过期，请重新获取重置邮件。');
-      return;
+
+  var params = new URLSearchParams(window.location.search);
+  var tokenHash = params.get('token_hash');
+  var type = params.get('type');
+
+  // 模式A：邮件链接带回 token_hash → 走 Supabase OTP 验证
+  if (tokenHash && type === 'recovery') {
+    try {
+      var res = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+      if (res.error || !res.data.session) {
+        showResetError('重置链接无效或已过期，请重新获取。');
+        return;
+      }
+      resetEmail = (res.data.user && res.data.user.email) || '';
+      $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '';
+      $('resetCodeInput').parentElement.style.display = 'none'; // 隐藏重置码输入
+    } catch (e) {
+      showResetError('无法验证重置链接，请重试。');
     }
-    resetEmail = (res.data.user && res.data.user.email) || '';
-    $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '';
-  } catch (e) {
-    showResetError('无法验证重置链接，请重试或重新获取。');
+    return;
   }
+
+  // 模式B：页面重置码模式（从"去设置新密码"按钮跳转过来）
+  resetEmail = sessionStorage.getItem('resetEmail') || params.get('email') || '';
+  $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '请输入注册时获取的重置码';
+  // 确保重置码输入框可见
+  $('resetCodeInput').parentElement.style.display = '';
 }
 
 async function submitNewPassword() {
@@ -889,11 +933,41 @@ async function submitNewPassword() {
   var confirmPwd = $('resetConfirmPwd').value;
   if (!pwd || pwd.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (pwd !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
-  if (!resetEmail) { showToast('重置会话已失效，请重新获取邮件', 'error'); return; }
+
+  // 检查是否需要输入重置码（页面模式）
+  var codeInput = $('resetCodeInput');
+  var needCode = codeInput.parentElement.style.display !== 'none';
+  if (needCode && !resetEmail) {
+    showResetError('缺少邮箱信息，请重新获取重置码。'); return;
+  }
 
   setLoading($('resetSubmitBtn'), true);
   try {
-    var rows = await sbRest('GET', 'sync_store?store=eq.wb_profile_lookup&data->>email=eq.' + encodeURIComponent(resetEmail) + '&select=group_key,data');
+    // 如果是重置码模式，先验证码
+    if (needCode && resetEmail) {
+      var userCode = codeInput.value.trim();
+      if (!userCode || userCode.length !== 6) {
+        setLoading($('resetSubmitBtn'), false);
+        showResetError('请输入6位数字重置码。'); return;
+      }
+      // 从 sync_store 取出存储的重置码
+      var codeRows = await sbRest('GET', 'sync_store?store=eq.wb_reset_codes&group_key=eq.reset_code_' + encodeURIComponent(resetEmail) + '&select=data');
+      if (!codeRows || !codeRows.length) {
+        setLoading($('resetSubmitBtn'), false);
+        showResetError('未找到重置码记录，可能已过期或不存在。'); return;
+      }
+      var cd = codeRows[0].data;
+      if (typeof cd === 'string') { try { cd = JSON.parse(cd); } catch (_) {} }
+      if (!cd || cd.code !== userCode || Date.now() > cd.expires_at) {
+        setLoading($('resetSubmitBtn'), false);
+        showResetError('重置码错误或已过期（10分钟有效），请重新获取。'); return;
+      }
+      // 验证通过，删除已使用的重置码
+      sbRest('DELETE', 'sync_store?group_key=eq.reset_code_' + encodeURIComponent(resetEmail) + '&store=eq.wb_reset_codes').catch(function(){});
+    }
+
+    // 查找用户并更新 password_hash
+    var rows = await sbRest('GET', 'sync_store?store=eq.wb_profile_lookup' + (resetEmail ? '&data->>email=eq.' + encodeURIComponent(resetEmail) : '') + '&select=group_key,data');
     if (!rows || !rows.length) {
       setLoading($('resetSubmitBtn'), false);
       showToast('未找到该邮箱对应的账号', 'error');
