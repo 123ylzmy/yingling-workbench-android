@@ -3923,20 +3923,7 @@
         data: newProfile,
         updated_at: new Date().toISOString()
       }, 'Prefer: resolution=merge-duplicates').then(function() {
-        // 如果手机号变了，更新 phone lookup
-        if (phone && phone !== oldProfile.phone) {
-          return sbFetch(syncConfig, 'POST', 'sync_store', {
-            group_key: 'profile_by_phone_' + phone,
-            store: 'wb_profile_lookup',
-            data: {
-              user_id: userId,
-              email: email || oldProfile.email,
-              session_key: newProfile.session_key,
-              password_hash: oldProfile.password_hash || ''
-            },
-            updated_at: new Date().toISOString()
-          });
-        }
+        // 登录标识已改为账户名称（注册时写入 profile_by_name_），编辑资料不再维护旧的手机号登录映射
       }).catch(function(e) {
         console.log('云端 profile 更新失败:', e.message);
       });

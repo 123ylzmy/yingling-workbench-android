@@ -135,14 +135,9 @@
 
     <!-- ============ 登录表单 ============ -->
     <form class="form active" id="loginForm" autocomplete="on">
-      <div class="login-modes">
-        <button type="button" class="mode-btn active" data-mode="password">密码登录</button>
-        <button type="button" class="mode-btn" data-mode="sms">验证码登录</button>
-      </div>
-
       <div class="form-group">
-        <label class="form-label" for="loginPhone">手机号</label>
-        <input type="tel" class="form-input" id="loginPhone" placeholder="请输入手机号" autocomplete="tel" required>
+        <label class="form-label" for="loginName">账户名称</label>
+        <input type="text" class="form-input" id="loginName" placeholder="输入你的账户名称" autocomplete="username" required>
       </div>
 
       <!-- 密码模式 -->
@@ -150,17 +145,6 @@
         <div class="form-group">
           <label class="form-label" for="loginPassword">密码</label>
           <input type="password" class="form-input" id="loginPassword" placeholder="输入密码" autocomplete="current-password">
-        </div>
-      </div>
-
-      <!-- 验证码模式（默认隐藏） -->
-      <div id="loginSmsMode" style="display:none">
-        <div class="form-group">
-          <label class="form-label" for="loginCode">验证码</label>
-          <div class="code-row">
-            <input type="text" class="form-input" id="loginCode" placeholder="6位验证码" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
-            <button type="button" class="code-btn" id="sendLoginCodeBtn" onclick="sendLoginCode()">获取验证码</button>
-          </div>
         </div>
       </div>
 
@@ -198,13 +182,13 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regPhone">手机号 <span style="color:var(--error)">*</span>（登录账号）</label>
-        <input type="tel" class="form-input" id="regPhone" placeholder="138xxxx8888" autocomplete="tel" required>
+        <label class="form-label" for="regName">账户名称 <span style="color:var(--error)">*</span>（登录账号）</label>
+        <input type="text" class="form-input" id="regName" placeholder="3-20位，字母/数字/中文/下划线" autocomplete="username" required>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="regEmail">邮箱（用于找回密码）<span style="color:var(--error)">*</span></label>
-        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" autocomplete="email" required>
+        <label class="form-label" for="regEmail">邮箱（选填，配好邮件服务后可用于找回）</label>
+        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com（可不填）" autocomplete="email">
       </div>
 
       <div class="form-row">
@@ -237,10 +221,10 @@
     <div class="forgot-view" id="forgotView">
       <button class="back-btn" id="backToLogin">← 返回登录</button>
       <div class="form-group">
-        <label class="form-label" for="forgotEmail">注册邮箱</label>
-        <input type="email" class="form-input" id="forgotEmail" placeholder="your@email.com" required>
+        <label class="form-label" for="forgotName">账户名称</label>
+        <input type="text" class="form-input" id="forgotName" placeholder="输入你的账户名称" autocomplete="username" required>
       </div>
-      <p class="hint-text">输入注册时填写的邮箱，获取密码重置码。</p>
+      <p class="hint-text">输入你的账户名称，获取密码重置码。</p>
       <button class="btn-primary" id="resetBtn">获取重置码</button>
       <div id="resetCodeArea" style="display:none;margin-top:16px;padding:14px;background:#f0f7ff;border:1px solid #b3d9ff;border-radius:8px;text-align:center;">
         <p style="margin:0 0 8px;font-size:13px;color:#555;">你的重置码（有效期 10 分钟）：</p>
@@ -362,7 +346,7 @@ function hashPassword(pwd) {
   return 'h_' + Math.abs(hash).toString(36) + '_' + pwd.length;
 }
 
-function phoneToLookupKey(phone) { return 'profile_by_phone_' + phone.replace(/\D/g, ''); }
+function nameToLookupKey(name) { return 'profile_by_name_' + name.trim().toLowerCase(); }
 
 // ==================== session / profile 存储 ====================
 function saveAuthData(session, profile) {
@@ -427,7 +411,7 @@ $('backToLogin').addEventListener('click', function() {
 
 // 设置新密码视图
 var resetView = $('resetView');
-var resetEmail = '';
+var resetAccount = '';
 function showResetView() {
   forms.forEach(function(f) { f.classList.remove('active'); });
   forgotView.classList.remove('active');
@@ -445,91 +429,9 @@ $('resetForm').addEventListener('submit', function(e) {
   submitNewPassword();
 });
 
-// ==================== 登录方式切换 ====================
-var currentLoginMode = 'password';
-document.querySelector('.login-modes').addEventListener('click', function(e) {
-  if (!e.target.classList.contains('mode-btn')) return;
-  var mode = e.target.dataset.mode;
-  if (mode === currentLoginMode) return;
-  currentLoginMode = mode;
-  document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
-  e.target.classList.add('active');
-  if (mode === 'password') {
-    $('loginPasswordMode').style.display = 'block';
-    $('loginSmsMode').style.display = 'none';
-    $('loginPassword').required = true;
-    $('loginCode').required = false;
-  } else {
-    $('loginPasswordMode').style.display = 'none';
-    $('loginSmsMode').style.display = 'block';
-    $('loginPassword').required = false;
-    $('loginCode').required = true;
-  }
-});
+// （短信验证码登录已移除：无真实短信服务，登录仅用账户名 + 密码）
 
-// ==================== 发送验证码 ====================
-var _sendCooldown = 0;
 
-function sendLoginCode() {
-  var phone = $('loginPhone').value.trim().replace(/\D/g, '');
-  if (!phone || phone.length !== 11) {
-    showToast('请输入正确的11位手机号', 'error');
-    return;
-  }
-  if (_sendCooldown > 0) return;
-
-  // 生成6位验证码
-  var code = String(Math.floor(100000 + Math.random() * 900000));
-
-  // 存入 localStorage（5分钟有效）
-  var codeData = {
-    code: code,
-    phone: phone,
-    expires: Date.now() + 5 * 60 * 1000
-  };
-  localStorage.setItem('wb_login_code', JSON.stringify(codeData));
-
-  // 开发阶段无真实短信服务，直接在页面显示验证码
-  var phoneTail = phone.slice(-4);
-  showToast('验证码: ' + code + ' — 手机尾号 ' + phoneTail, 'info');
-  console.log('[SMS] Verification code for ' + phone + ': ' + code);
-
-  // 60秒冷却
-  _sendCooldown = 60;
-  updateCodeBtn();
-  var timer = setInterval(function() {
-    _sendCooldown--;
-    updateCodeBtn();
-    if (_sendCooldown <= 0) clearInterval(timer);
-  }, 1000);
-}
-
-function updateCodeBtn() {
-  var btn = $('sendLoginCodeBtn');
-  if (_sendCooldown > 0) {
-    btn.disabled = true;
-    btn.textContent = _sendCooldown + 's后重发';
-  } else {
-    btn.disabled = false;
-    btn.textContent = '获取验证码';
-  }
-}
-
-function verifyLoginCode(phone, code) {
-  try {
-    var stored = JSON.parse(localStorage.getItem('wb_login_code') || '{}');
-    if (!stored.code) return false;
-    if (stored.phone.replace(/\D/g, '') !== phone.replace(/\D/g, '')) return false;
-    if (Date.now() > stored.expires) {
-      localStorage.removeItem('wb_login_code');
-      return false;
-    }
-    if (stored.code !== code) return false;
-    // 验证成功后清除（用完即焚）
-    localStorage.removeItem('wb_login_code');
-    return true;
-  } catch(e) { return false; }
-}
 
 // ==================== 通过手机号查找用户映射 ====================
 function parseDataField(d) {
@@ -541,12 +443,12 @@ function parseDataField(d) {
   return d;
 }
 
-function findUserByPhone(phone) {
-  var key = phoneToLookupKey(phone);
+function findUserByName(name) {
+  var key = nameToLookupKey(name);
   return sbRest('GET', 'sync_store?group_key=eq.' + encodeURIComponent(key) + '&store=eq.wb_profile_lookup&select=data&limit=1', null)
     .then(function(arr) {
       if (arr && arr.length > 0) {
-        return parseDataField(arr[0].data); // { user_id, email, session_key, password_hash }
+        return parseDataField(arr[0].data); // { user_id, account, email, session_key, password_hash }
       }
       return null;
     })
@@ -568,18 +470,22 @@ function fetchUserProfile(userId) {
 // ==================== 登录表单提交 ====================
 $('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  var phone = $('loginPhone').value.trim().replace(/\D/g, '');
+  var name = $('loginName').value.trim();
 
-  if (!phone || phone.length !== 11) {
-    showToast('请输入正确的11位手机号', 'error');
+  if (!name) {
+    showToast('请输入账户名称', 'error');
+    return;
+  }
+  if (name.length < 3 || name.length > 20) {
+    showToast('账户名称需 3-20 个字符', 'error');
+    return;
+  }
+  if (!/^[一-龥A-Za-z0-9_]+$/.test(name)) {
+    showToast('账户名称仅限中英文、数字和下划线', 'error');
     return;
   }
 
-  if (currentLoginMode === 'password') {
-    loginWithPassword(phone);
-  } else {
-    loginWithCode(phone);
-  }
+  loginWithPassword(name);
 });
 
 // ==================== 自签本地 session（不再依赖 Supabase Auth） ====================
@@ -598,22 +504,22 @@ function createLocalSession(userId, rememberMe) {
 }
 
 // ==================== 密码登录 ====================
-function loginWithPassword(phone) {
+function loginWithPassword(name) {
   var password = $('loginPassword').value;
 
   if (!password) { showToast('请输入密码', 'error'); return; }
 
   setLoading($('loginBtn'), true);
 
-  // 1. 通过手机号查找用户映射
-  findUserByPhone(phone).then(function(userData) {
+  // 1. 通过账户名称查找用户映射
+  findUserByName(name).then(function(userData) {
     if (!userData) {
       setLoading($('loginBtn'), false);
-      showToast('该手机号未注册，请先注册', 'error');
+      showToast('该账户名称未注册，请先注册', 'error');
       return;
     }
 
-    console.log('[Login] userData found:', { user_id: userData.user_id, email: userData.email, has_password_hash: !!userData.password_hash });
+    console.log('[Login] userData found:', { user_id: userData.user_id, account: userData.account, has_password_hash: !!userData.password_hash });
 
     // 2. 本地验证用户密码（不经过 Supabase Auth，无需邮箱验证！）
     var pwdHash = hashPassword(password);
@@ -645,37 +551,7 @@ function loginWithPassword(phone) {
 }
 
 // ==================== 验证码登录 ====================
-function loginWithCode(phone) {
-  var code = $('loginCode').value.trim();
-
-  if (!code || code.length !== 6) {
-    showToast('请输入6位验证码', 'error');
-    return;
-  }
-
-  // 本地验证验证码
-  if (!verifyLoginCode(phone, code)) {
-    showToast('验证码错误或已过期', 'error');
-    return;
-  }
-
-  setLoading($('loginBtn'), true);
-
-  // 查找用户，自签 session 登录（不经过 Supabase Auth）
-  findUserByPhone(phone).then(function(userData) {
-    setLoading($('loginBtn'), false);
-    if (!userData) {
-      showToast('该手机号未注册，请先注册', 'error');
-      return;
-    }
-
-    var session = createLocalSession(userData.user_id, $('rememberMe').checked);
-    finishLogin(session, userData.user_id);
-  }).catch(function() {
-    setLoading($('loginBtn'), false);
-    showToast('网络错误，请重试', 'error');
-  });
-}
+// （loginWithCode 已移除：短信验证码登录整体下线，仅保留账户名 + 密码）
 
 // ==================== 登录完成 ====================
 function finishLogin(session, userId) {
@@ -715,7 +591,7 @@ $('registerForm').addEventListener('submit', function(e) {
   var avatarIdx = parseInt($('regAvatar').value) || 0;
   var nickname = $('regNickname').value.trim();
   var gender = $('regGender').value;
-  var phone = $('regPhone').value.trim().replace(/\D/g, '');
+  var name = $('regName').value.trim();
   var email = $('regEmail').value.trim();
   var birthday = $('regBirthday').value;
   var height = parseFloat($('regHeight').value) || null;
@@ -726,9 +602,14 @@ $('registerForm').addEventListener('submit', function(e) {
   if (!nickname) { showToast('请输入昵称', 'error'); return; }
   if (nickname.length > 16) { showToast('昵称最多16个字符', 'error'); return; }
   if (!gender) { showToast('请选择性别', 'error'); return; }
-  if (!phone || phone.length !== 11) { showToast('请输入正确的11位手机号', 'error'); return; }
-  if (!email) { showToast('请输入邮箱（用于找回密码）', 'error'); return; }
-  if (email.indexOf('@') < 0 || email.indexOf('.') < 0) { showToast('请输入有效的邮箱地址', 'error'); return; }
+  if (!name) { showToast('请输入账户名称', 'error'); return; }
+  if (name.length < 3 || name.length > 20) { showToast('账户名称需 3-20 个字符', 'error'); return; }
+  if (!/^[一-龥A-Za-z0-9_]+$/.test(name)) { showToast('账户名称仅限中英文、数字和下划线', 'error'); return; }
+  // 邮箱选填：未填则用占位地址（Supabase 注册仍需 email 字段）
+  var effectiveEmail = email || (name + '@local.user');
+  if (email) {
+    if (email.indexOf('@') < 0 || email.indexOf('.') < 0) { showToast('请输入有效的邮箱地址', 'error'); return; }
+  }
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
@@ -746,8 +627,8 @@ $('registerForm').addEventListener('submit', function(e) {
     avatar_emoji: AVATARS[avatarIdx].emoji,
     avatar_bg: AVATARS[avatarIdx].bg,
     gender: gender,
-    phone: phone,
-    email: email,
+    account: name,
+    email: effectiveEmail,
     birthday: birthday || null,
     height: height,
     created_at: new Date().toISOString(),
@@ -755,17 +636,17 @@ $('registerForm').addEventListener('submit', function(e) {
     // 注意：session_key 和 password_hash 存在 wb_profile_lookup，不在 profile 主体中
   };
 
-  // 先检查手机号是否已注册
-  findUserByPhone(phone).then(function(existing) {
+  // 先检查账户名称是否已注册
+  findUserByName(name).then(function(existing) {
     if (existing) {
       setLoading($('regBtn'), false);
-      showToast('该手机号已注册，请直接登录', 'error');
+      showToast('该账户名称已注册，请直接登录', 'error');
       return Promise.reject('DUPLICATE');
     }
 
     // 创建 Supabase 账号 — 密码用 sessionKey！
     return supabase.auth.signUp({
-      email: email,
+      email: effectiveEmail,
       password: sessionKey,
       options: { data: profile }
     });
@@ -793,7 +674,7 @@ $('registerForm').addEventListener('submit', function(e) {
     }
 
     // 串行写入三份数据
-    return saveRegistrationData(userId, profile, phone, email, sessionKey, passwordHash, res.data.session);
+    return saveRegistrationData(userId, profile, name, effectiveEmail, sessionKey, passwordHash, res.data.session);
   }).catch(function(err) {
     if (typeof err === 'string') return; // 已处理
     setLoading($('regBtn'), false);
@@ -802,7 +683,7 @@ $('registerForm').addEventListener('submit', function(e) {
   });
 });
 
-function saveRegistrationData(userId, profile, phone, email, sessionKey, passwordHash, session) {
+function saveRegistrationData(userId, profile, name, email, sessionKey, passwordHash, session) {
   // 1. 存 profile
   return sbRest('POST', 'sync_store', {
     group_key: 'profile_' + userId,
@@ -810,12 +691,13 @@ function saveRegistrationData(userId, profile, phone, email, sessionKey, passwor
     data: profile,
     updated_at: new Date().toISOString()
   }).then(function() {
-    // 2. 存手机号→用户映射（含 session_key 和 password_hash）
+    // 2. 存账户名→用户映射（含 session_key 和 password_hash）
     return sbRest('POST', 'sync_store', {
-      group_key: phoneToLookupKey(phone),
+      group_key: nameToLookupKey(name),
       store: 'wb_profile_lookup',
       data: {
         user_id: userId,
+        account: name,
         email: email,
         session_key: sessionKey,
         password_hash: passwordHash
@@ -849,19 +731,19 @@ function generateResetCode() {
 var _resetPendingEmail = '';
 
 $('resetBtn').addEventListener('click', function() {
-  var email = $('forgotEmail').value.trim();
-  if (!email) { showToast('请输入注册邮箱', 'error'); return; }
+  var name = $('forgotName').value.trim();
+  if (!name) { showToast('请输入账户名称', 'error'); return; }
 
   setLoading($('resetBtn'), true);
-  _resetPendingEmail = email;
+  _resetPendingEmail = name;
   var code = generateResetCode();
   var expiresAt = Date.now() + 10 * 60 * 1000; // 10分钟有效
 
   // 重置码存本地：页面重置码模式本就是同一浏览器的连续流程，
   // 不需要写后端；之前写 wb_reset_codes 被 RLS 写白名单拦截导致失败。
-  var storeKey = 'wb_reset_code_' + encodeURIComponent(email);
+  var storeKey = 'wb_reset_code_' + encodeURIComponent(name);
   try {
-    localStorage.setItem(storeKey, JSON.stringify({ code: code, email: email, expires_at: expiresAt }));
+    localStorage.setItem(storeKey, JSON.stringify({ code: code, account: name, expires_at: expiresAt }));
   } catch (err) {
     setLoading($('resetBtn'), false);
     console.error('Store reset code error:', err);
@@ -873,16 +755,12 @@ $('resetBtn').addEventListener('click', function() {
   $('resetCodeDisplay').textContent = code;
   $('resetCodeArea').style.display = 'block';
   showToast('重置码已生成，请在下方查看', 'success');
-  // 尽力发邮件（国内常被墙，失败不影响页面码流程）
-  supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://plan.yingling.fun/auth.html?mode=reset'
-  }).catch(function() {});
 });
 
 // "去设置新密码"按钮
 $('goToResetBtn').addEventListener('click', function() {
   sessionStorage.setItem('resetMode', '1');
-  sessionStorage.setItem('resetEmail', _resetPendingEmail);
+  sessionStorage.setItem('resetAccount', _resetPendingEmail);
   window.location.href = 'auth.html?mode=reset';
 });
 
@@ -903,7 +781,7 @@ async function handlePasswordReset() {
   var tokenHash = params.get('token_hash');
   var type = params.get('type');
 
-  // 模式A：邮件链接带回 token_hash → 走 Supabase OTP 验证
+  // 模式A：邮件链接带回 token_hash → 走 Supabase OTP 验证（需配好邮件服务才可用）
   if (tokenHash && type === 'recovery') {
     try {
       var res = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
@@ -911,8 +789,8 @@ async function handlePasswordReset() {
         showResetError('重置链接无效或已过期，请重新获取。');
         return;
       }
-      resetEmail = (res.data.user && res.data.user.email) || '';
-      $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '';
+      resetAccount = (res.data.user && res.data.user.email) || '';
+      $('resetEmailHint').textContent = resetAccount ? ('账号邮箱：' + resetAccount) : '';
       $('resetCodeInput').parentElement.style.display = 'none'; // 隐藏重置码输入
     } catch (e) {
       showResetError('无法验证重置链接，请重试。');
@@ -921,8 +799,8 @@ async function handlePasswordReset() {
   }
 
   // 模式B：页面重置码模式（从"去设置新密码"按钮跳转过来）
-  resetEmail = sessionStorage.getItem('resetEmail') || params.get('email') || '';
-  $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '请输入注册时获取的重置码';
+  resetAccount = sessionStorage.getItem('resetAccount') || params.get('account') || '';
+  $('resetEmailHint').textContent = resetAccount ? ('账户名称：' + resetAccount) : '请输入注册时获取的重置码';
   // 确保重置码输入框可见
   $('resetCodeInput').parentElement.style.display = '';
 }
@@ -936,21 +814,21 @@ async function submitNewPassword() {
   // 检查是否需要输入重置码（页面模式）
   var codeInput = $('resetCodeInput');
   var needCode = codeInput.parentElement.style.display !== 'none';
-  if (needCode && !resetEmail) {
-    showResetError('缺少邮箱信息，请重新获取重置码。'); return;
+  if (needCode && !resetAccount) {
+    showResetError('缺少账户信息，请重新获取重置码。'); return;
   }
 
   setLoading($('resetSubmitBtn'), true);
   try {
     // 如果是重置码模式，先验证码
-    if (needCode && resetEmail) {
+    if (needCode && resetAccount) {
       var userCode = codeInput.value.trim();
       if (!userCode || userCode.length !== 6) {
         setLoading($('resetSubmitBtn'), false);
         showResetError('请输入6位数字重置码。'); return;
       }
       // 从本地取出存储的重置码（与生成端同源 localStorage）
-      var storeKey = 'wb_reset_code_' + encodeURIComponent(resetEmail);
+      var storeKey = 'wb_reset_code_' + encodeURIComponent(resetAccount);
       var raw = null;
       try { raw = localStorage.getItem(storeKey); } catch (_) {}
       if (!raw) {
@@ -968,10 +846,10 @@ async function submitNewPassword() {
     }
 
     // 查找用户并更新 password_hash
-    var rows = await sbRest('GET', 'sync_store?store=eq.wb_profile_lookup' + (resetEmail ? '&data->>email=eq.' + encodeURIComponent(resetEmail) : '') + '&select=group_key,data');
+    var rows = await sbRest('GET', 'sync_store?store=eq.wb_profile_lookup' + (resetAccount ? '&data->>account=eq.' + encodeURIComponent(resetAccount) : '') + '&select=group_key,data');
     if (!rows || !rows.length) {
       setLoading($('resetSubmitBtn'), false);
-      showToast('未找到该邮箱对应的账号', 'error');
+      showToast('未找到该账户名称对应的账号', 'error');
       return;
     }
     var row = rows[0];
