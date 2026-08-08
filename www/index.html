@@ -1321,6 +1321,34 @@
     auth.last_active = Date.now();
     localStorage.setItem("wb_auth_data", JSON.stringify(auth));
 
+    // ===== 数据归属校验：切换账号时清空上一个账号残留的本地数据 =====
+    // 背景：主数据 key(wb_yingling_v2) 是全局的，不带 userId。
+    // 若不校验，新账号会直接读到上一个账号的体重/日程/生日，
+    // 并被自动云同步上传，污染新账号的云端数据。
+    try {
+      var __uid = (session && session.user && session.user.id) ? session.user.id : null;
+      if (__uid) {
+        var __owner = localStorage.getItem("wb_data_owner");
+        if (!__owner) {
+          // 首次运行 / 老用户升级：认领现有数据，不清空（避免误删真实数据）
+          localStorage.setItem("wb_data_owner", __uid);
+        } else if (__owner !== __uid) {
+          // 检测到换账号：清掉上一账号的业务数据，保留当前登录态
+          var __drop = ["wb_yingling_v2", "wb_yingling_settings"];
+          for (var __i = localStorage.length - 1; __i >= 0; __i--) {
+            var __k = localStorage.key(__i);
+            if (!__k) continue;
+            if (__k.indexOf("wb_xm_workout_") === 0 || __k.indexOf("wb_reset_code_") === 0) __drop.push(__k);
+          }
+          for (var __j = 0; __j < __drop.length; __j++) {
+            try { localStorage.removeItem(__drop[__j]); } catch (e) {}
+          }
+          localStorage.setItem("wb_data_owner", __uid);
+          console.log("[Auth] 检测到账号切换，已清空上一账号的本地残留数据");
+        }
+      }
+    } catch (e) { console.warn("[Auth] 数据归属校验失败", e); }
+
     // 检查 token 是否过期
     if (session.expires_at && session.expires_at < Date.now() / 1000) {
       if (session._local) {

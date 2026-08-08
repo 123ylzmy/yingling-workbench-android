@@ -2856,7 +2856,20 @@
 
   function clearAll() {
     conf('⚠ 清空所有数据（包括示例）。确定？', () => {
-      conf('再次确认：全部清空？', () => { localStorage.removeItem(STORE_KEY); state = loadData(); renderAll(); toast('已清空') });
+      conf('再次确认：全部清空？（云端备份也会一并清空）', () => {
+        localStorage.removeItem(STORE_KEY);
+        // 连带清理派生数据（训练动作自定义等），避免"清空"后还有残留
+        try {
+          for (var _ci = localStorage.length - 1; _ci >= 0; _ci--) {
+            var _ck = localStorage.key(_ci);
+            if (_ck && _ck.indexOf('wb_xm_workout_') === 0) localStorage.removeItem(_ck);
+          }
+        } catch (e) {}
+        state = loadData();
+        save();            // 必须写回并触发云同步，否则云端脏数据下次登录会被拉回来
+        renderAll();
+        toast('已清空');
+      });
     });
   }
 
