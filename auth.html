@@ -839,7 +839,7 @@ $('resetBtn').addEventListener('click', function() {
 
   setLoading($('resetBtn'), true);
   supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/auth.html?mode=reset'
+    redirectTo: 'https://plan.yingling.fun/auth.html?mode=reset'
   }).then(function(res) {
     setLoading($('resetBtn'), false);
     if (res.error) { showToast(res.error.message, 'error'); return; }
@@ -859,17 +859,25 @@ function showResetError(msg) {
 }
 
 async function handlePasswordReset() {
+  // 链接已直接指向本站（不经过 supabase.co 验证页），从 URL 读取恢复令牌
+  var params = new URLSearchParams(window.location.search);
+  var tokenHash = params.get('token_hash');
+  var type = params.get('type');
+  if (!tokenHash || type !== 'recovery') {
+    showResetError('重置链接无效或已过期，请重新获取重置邮件。');
+    return;
+  }
   sessionStorage.setItem('resetMode', '1');
   showResetView();
   $('resetError').style.display = 'none';
   $('resetSubmitBtn').disabled = false;
   try {
-    var res = await supabase.auth.getUser();
-    if (res.error || !res.data.user) {
+    var res = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+    if (res.error || !res.data.session) {
       showResetError('重置链接无效或已过期，请重新获取重置邮件。');
       return;
     }
-    resetEmail = res.data.user.email || '';
+    resetEmail = (res.data.user && res.data.user.email) || '';
     $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '';
   } catch (e) {
     showResetError('无法验证重置链接，请重试或重新获取。');
