@@ -585,7 +585,7 @@
     var g = '下午好';
     if (h < 6) g = '凌晨好'; else if (h < 11) g = '早上好'; else if (h < 13) g = '中午好'; else if (h < 18) g = '下午好'; else g = '晚上好';
     var avatarHtml = getAvatarHtml(profile, 28);
-    $('greetLine').innerHTML = g + '，' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()"></span><span class="mood-panel" id="moodPanel"></span></span>';
+    $('greetLine').innerHTML = g + '，' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()" ontouchstart="if(event.target===this){event.preventDefault();closeMoodPanel()}"></span><span class="mood-panel" id="moodPanel"></span></span>';
     if (!state.mood || state.mood.date !== today()) { state.mood = { date: today(), value: 'happy' }; }
     renderMoodIcon();
   }
@@ -636,10 +636,12 @@
     trigger.classList.remove('open');
   }
   function selectMood(v, e) {
-    if (e) e.stopPropagation();
+    if (e) { e.stopPropagation(); e.preventDefault(); }
     state.mood.value = v;
     state.mood.date = today();
-    save(); renderMoodIcon(); closeMoodPanel();
+    save(); renderMoodIcon();
+    // 用 setTimeout 确保在移动端触摸事件链完成后关闭面板，避免事件冲突
+    setTimeout(function () { closeMoodPanel(); }, 0);
     var cfg = getMoodCfg(v);
     toast('心情：' + cfg.label);
   }
