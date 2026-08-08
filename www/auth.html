@@ -103,6 +103,8 @@
 
     .forgot-view { display:none; }
     .forgot-view.active { display:block; }
+    .reset-view { display:none; }
+    .reset-view.active { display:block; }
     .back-btn { display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--accent);
       cursor:pointer; margin-bottom:14px; background:none; border:none; padding:0; }
     .back-btn:hover { text-decoration:underline; }
@@ -240,6 +242,25 @@
       </div>
       <p class="hint-text">输入注册时填写的邮箱，我们将发送密码重置链接。</p>
       <button class="btn-primary" id="resetBtn">发送重置链接</button>
+    </div>
+
+    <!-- ============ 设置新密码 ============ -->
+    <div class="reset-view" id="resetView">
+      <button class="back-btn" id="resetBackToLogin" type="button">← 返回登录</button>
+      <h2 style="font-size:18px;margin:8px 0 4px;">设置新密码</h2>
+      <p class="hint-text" id="resetEmailHint" style="text-align:left;"></p>
+      <form id="resetForm">
+        <div class="form-group">
+          <label class="form-label" for="resetNewPwd">新密码（至少6位）</label>
+          <input type="password" class="form-input" id="resetNewPwd" placeholder="至少6位密码" autocomplete="new-password" minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="resetConfirmPwd">确认新密码</label>
+          <input type="password" class="form-input" id="resetConfirmPwd" placeholder="再次输入" autocomplete="new-password" minlength="6">
+        </div>
+        <button class="btn-primary" id="resetSubmitBtn" type="submit">确认重置</button>
+        <p class="hint-text" id="resetError" style="color:var(--error);display:none;text-align:left;"></p>
+      </form>
     </div>
   </div>
 
@@ -392,6 +413,26 @@ $('showForgot').addEventListener('click', function() {
 $('backToLogin').addEventListener('click', function() {
   forgotView.classList.remove('active');
   $('loginForm').classList.add('active');
+});
+
+// 设置新密码视图
+var resetView = $('resetView');
+var resetEmail = '';
+function showResetView() {
+  forms.forEach(function(f) { f.classList.remove('active'); });
+  forgotView.classList.remove('active');
+  tabsEl.style.display = 'none';
+  resetView.classList.add('active');
+}
+function hideResetView() {
+  resetView.classList.remove('active');
+  tabsEl.style.display = '';
+  $('loginForm').classList.add('active');
+}
+$('resetBackToLogin').addEventListener('click', hideResetView);
+$('resetForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  submitNewPassword();
 });
 
 // ==================== 登录方式切换 ====================
@@ -798,7 +839,7 @@ $('resetBtn').addEventListener('click', function() {
 
   setLoading($('resetBtn'), true);
   supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/auth.html#reset'
+    redirectTo: window.location.origin + '/auth.html?mode=reset'
   }).then(function(res) {
     setLoading($('resetBtn'), false);
     if (res.error) { showToast(res.error.message, 'error'); return; }
@@ -810,8 +851,78 @@ $('resetBtn').addEventListener('click', function() {
   });
 });
 
+// ==================== 密码重置回调 ====================
+function showResetError(msg) {
+  var el = $('resetError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function handlePasswordReset() {
+  sessionStorage.setItem('resetMode', '1');
+  showResetView();
+  $('resetError').style.display = 'none';
+  $('resetSubmitBtn').disabled = false;
+  try {
+    var res = await supabase.auth.getUser();
+    if (res.error || !res.data.user) {
+      showResetError('重置链接无效或已过期，请重新获取重置邮件。');
+      return;
+    }
+    resetEmail = res.data.user.email || '';
+    $('resetEmailHint').textContent = resetEmail ? ('账号邮箱：' + resetEmail) : '';
+  } catch (e) {
+    showResetError('无法验证重置链接，请重试或重新获取。');
+  }
+}
+
+async function submitNewPassword() {
+  var pwd = $('resetNewPwd').value;
+  var confirmPwd = $('resetConfirmPwd').value;
+  if (!pwd || pwd.length < 6) { showToast('密码至少6位', 'error'); return; }
+  if (pwd !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
+  if (!resetEmail) { showToast('重置会话已失效，请重新获取邮件', 'error'); return; }
+
+  setLoading($('resetSubmitBtn'), true);
+  try {
+    var rows = await sbRest('GET', 'sync_store?store=eq.wb_profile_lookup&data->>email=eq.' + encodeURIComponent(resetEmail) + '&select=group_key,data');
+    if (!rows || !rows.length) {
+      setLoading($('resetSubmitBtn'), false);
+      showToast('未找到该邮箱对应的账号', 'error');
+      return;
+    }
+    var row = rows[0];
+    var data = row.data;
+    if (typeof data === 'string') { try { data = JSON.parse(data); } catch (_) {} }
+    if (!data || typeof data !== 'object') {
+      setLoading($('resetSubmitBtn'), false);
+      showToast('数据异常，请重试', 'error');
+      return;
+    }
+    data.password_hash = hashPassword(pwd);
+    await sbRest('PATCH', 'sync_store?group_key=eq.' + encodeURIComponent(row.group_key) + '&store=eq.wb_profile_lookup', {
+      data: data,
+      updated_at: new Date().toISOString()
+    });
+    await supabase.auth.signOut();
+    sessionStorage.removeItem('resetMode');
+    setLoading($('resetSubmitBtn'), false);
+    showToast('密码已重置，请用新密码登录', 'success');
+    setTimeout(function() { window.location.href = 'auth.html'; }, 1500);
+  } catch (e) {
+    setLoading($('resetSubmitBtn'), false);
+    showToast('重置失败：' + (e && e.message ? e.message : '请重试'), 'error');
+    console.error('Reset password error:', e);
+  }
+}
+
 // ==================== 自动检查登录态 ====================
 (function() {
+  // 优先处理密码重置回调（避免恢复会话被误判为已登录而跳转）
+  var _sp = new URLSearchParams(window.location.search);
+  var _inReset = _sp.get('mode') === 'reset' || /reset/.test(window.location.hash) || sessionStorage.getItem('resetMode') === '1';
+  if (_inReset) { handlePasswordReset(); return; }
+
   // 检查新格式
   var authData = localStorage.getItem('wb_auth_data');
   if (authData) {
