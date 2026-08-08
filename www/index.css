@@ -392,7 +392,7 @@ input[type=number]::-webkit-inner-spin-button {
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 12px 20px 24px;
+  padding: 16px 0 20px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
@@ -4216,7 +4216,7 @@ input[type=range]::-webkit-slider-thumb {
 /* ── 窄桌面 / 平板横屏（≤1100px） ── */
 @media(max-width:1100px) {
   .content {
-    padding: 14px 20px 18px
+    padding: 14px 0 18px
   }
 
   .today-split {
@@ -5246,7 +5246,7 @@ input[type=range]::-webkit-slider-thumb {
 /* ── 桌面宽屏（≥1200px）—— 全宽铺满，日历:右侧=1:2弹性分配 ── */
 @media(min-width:1200px) {
   .content {
-    padding: 16px 24px;
+    padding: 16px 0;
   }
 }
 
@@ -5376,8 +5376,6 @@ input[type=range]::-webkit-slider-thumb {
 [data-theme="dark"] .cal-nav button:hover { background: #333340; color: var(--ink) }
 [data-theme="dark"] .cal-dow { color: var(--ink-lighter) }
 [data-theme="dark"] .cal-legend { color: var(--ink-soft) }
-  color: var(--ink)
-}
 
 [data-theme="dark"] .cal-day.other {
   color: var(--ink-lighter)
