@@ -1680,6 +1680,19 @@
 
 
   /* ===================== 健康页面 ===================== */
+  // BMI = 体重(kg) / 身高(m)²，身高取自注册时填写的 profile.height（cm）
+  function calcBmi(weightKg, heightCm) {
+    if (!weightKg || !heightCm) return null;
+    var h = heightCm / 100;
+    if (h <= 0) return null;
+    return +(weightKg / (h * h)).toFixed(1);
+  }
+  function bmiCategory(b) {
+    if (b < 18.5) return '偏瘦';
+    if (b < 24) return '正常';
+    if (b < 28) return '偏胖';
+    return '肥胖';
+  }
   function renderHealthStats() {
     const w = [...state.weight].sort((a, b) => a.date.localeCompare(b.date));
     const cur = w[w.length - 1];
@@ -1690,10 +1703,13 @@
     const toGo = cur && tgt != null ? +(cur.weight - tgt).toFixed(1) : null;
     const pct = cur && start && tgt != null ? Math.min(100, Math.round(((start.weight - cur.weight) / (start.weight - tgt)) * 100)) : 0;
     const streak = calcStreak();
+    const bmi = calcBmi(cur ? cur.weight : null, getUserProfile().height);
+    const bmiLabel = bmi != null ? ('BMI · ' + bmiCategory(bmi)) : 'BMI';
 
     $('healthStats').innerHTML = `
   <div class="stat-row">
     <div class="stat"><div class="v">${cur ? cur.weight : '—'}</div><div class="l">当前体重 kg</div></div>
+    <div class="stat"><div class="v ${bmi != null ? 'c' : ''}">${bmi != null ? bmi : '—'}</div><div class="l">${bmiLabel}</div></div>
     <div class="stat"><div class="v">${cur && cur.bodyFat != null ? cur.bodyFat + '%' : '—'}</div><div class="l">体脂率</div></div>
     <div class="stat"><div class="v g">${lost > 0 ? '-' + lost : '—'}</div><div class="l">已减重 kg</div></div>
     <div class="stat"><div class="v c">${toGo != null ? (toGo > 0 ? toGo : '🎯') : '—'}</div><div class="l">距目标 kg</div></div>
@@ -2415,15 +2431,27 @@
   /* ===================== 弹窗：体重 ===================== */
   function openWeightModal() {
     const ex = state.weight.find(w => w.date === today());
+    const h = getUserProfile().height;
+    const initBmi = ex ? calcBmi(ex.weight, h) : null;
     openModal({
       title: '记体重',
       body: `<div class="form-group"><label>日期</label><input class="inp" type="date" id="wd" value="${today()}"></div>
     <div class="form-grid">
-      <div class="form-group"><label>体重 (kg)</label><input class="inp" type="number" id="wv" step="0.1" placeholder="比如 61.0" value="${ex ? ex.weight : ''}"></div>
+      <div class="form-group"><label>体重 (kg)</label><input class="inp" type="number" id="wv" step="0.1" placeholder="比如 61.0" value="${ex ? ex.weight : ''}" oninput="calcBmiLive()"></div>
       <div class="form-group"><label>体脂率 (%) <span style="font-weight:400;color:var(--ink-light);font-size:10px">可选</span></label><input class="inp" type="number" id="wbf" step="0.1" placeholder="比如 22.5" value="${ex && ex.bodyFat ? ex.bodyFat : ''}"></div>
-    </div>`,
+    </div>
+    <div class="bmi-hint" id="bmiHint">${h ? (initBmi != null ? ('当前 BMI：<b>' + initBmi + '</b> · ' + bmiCategory(initBmi)) : '输入体重后自动计算 BMI') : '请先在个人资料设置身高'}</div>`,
       foot: '<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" onclick="saveWeight()">保存</button>'
     });
+  }
+  function calcBmiLive() {
+    var el = $('bmiHint'); if (!el) return;
+    var h = getUserProfile().height;
+    if (!h) { el.textContent = '请先在个人资料设置身高'; return; }
+    var w = parseFloat($('wv').value);
+    var bmi = calcBmi(w, h);
+    if (bmi == null) { el.textContent = '输入体重后自动计算 BMI'; return; }
+    el.innerHTML = '当前 BMI：<b>' + bmi + '</b> · ' + bmiCategory(bmi);
   }
   function saveWeight() {
     const d = $('wd').value, v = parseFloat($('wv').value);

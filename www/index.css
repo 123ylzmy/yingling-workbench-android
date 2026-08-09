@@ -646,9 +646,24 @@ input[type=number]::-webkit-inner-spin-button {
 /* ========== 统计卡片行 ========== */
 .stat-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin-bottom: 14px
+}
+
+.bmi-hint {
+  margin: 2px 0 4px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--c50, #F2F8F6);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.5
+}
+
+.bmi-hint b {
+  font-size: 14px;
+  color: var(--c300, #2C8C7C)
 }
 
 .stat {
