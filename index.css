@@ -1019,7 +1019,16 @@ input[type=number]::-webkit-inner-spin-button {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 18px;
-  padding: 0 6px
+  padding: 8px 12px;
+  border: 1.5px solid var(--line, #ECE7DE);
+  border-radius: 10px;
+  background: var(--input-bg, #fafafa);
+  transition: border-color .2s, box-shadow .2s
+}
+
+.cal-nav:focus-within {
+  border-color: var(--accent, #7EB89A);
+  box-shadow: 0 0 0 3px rgba(126,184,154,0.10)
 }
 
 .cal-nav .mnth {
@@ -1037,7 +1046,7 @@ input[type=number]::-webkit-inner-spin-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background: transparent;
   color: var(--ink-soft);
   border: none;
   cursor: pointer;
