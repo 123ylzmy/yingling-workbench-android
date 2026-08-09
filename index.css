@@ -258,8 +258,11 @@ input[type=number]::-webkit-inner-spin-button {
   min-height: 0;
   width: 100%;
   max-width: none;
-  overflow: hidden;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 .topbar {
