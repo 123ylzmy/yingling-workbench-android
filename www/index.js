@@ -1,4 +1,5 @@
 /* ===================== 认证 ===================== */
+  var APP_VERSION = '20260809';
   // 解析 sync_store 返回的 data 字段（兼容 JSONB 对象和 TEXT 字符串）
   function parseStoreData(d) {
     if (!d) return null;
@@ -3844,9 +3845,9 @@
   (async function initApp() {
     var step = '';
     try {
-      // 使用 ?v 参数破坏 Service Worker 缓存
+      // 使用 APP_VERSION 控制缓存有效期（部署时更新版本号即可刷新）
       step = 'fetch data.json';
-      var fetchUrl = 'data.json?v=' + Date.now();
+      var fetchUrl = 'data.json?v=' + APP_VERSION;
       var resp = await fetch(fetchUrl);
       if (!resp.ok) throw new Error('HTTP ' + resp.status + ' (URL: ' + fetchUrl + ')');
       step = 'parse JSON';
