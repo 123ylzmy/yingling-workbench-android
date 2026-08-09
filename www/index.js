@@ -795,6 +795,7 @@
     document.querySelectorAll('.side-nav-item,.bn-item').forEach(x => x.classList.toggle('active', x.dataset.tab === p));
     if (p !== 'study' && studyTimer.running) { pauseStudyTimer() }
     renderAll();
+    var main = document.querySelector('.main'); if (main) main.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   /* ===================== 今日页面 ===================== */
