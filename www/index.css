@@ -978,8 +978,9 @@ input[type=number]::-webkit-inner-spin-button {
   min-height: 0
 }
 
-/* 每日人民日报阅读：置顶卡片（宽度跟随 content，保持紧凑高度） */
+/* 每日人民日报阅读：位于今日要处理上方，宽度一致，紧凑高度 */
 .rmrb-top {
+  flex: 0 0 auto !important;
   margin-bottom: 16px
 }
 
