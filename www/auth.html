@@ -186,11 +186,6 @@
         <input type="text" class="form-input" id="regName" placeholder="3-20位，字母/数字/中文/下划线" autocomplete="username" required>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="regEmail">邮箱（选填，配好邮件服务后可用于找回）</label>
-        <input type="email" class="form-input" id="regEmail" placeholder="your@email.com（可不填）" autocomplete="email">
-      </div>
-
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="regBirthday">生日</label>
@@ -592,7 +587,6 @@ $('registerForm').addEventListener('submit', function(e) {
   var nickname = $('regNickname').value.trim();
   var gender = $('regGender').value;
   var name = $('regName').value.trim();
-  var email = $('regEmail').value.trim();
   var birthday = $('regBirthday').value;
   var height = parseFloat($('regHeight').value) || null;
   var password = $('regPassword').value;
@@ -605,11 +599,8 @@ $('registerForm').addEventListener('submit', function(e) {
   if (!name) { showToast('请输入账户名称', 'error'); return; }
   if (name.length < 3 || name.length > 20) { showToast('账户名称需 3-20 个字符', 'error'); return; }
   if (!/^[一-龥A-Za-z0-9_]+$/.test(name)) { showToast('账户名称仅限中英文、数字和下划线', 'error'); return; }
-  // 邮箱选填：未填则用占位地址（Supabase 注册仍需 email 字段）
-  var effectiveEmail = email || (name + '@local.user');
-  if (email) {
-    if (email.indexOf('@') < 0 || email.indexOf('.') < 0) { showToast('请输入有效的邮箱地址', 'error'); return; }
-  }
+  // 注册不再收集邮箱：Supabase 注册仍需 email 字段，使用占位地址
+  var effectiveEmail = name + '@local.user';
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
@@ -656,7 +647,7 @@ $('registerForm').addEventListener('submit', function(e) {
       setLoading($('regBtn'), false);
       var msg = res.error.message;
       if (msg.indexOf('already registered') >= 0 || msg.indexOf('already exists') >= 0) {
-        msg = '该邮箱已注册，请直接登录或使用其他邮箱';
+        msg = '该账户已注册，请直接登录';
       }
       showToast(msg, 'error');
       return;

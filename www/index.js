@@ -586,7 +586,8 @@
     var g = '下午好';
     if (h < 6) g = '凌晨好'; else if (h < 11) g = '早上好'; else if (h < 13) g = '中午好'; else if (h < 18) g = '下午好'; else g = '晚上好';
     var avatarHtml = getAvatarHtml(profile, 28);
-    $('greetLine').innerHTML = g + '，' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()" ontouchstart="if(event.target===this){event.preventDefault();closeMoodPanel()}"></span><span class="mood-panel" id="moodPanel"></span></span>';
+    var nickname = (profile && profile.nickname) ? profile.nickname : '';
+    $('greetLine').innerHTML = g + '，我的' + nickname + ' ' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()" ontouchstart="if(event.target===this){event.preventDefault();closeMoodPanel()}"></span><span class="mood-panel" id="moodPanel"></span></span>';
     if (!state.mood || state.mood.date !== today()) { state.mood = { date: today(), value: 'happy' }; }
     renderMoodIcon();
   }
@@ -1696,7 +1697,6 @@
     <div class="prog-info">
       <div class="t1">本月健康进度</div>
       <div class="t2">从 ${start?.weight || '—'} → ${tgt != null ? tgt : '—'} kg</div>
-      <div class="t3">从「设置健康目标」独立设置，与目标激励无关</div>
     </div>
   </div>`;
   }
