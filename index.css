@@ -109,8 +109,8 @@ input[type=number]::-webkit-inner-spin-button {
 
 /* ========== 布局 ========== */
 .app {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
   width: 100%;
   min-width: 100%;
   max-width: none;
@@ -263,7 +263,7 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 .topbar {
-  height: 52px;
+  height: 72px;
   box-sizing: border-box;
   padding: 7px 24px;
   background: #fff;
@@ -4257,7 +4257,7 @@ input[type=range]::-webkit-slider-thumb {
 
   /* 整体布局 */
   .app {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     min-height: 100vh;
     height: auto
   }
