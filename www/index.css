@@ -5041,6 +5041,7 @@ input[type=range]::-webkit-slider-thumb {
     min-width: 60px;
     min-height: 50px;
     justify-content: center;
+    white-space: nowrap;
   }
 
   .bn-item.active {
