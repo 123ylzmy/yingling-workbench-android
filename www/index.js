@@ -2750,8 +2750,6 @@
     var avatarHtml = getAvatarHtml(profile, 44);
     var genderLabel = { female: '女', male: '男', other: '其他' };
     var profileInfoRows = [
-      { label: '手机号', value: profile.phone || '未设置' },
-      { label: '邮箱', value: profile.email || '未设置' },
       { label: '性别', value: genderLabel[profile.gender] || '未设置' },
       { label: '生日', value: profile.birthday || '未设置' },
       { label: '身高', value: profile.height ? (profile.height + ' cm') : '未设置' }
@@ -3918,8 +3916,6 @@
     setVal('profileNickname', profile.nickname || '');
     setVal('profileGender', profile.gender || '');
     initGenderDropdown();
-    setVal('profilePhone', profile.phone || '');
-    setVal('profileEmail', profile.email || '');
     setVal('profileBirthday', profile.birthday || '');
     setVal('profileHeight', profile.height || '');
 
@@ -3969,8 +3965,6 @@
     var avatarUrl = document.getElementById('profileAvatarUrl').value.trim() || oldProfile.avatar_url || '';
     var nickname = val('profileNickname');
     var gender = val('profileGender');
-    var phone = val('profilePhone').replace(/\D/g, '');
-    var email = val('profileEmail');
     var birthday = val('profileBirthday');
     var heightStr = val('profileHeight');
     var height = heightStr ? parseFloat(heightStr) : null;
@@ -3986,8 +3980,6 @@
       avatar_emoji: AVATAR_FULL[avatarIdx].emoji,
       avatar_bg: AVATAR_FULL[avatarIdx].bg,
       gender: gender,
-      phone: phone || oldProfile.phone || '',
-      email: email || oldProfile.email || '',
       birthday: birthday || oldProfile.birthday || null,
       height: height !== null ? height : (oldProfile.height || null),
       session_key: oldProfile.session_key || '',
