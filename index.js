@@ -362,38 +362,39 @@
     });
   }
 
-  /* ===================== 每日心灵语录 ===================== */
-  const SOUL_QUOTES = [
-    "你比你相信的更勇敢，比你看起来更强大，比你想象的更聪明。",
-    "每一个不曾起舞的日子，都是对生命的辜负。",
-    "慢慢来，比较快。",
-    "你不需要完美，你只需要完整。",
-    "今天的不开心就止于此吧，明天依旧光芒万丈。",
-    "允许一切发生，然后记得做一个勇敢的人。",
-    "生活不是等待暴风雨过去，而是学会在雨中跳舞。",
-    "你是自己的太阳，无需借谁的光。",
-    "每一次呼吸都是新的开始。",
-    "温柔要有，但不是妥协。",
-    "保持心脏震荡，有人等你共鸣。",
-    "万物皆有裂痕，那是光照进来的地方。",
-    "你已经做得很好了，真的。",
-    "做你自己，因为别人都有人做了。",
-    "世界喧嚣，你做你自己就好。",
-    "不必行色匆匆，不必光芒四射，不必成为别人。",
-    "心若向阳，无畏悲伤。",
-    "当下的每一刻，都是你生命中最年轻的时刻。",
-    "相信自己，你值得拥有最好的。",
-    "日子很长，过客很多，也不必太在意。"
+  /* ===================== 每日人民日报阅读 ===================== */
+  // 人民日报风格每日文摘（原创正能量短句，非官方原文，规避版权风险）
+  const RMRB_QUOTES = [
+    "时代呼唤担当，民族振兴是青年的责任。",
+    "把每一件小事做好，就是不平凡的开始。",
+    "前进的道路从不会一帆风顺，但脚下的每一步都算数。",
+    "脚下有多少泥土，心中就沉淀多少真情。",
+    "梦想不会发光，发光的是那个追梦的你。",
+    "越是艰难处，越是修心时。",
+    "平凡铸就伟大，英雄来自人民。",
+    "星光不问赶路人，时光不负有心人。",
+    "扎根泥土，才能遇见更广阔的世界。",
+    "读懂中国，从读懂身边的烟火气开始。",
+    "每一代人有每一代人的长征，每一代人有每一代人的担当。",
+    "把青春融进时代的洪流，把脚印刻在祖国的大地。",
+    "心中有信仰，脚下有力量。",
+    "国家发展的大逻辑，藏在每一个普通人的日子里。",
+    "从容于心，从容于行，方能行稳致远。",
+    "与其焦虑明天，不如把今天过成想要的模样。",
+    "读懂人民，才能读懂这个时代。",
+    "一滴水只有放进大海里，才永远不会干涸。",
+    "把时间花在哪里，哪里就会开花结果。",
+    "生活的答案，往往藏在日复一日的坚持里。"
   ];
   function getDailyQuote() {
     var d = new Date();
     var seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-    return SOUL_QUOTES[seed % SOUL_QUOTES.length];
+    return RMRB_QUOTES[seed % RMRB_QUOTES.length];
   }
   function getRandomQuote() {
-    return SOUL_QUOTES[Math.floor(Math.random() * SOUL_QUOTES.length)];
+    return RMRB_QUOTES[Math.floor(Math.random() * RMRB_QUOTES.length)];
   }
-  function renderSoulQuote() {
+  function renderRMRB() {
     var el = document.getElementById('soulQuote');
     if (!el) return;
     var saved = state._soulQuote;
@@ -405,12 +406,12 @@
     }
     el.textContent = saved.text;
   }
-  function refreshSoulQuote() {
+  function refreshRMRB() {
     var q = getRandomQuote();
     state._soulQuote = { date: today(), text: q };
     save();
-    renderSoulQuote();
-    toast('已更换语录 ✨');
+    renderRMRB();
+    toast('已换一篇 📰');
   }
 
   let HABITS = [];      // 从 data.json 加载
@@ -3792,7 +3793,7 @@
 
   /* ===================== 渲染全体 ===================== */
   function renderAll() {
-    renderHead(); renderBkHint(); renderSoulQuote();
+    renderHead(); renderBkHint(); renderRMRB();
     // 初始化日历月份
     if (!calYear) { const now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth() + 1; }
     if (curPage === 'today') { renderToday(); renderCalendar() }
