@@ -2765,6 +2765,29 @@
         '</div>' +
       '</div>';
 
+    // 运行在 APK 内时隐藏「下载安装包」，避免自己下载自己
+    var isNativeApp = !!(window.Capacitor || location.protocol === 'file:' || location.protocol === 'capacitor:');
+
+    var appDataSection = '' +
+      '<div style="font-size:12px;color:var(--g300);font-weight:600;margin:18px 0 8px">数据与应用</div>' +
+      '<div class="settings-grid">' +
+        '<div class="settings-row">' +
+          '<div><div class="label">数据管理</div><div class="hint">清空本地与云端的全部数据</div></div>' +
+          '<button class="btn ghost" onclick="closeModal();openDataMgmt()" style="padding:6px 14px;font-size:12px;border-radius:8px;min-height:32px" aria-label="打开数据管理">打开</button>' +
+        '</div>' +
+        (isNativeApp ? '' :
+        '<div class="settings-row" style="align-items:flex-start">' +
+          '<div style="min-width:0">' +
+            '<div class="label">Android 应用</div>' +
+            '<div class="hint" id="apkInfoHint" aria-live="polite">正在获取版本信息…</div>' +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">' +
+            '<a class="btn" id="apkDownloadBtn" href="' + APK_REL_URL + '" download="自洽日程.apk" style="padding:6px 14px;font-size:12px;border-radius:8px;min-height:32px;text-decoration:none" aria-label="下载 Android 安装包">下载 APK</a>' +
+            '<button class="btn ghost" onclick="copyApkLink()" style="padding:4px 10px;font-size:11px;border-radius:8px;min-height:26px" aria-label="复制安装包下载链接">复制链接</button>' +
+          '</div>' +
+        '</div>') +
+      '</div>';
+
     openModal({
       title: '设置',
       body: profileSection +
@@ -2801,9 +2824,11 @@
         '<div style="border-top:1px solid var(--line);padding-top:12px">' +
         '<button class="btn ghost" onclick="resetSettings()" style="width:100%;justify-content:center;color:var(--danger-soft)">恢复默认设置</button>' +
         '</div>' +
-        '</div>',
+        '</div>' +
+        appDataSection,
       foot: '<button class="btn ghost" onclick="closeModal()">关闭</button>'
     });
+    if (!isNativeApp) loadApkInfo();  // 弹窗已渲染，异步补版本信息，不阻塞打开
   }
 
   function onPresetAccentClick(id) {
@@ -2840,6 +2865,52 @@
       closeModal();
       toast('已恢复默认设置');
     });
+  }
+
+  /* ===================== APK 下载 ===================== */
+  // gh-pages 根目录由 CI 发布：自洽日程.apk + apk-info.json
+  var APK_REL_URL = '%E8%87%AA%E6%B4%BD%E6%97%A5%E7%A8%8B.apk';       // 相对路径，保证同源可直接下载
+  var APK_ABS_URL = 'https://plan.yingling.fun/' + APK_REL_URL;        // 绝对路径，用于复制分享
+
+  function loadApkInfo() {
+    if (!document.getElementById('apkInfoHint')) return;
+    fetch('apk-info.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (info) {
+        var el = document.getElementById('apkInfoHint');
+        if (!el) return;  // 弹窗可能已被关闭
+        var parts = [];
+        if (info.shortSha) parts.push('版本 ' + info.shortSha);
+        if (info.sizeMB) parts.push(info.sizeMB + ' MB');
+        if (info.builtAt) parts.push(info.builtAt);
+        el.textContent = parts.length ? parts.join(' · ') : '最新构建';
+      })
+      .catch(function () {
+        var el = document.getElementById('apkInfoHint');
+        if (el) el.textContent = '安装包已发布，点击右侧下载';
+      });
+  }
+
+  function copyApkLink() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(APK_ABS_URL)
+        .then(function () { toast('下载链接已复制'); })
+        .catch(function () { copyTextFallback(APK_ABS_URL); });
+    } else {
+      copyTextFallback(APK_ABS_URL);
+    }
+  }
+
+  function copyTextFallback(txt) {
+    var ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); toast('下载链接已复制'); }
+    catch (e) { toast('复制失败，请手动复制'); }
+    ta.remove();
   }
 
   /* ===================== 数据管理 ===================== */
