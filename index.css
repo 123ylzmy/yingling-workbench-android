@@ -60,10 +60,9 @@
 
 html,
 body {
-  min-height: 100vh;
-  height: auto;
+  height: 100vh;
   width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   margin: 0;
   padding: 0;
 }
@@ -114,7 +113,8 @@ input[type=number]::-webkit-inner-spin-button {
   width: 100%;
   min-width: 100%;
   max-width: none;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   position: relative;
   margin: 0;
   padding: 0;
@@ -4312,8 +4312,8 @@ input[type=range]::-webkit-slider-thumb {
   /* 整体布局 */
   .app {
     grid-template-columns: 1fr;
-    min-height: 100vh;
-    height: auto
+    height: 100vh;
+    overflow: hidden
   }
 
   .sidebar {
