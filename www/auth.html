@@ -600,7 +600,10 @@ $('registerForm').addEventListener('submit', function(e) {
   if (name.length < 3 || name.length > 20) { showToast('账户名称需 3-20 个字符', 'error'); return; }
   if (!/^[一-龥A-Za-z0-9_]+$/.test(name)) { showToast('账户名称仅限中英文、数字和下划线', 'error'); return; }
   // 注册不再收集邮箱：Supabase 注册仍需 email 字段，使用占位地址
-  var effectiveEmail = name + '@local.user';
+  // 将账户名转为 ASCII-safe 版本（中文→拼音风格编码），确保邮箱格式合法
+  var safeName = name.replace(/[^a-zA-Z0-9_]/g, '');
+  if (safeName.length < 3) safeName = 'user_' + Date.now().toString(36);
+  var effectiveEmail = safeName + '@localuser.internal';
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
