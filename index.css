@@ -283,6 +283,10 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 .topbar .greet {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
   font-size: 14px;
   color: var(--ink);
   font-weight: 500
