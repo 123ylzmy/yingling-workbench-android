@@ -364,29 +364,28 @@
 
   /* ===================== 每日人民日报阅读 ===================== */
   // 人民日报风格每日文摘（原创正能量短句，非官方原文，规避版权风险）
-  // 每篇带 u 字段：点「阅读原文」跳转人民网对应主题频道（真实文章栏目页）
-  // 说明：无真实原文版权，链接指向人民网各频道栏目；如需某篇对应真实原文，替换 u 即可
+  // 「阅读原文」统一跳转人民网首页（原始跳转链接），规避各频道子域 403 拦截
   const RMRB_QUOTES = [
-    { t: "时代呼唤担当，民族振兴是青年的责任。", u: "https://theory.people.com.cn/" },
-    { t: "把每一件小事做好，就是不平凡的开始。", u: "https://society.people.com.cn/" },
-    { t: "前进的道路从不会一帆风顺，但脚下的每一步都算数。", u: "https://politics.people.com.cn/" },
-    { t: "脚下有多少泥土，心中就沉淀多少真情。", u: "https://society.people.com.cn/" },
-    { t: "梦想不会发光，发光的是那个追梦的你。", u: "https://culture.people.com.cn/" },
-    { t: "越是艰难处，越是修心时。", u: "https://theory.people.com.cn/" },
-    { t: "平凡铸就伟大，英雄来自人民。", u: "https://society.people.com.cn/" },
-    { t: "星光不问赶路人，时光不负有心人。", u: "https://culture.people.com.cn/" },
-    { t: "扎根泥土，才能遇见更广阔的世界。", u: "https://politics.people.com.cn/" },
-    { t: "读懂中国，从读懂身边的烟火气开始。", u: "https://www.people.com.cn/" },
-    { t: "每一代人有每一代人的长征，每一代人有每一代人的担当。", u: "https://theory.people.com.cn/" },
-    { t: "把青春融进时代的洪流，把脚印刻在祖国的大地。", u: "https://culture.people.com.cn/" },
-    { t: "心中有信仰，脚下有力量。", u: "https://theory.people.com.cn/" },
-    { t: "国家发展的大逻辑，藏在每一个普通人的日子里。", u: "https://finance.people.com.cn/" },
-    { t: "从容于心，从容于行，方能行稳致远。", u: "https://culture.people.com.cn/" },
-    { t: "与其焦虑明天，不如把今天过成想要的模样。", u: "https://society.people.com.cn/" },
-    { t: "读懂人民，才能读懂这个时代。", u: "https://www.people.com.cn/" },
-    { t: "一滴水只有放进大海里，才永远不会干涸。", u: "https://society.people.com.cn/" },
-    { t: "把时间花在哪里，哪里就会开花结果。", u: "https://edu.people.com.cn/" },
-    { t: "生活的答案，往往藏在日复一日的坚持里。", u: "https://edu.people.com.cn/" }
+    "时代呼唤担当，民族振兴是青年的责任。",
+    "把每一件小事做好，就是不平凡的开始。",
+    "前进的道路从不会一帆风顺，但脚下的每一步都算数。",
+    "脚下有多少泥土，心中就沉淀多少真情。",
+    "梦想不会发光，发光的是那个追梦的你。",
+    "越是艰难处，越是修心时。",
+    "平凡铸就伟大，英雄来自人民。",
+    "星光不问赶路人，时光不负有心人。",
+    "扎根泥土，才能遇见更广阔的世界。",
+    "读懂中国，从读懂身边的烟火气开始。",
+    "每一代人有每一代人的长征，每一代人有每一代人的担当。",
+    "把青春融进时代的洪流，把脚印刻在祖国的大地。",
+    "心中有信仰，脚下有力量。",
+    "国家发展的大逻辑，藏在每一个普通人的日子里。",
+    "从容于心，从容于行，方能行稳致远。",
+    "与其焦虑明天，不如把今天过成想要的模样。",
+    "读懂人民，才能读懂这个时代。",
+    "一滴水只有放进大海里，才永远不会干涸。",
+    "把时间花在哪里，哪里就会开花结果。",
+    "生活的答案，往往藏在日复一日的坚持里。"
   ];
   var _rmrbIdx = -1;
   var _rmrbKey = 'wb_rmrb_idx';
@@ -413,10 +412,7 @@
     }
     _rmrbIdx = idx;
     rmrbSaveIdx(idx);
-    var item = RMRB_QUOTES[idx];
-    el.textContent = item.t;
-    var link = document.getElementById('rmrbLink');
-    if (link) link.href = item.u;
+    el.textContent = RMRB_QUOTES[idx];
   }
   // 手动切换到另一篇（与当前不同）
   function refreshRMRB() {
