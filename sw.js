@@ -1,5 +1,5 @@
 // 自洽日程 Service Worker v4
-const CACHE_NAME = 'yl-workbench-v5';
+const CACHE_NAME = 'yl-workbench-v6';
 const ASSETS = [
   '/',
   '/index.html',
@@ -43,7 +43,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 请求拦截：缓存优先，网络回退
+// 请求拦截：网络优先，缓存回退（保证每次都拉最新资源）
 self.addEventListener('fetch', event => {
   // 跳过非 GET 请求和 Supabase API 请求
   if (event.request.method !== 'GET') return;
@@ -51,31 +51,21 @@ self.addEventListener('fetch', event => {
   if (url.pathname.includes('/auth/') || url.pathname.includes('/rest/')) return;
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) {
-        // 后台更新缓存
-        fetch(event.request).then(response => {
-          if (response.ok) {
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, response);
-            });
-          }
-        }).catch(() => {});
-        return cached;
-      }
-      return fetch(event.request).then(response => {
-        if (!response || response.status !== 200) return response;
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, clone);
-        });
-        return response;
-      }).catch(() => {
-        // 离线时返回缓存首页
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+    fetch(event.request)
+      .then(response => {
+        // 网络成功：更新缓存并返回最新内容
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
-      });
-    })
+        return response;
+      })
+      .catch(() => {
+        // 离线或网络失败：回退到缓存
+        return caches.match(event.request).then(cached => {
+          if (cached) return cached;
+          if (event.request.mode === 'navigate') return caches.match('/index.html');
+        });
+      })
   );
 });
