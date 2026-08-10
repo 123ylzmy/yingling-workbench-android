@@ -2688,6 +2688,67 @@ input[type=number]::-webkit-inner-spin-button {
   text-align: center
 }
 
+/* ========== 打卡成就区（健康页用） ========== */
+.checkin-ach {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px
+}
+.checkin-num {
+  display: flex;
+  align-items: baseline;
+  gap: 2px
+}
+.checkin-big {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--g500);
+  line-height: 1
+}
+.checkin-unit {
+  font-size: 15px;
+  color: var(--g500);
+  font-weight: 500
+}
+.checkin-lab {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 4px
+}
+.checkin-stat-btn {
+  font-size: 12px;
+  color: var(--ink-soft);
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 10px;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap
+}
+.checkin-stat {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 10px 0 4px
+}
+.checkin-stat-item {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 4px;
+  text-align: center
+}
+.checkin-stat-n {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--g500)
+}
+.checkin-stat-l {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 2px
+}
+
 /* ========== 习惯打卡（健康页用） ========== */
 .habit-grid {
   display: grid;
