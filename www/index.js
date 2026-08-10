@@ -1563,25 +1563,7 @@
   function delEvent(id) { conf('删除这条记录？', function () { state.events = state.events.filter(function (e) { return e.id !== id }); save(); renderAll() }) }
 
   /* ===================== 习惯打卡（仅健康页使用） ===================== */
-  function renderHabits(containerId) {
-    const td = today(), tdh = state.habits[td] || {};
-    const all = [...HABITS, ...state.customHabits.map(h => ({ ...h, ico: h.icon ? '<circle cx="12" cy="12" r="10"/>' : '' }))];
-    const doneN = all.filter(h => tdh[h.key]).length;
-    $(containerId).innerHTML = `
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--ink-soft)">
-    完成 <b style="color:var(--g500);font-size:14px">${doneN}</b>/${all.length} 项
-  </div>
-  <div class="habit-grid">
-    ${all.map(h => `<div class="habit-card ${tdh[h.key] ? 'done' : ''}" onclick="toggleHabit('${h.key}')">
-      <div class="hico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${h.ico || '<circle cx="12" cy="12" r="10"/>'}</svg></div>
-      <div class="hlbl">${esc(h.label)}</div>
-    </div>`).join('')}
-    <div class="habit-card habit-add" onclick="openCustomHabitModal()">
-      <div class="hico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-      <div class="hlbl">自定义</div>
-    </div>
-  </div>`;
-  }
+  /* 旧版 renderHabits 已移除（被下方新版覆盖，保留 toggleHabit） */
   function toggleHabit(key) {
     const td = today();
     if (!state.habits[td]) state.habits[td] = {};
