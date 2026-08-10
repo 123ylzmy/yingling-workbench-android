@@ -2708,9 +2708,9 @@ html.is-native-app .lbl-app {
 /* ========== 打卡成就区（健康页用） ========== */
 .checkin-ach {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px
+  margin-bottom: 6px
 }
 .checkin-num {
   display: flex;
@@ -2764,6 +2764,54 @@ html.is-native-app .lbl-app {
   font-size: 11px;
   color: var(--ink-soft);
   margin-top: 2px
+}
+
+/* ========== 打卡统计可视化图表（年/月/周） ========== */
+.checkin-block {
+  margin: 2px 0 14px
+}
+.ck-tabs {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 4px 0 10px
+}
+.ck-tab {
+  font-size: 12px;
+  padding: 5px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all .15s
+}
+.ck-tab.active {
+  background: var(--g500);
+  color: #fff;
+  border-color: var(--g500)
+}
+.checkin-chart {
+  width: 100%
+}
+.ck-svg {
+  display: block;
+  width: 100%
+}
+.ck-cap {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 2px
+}
+/* 网页端：打卡区与习惯网格居中限宽，宽屏不散 */
+html:not(.is-native-app) .checkin-block {
+  max-width: 480px;
+  margin: 2px auto 14px
+}
+html:not(.is-native-app) #healthHabits .habit-grid {
+  max-width: 480px;
+  margin: 0 auto
 }
 
 /* ========== 习惯打卡（健康页用） ========== */
