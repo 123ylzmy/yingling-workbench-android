@@ -2723,18 +2723,25 @@
     return { total, streak, yCount, mCount, wCount };
   }
   let checkinRange = 'year';
-  function toggleCheckinChart() {
-    const card = document.getElementById('checkinChartCard');
-    const btn = document.getElementById('ckToggleBtn');
-    if (!card || !btn) return;
-    if (card.style.display === 'none') {
-      card.style.display = 'block';
-      btn.textContent = '趋势 ▴';
-      renderCheckinChartInto('checkinChart', checkinRange);
-    } else {
-      card.style.display = 'none';
-      btn.textContent = '趋势 ▾';
-    }
+  function openCheckinModal() {
+    const st = checkinStats();
+    openModal({
+      title: '打卡统计',
+      body:
+        '<div class="ck-tabs" style="justify-content:center;margin-bottom:10px">' +
+          '<button class="ck-tab ' + (checkinRange === 'year' ? 'active' : '') + '" data-r="year" onclick="switchCheckinRange(\'year\')">年</button>' +
+          '<button class="ck-tab ' + (checkinRange === 'month' ? 'active' : '') + '" data-r="month" onclick="switchCheckinRange(\'month\')">月</button>' +
+          '<button class="ck-tab ' + (checkinRange === 'week' ? 'active' : '') + '" data-r="week" onclick="switchCheckinRange(\'week\')">周</button>' +
+        '</div>' +
+        '<div class="checkin-chart" id="checkinChart"></div>' +
+        '<div class="ck-stats-row">' +
+          '<div class="ck-stat"><span class="ck-stat-n">' + st.yCount + '</span><span class="ck-stat-l">本年</span></div>' +
+          '<div class="ck-stat"><span class="ck-stat-n">' + st.mCount + '</span><span class="ck-stat-l">本月</span></div>' +
+          '<div class="ck-stat"><span class="ck-stat-n">' + st.wCount + '</span><span class="ck-stat-l">本周</span></div>' +
+        '</div>',
+      foot: '<button class="btn" onclick="closeModal()">关闭</button>'
+    });
+    renderCheckinChartInto('checkinChart', checkinRange);
   }
   function switchCheckinRange(r) {
     checkinRange = r;
@@ -2826,19 +2833,7 @@
   <div class="checkin-block">
     <div class="checkin-ach">
       <div class="checkin-num"><span class="checkin-big">${st.total}</span><span class="checkin-unit">天</span></div>
-      <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天</div>
-      <button class="ck-toggle-btn" id="ckToggleBtn" onclick="toggleCheckinChart()">趋势 ▾</button>
-    </div>
-    <div class="checkin-chart-card" id="checkinChartCard" style="display:none">
-      <div class="checkin-chart-head">
-        <span class="checkin-chart-title">打卡趋势</span>
-        <div class="ck-tabs">
-          <button class="ck-tab ${checkinRange === 'year' ? 'active' : ''}" data-r="year" onclick="switchCheckinRange('year')">年</button>
-          <button class="ck-tab ${checkinRange === 'month' ? 'active' : ''}" data-r="month" onclick="switchCheckinRange('month')">月</button>
-          <button class="ck-tab ${checkinRange === 'week' ? 'active' : ''}" data-r="week" onclick="switchCheckinRange('week')">周</button>
-        </div>
-      </div>
-      <div class="checkin-chart" id="checkinChart"></div>
+      <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天<button class="ck-caret" onclick="openCheckinModal()" title="打卡统计" aria-label="打卡统计">▾</button></div>
     </div>
   </div>
   <div class="habit-grid">
@@ -2856,7 +2851,6 @@
       <div class="hlbl">添加</div>
     </div>
   </div>`;
-    renderCheckinChartInto('checkinChart', checkinRange);
   }
 
   /* ===================== 弹窗：目标 ===================== */
