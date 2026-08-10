@@ -446,6 +446,7 @@
         if (!d.studyModules) d.studyModules = defData.studyModules;
         if (!d.holidays) d.holidays = [];
         if (!d.healthTarget) d.healthTarget = null;
+        if (!d.checkins) d.checkins = {};
         // 迁移旧工作任务：补 deadline + completedDate + progress + stages
         if (d.workTasks) d.workTasks.forEach(t => {
           if (!t.deadline) t.deadline = today();
@@ -515,7 +516,7 @@
   let todoViewDate = null; // 在 initApp 中赋值
   let calYear, calMonth;
   let _showLunar = false;
-  function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); lastLocalUpdate = Date.now(); autoCloudSave() }
+  function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); lastLocalUpdate = Date.now(); autoCloudSave(); syncTodayCheckin() }
   /* 自动云端保存（防抖 1.5 秒，失败自动重试最多 3 次） */
   var _cloudSavePending = null;
   var _cloudSaveRetries = 0;
@@ -2686,15 +2687,70 @@
     state.habits[td][key] = !state.habits[td][key];
     save(); renderAll();
   }
+  /* ===================== 打卡成就：健康打卡 + 训练日都完成 = 当天打卡 1 天 ===================== */
+  function isTodayCheckinDone() {
+    const td = today();
+    const all = [...HABITS, ...(state.customHabits || [])];
+    const tdh = state.habits[td] || {};
+    const habitDone = all.length === 0 ? true : all.every(h => tdh[h.key]);
+    const trainTodos = (state.todos || []).filter(t => t.isRepeat && t.repeatDates && t.repeatDates.indexOf(td) >= 0);
+    const trainDone = trainTodos.length === 0 ? true : trainTodos.every(t => t.doneBy && t.doneBy[td]);
+    return habitDone && trainDone;
+  }
+  function syncTodayCheckin() {
+    if (!state || !state.checkins) return;
+    const td = today();
+    if (isTodayCheckinDone()) state.checkins[td] = true;
+    else delete state.checkins[td];
+  }
+  function checkinStats() {
+    const td = today();
+    const keys = Object.keys(state.checkins || {});
+    const total = keys.length;
+    let streak = 0;
+    let d = new Date();
+    if (!state.checkins[td]) d.setDate(d.getDate() - 1); // 今天未打卡则从昨天算连续
+    while (true) {
+      const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (state.checkins[ds]) { streak++; d.setDate(d.getDate() - 1); } else break;
+    }
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    const weekStart = new Date(now);
+    const wd = (now.getDay() + 6) % 7; // 周一=0
+    weekStart.setDate(now.getDate() - wd); weekStart.setHours(0, 0, 0, 0);
+    let yCount = 0, mCount = 0, wCount = 0;
+    keys.forEach(k => {
+      const dt = new Date(k + 'T00:00:00');
+      if (dt.getFullYear() === y) { yCount++; if (dt.getMonth() === m) mCount++; }
+      if (dt >= weekStart) wCount++;
+    });
+    return { total, streak, yCount, mCount, wCount };
+  }
+  function toggleCheckinStat() {
+    const el = document.getElementById('checkinStat');
+    if (!el) return;
+    const btn = document.getElementById('checkinStatBtn');
+    if (el.style.display === 'none') { el.style.display = 'grid'; if (btn) btn.textContent = '统计 ▴'; }
+    else { el.style.display = 'none'; if (btn) btn.textContent = '统计 ▾'; }
+  }
   function renderHabits(containerId) {
+    syncTodayCheckin();
     const td = today(), tdh = state.habits[td] || {};
     const builtins = HABITS;
     const customs = state.customHabits.map(h => ({ ...h, ico: h.icon ? '<circle cx="12" cy="12" r="10"/>' : '', _isCustom: true }));
     const all = [...builtins, ...customs];
-    const doneN = all.filter(h => tdh[h.key]).length;
+    const st = checkinStats();
     $(containerId).innerHTML = `
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--ink-soft)">
-    完成 <b style="color:var(--g500);font-size:14px">${doneN}</b>/${all.length} 项
+  <div class="checkin-ach">
+    <div class="checkin-num"><span class="checkin-big">${st.total}</span><span class="checkin-unit">天</span></div>
+    <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天</div>
+    <button class="checkin-stat-btn" id="checkinStatBtn" onclick="toggleCheckinStat()">统计 ▾</button>
+  </div>
+  <div class="checkin-stat" id="checkinStat" style="display:none">
+    <div class="checkin-stat-item"><div class="checkin-stat-n">${st.yCount}</div><div class="checkin-stat-l">本年</div></div>
+    <div class="checkin-stat-item"><div class="checkin-stat-n">${st.mCount}</div><div class="checkin-stat-l">本月</div></div>
+    <div class="checkin-stat-item"><div class="checkin-stat-n">${st.wCount}</div><div class="checkin-stat-l">本周</div></div>
   </div>
   <div class="habit-grid">
     ${all.map(h => {
