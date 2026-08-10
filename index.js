@@ -462,6 +462,7 @@
       if (d.todos) d.todos.forEach(t => { if (t.done === undefined) t.done = false });
       // 迁移旧目标：无 type 字段的按 category 推断
       if (d.goals) d.goals.forEach(g => {
+        if (g.deadline && g.deadline < today()) g.deadline = null; // 旧逻辑强制 today，无真实截止→转为长期目标
         if (!g.type) {
           if (g.category === 'health' && g.unit === 'kg') {
             g.type = 'metric';
@@ -2054,8 +2055,9 @@
 
     $('goalList').innerHTML = activeGoals.length ? activeGoals.map(g => {
       const { pct, curLabel } = calcGoalProgress(g);
-      const days = db(today(), g.deadline);
-      const urg = days <= 30 && days >= 0, over = days < 0;
+      const hasDeadline = !!g.deadline;
+      const days = hasDeadline ? db(today(), g.deadline) : null;
+      const urg = hasDeadline && days <= 30 && days >= 0, over = hasDeadline && days < 0;
       const cb = ({ health: 'g', love: 'p', skill: 'c', work: 'b', life: 'pu', finance: 'c', travel: 'b', hobby: 'p' }[g.category] || 'g');
       const pctClr = g.category === 'health' ? 'var(--g500)' : g.category === 'skill' ? 'var(--c300)' : g.category === 'love' ? 'var(--p300)' : 'var(--ink)';
       const typeLabel = g.category === 'health' ? '🩺 健康' : '📋 任务';
@@ -2076,7 +2078,7 @@
     <div class="goal-bar"><div class="goal-bar-fill ${cb}" style="width:${pct}%"></div></div>
     <div class="goal-meta">
       <span>${curLabel}</span>
-      <span class="${urg || over ? 'urgent' : ''}">${over ? '已超期 ' + (-days) + ' 天' : g.deadline === today() ? '今天到期' : g.category === 'health' ? '' : days < 0 ? '' : '还剩 ' + days + ' 天'}</span>
+      <span class="${urg || over ? 'urgent' : ''}">${!hasDeadline ? '长期目标' : over ? '已超期 ' + (-days) + ' 天' : g.deadline === today() ? '今天到期' : '还剩 ' + days + ' 天'}</span>
     </div>
     ${g.krs && g.krs.length ? `<div class="goal-kr">${g.krs.map((kr, i) => `<div class="goal-kr-item ${kr.done ? 'done' : ''}" onclick="toggleKR('${g.id}',${i})"><span class="kdot"></span>${esc(kr.title)}</div>`).join('')}</div>` : ''}
     ${pct >= 100 && g.reward && !g.rewardRedeemed ? `<div class="goal-reward-done" onclick="redeemGoalReward('${g.id}',event)" title="点击兑换奖励">🎁 <b>已达成！</b> 点击兑换：${esc(g.reward)}</div>` : ''}
@@ -2722,7 +2724,8 @@
       <div class="chip-group" id="gcats">${CATEGORIES.map(c => `<div class="chip ${c.cls || ''} ${g && g.category === c.id || (!g && c.id === defaultCat) ? 'active' : ''}" data-cat="${c.id}">${c.label}</div>`).join('')}</div>
     </div>
     <div class="form-group"><label>关键结果 KR（可选，每行一个）</label><textarea class="inp" id="gkr" placeholder="比如：&#10;每周运动≥3次&#10;21点后不吃东西">${g ? g.krs.map(k => k.title).join('\n') : ''}</textarea></div>
-    <div class="form-group"><label>🎁 达成奖励</label><input class="inp" id="greward" value="${g && g.reward ? esc(g.reward) : ''}" placeholder="达到目标后奖励自己什么？（比如：买新裙子、去吃大餐、去旅行）"></div>`,
+    <div class="form-group"><label>🎁 达成奖励</label><input class="inp" id="greward" value="${g && g.reward ? esc(g.reward) : ''}" placeholder="达到目标后奖励自己什么？（比如：买新裙子、去吃大餐、去旅行）"></div>
+    <div class="form-group"><label>📅 截止日期（可选，留空=长期目标）</label><input class="inp" type="date" id="gdeadline" value="${g && g.deadline ? g.deadline : ''}"></div>`,
       foot: '<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" onclick="saveGoal(\'' + (g ? g.id : '') + '\')">保存</button>'
     });
     $('gcats').querySelectorAll('.chip').forEach(c => {
@@ -2739,7 +2742,7 @@
     const data = {
       title: t, category: cat, type: 'task',
       target: 1, unit: '个任务',
-      deadline: today(),
+      deadline: ($('gdeadline') ? $('gdeadline').value.trim() : '') || null,
       reward: $('greward').value.trim() || '',
       krs: $('gkr').value.split('\n').map(s => s.trim()).filter(Boolean).map(s => ({ title: s, done: false }))
     };
