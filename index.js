@@ -1022,7 +1022,7 @@
       document.getElementById('repeatChevron').textContent = '▾';
     }
   }
-  // 渲染循环日期选择器（今天起 30 天，月历点选）
+  // 渲染循环日期选择器（今天起 30 天，月历点选 · 紧凑版）
   function renderRepeatCal() {
     var el = document.getElementById('repeatCal');
     if (!el) return;
@@ -1037,11 +1037,17 @@
     cur.setDate(cur.getDate() - cur.getDay()); // 回退到周日
     var endDate = new Date(max);
     endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
+    var lastMonth = -1;
     while (cur <= endDate) {
       var dstr = cur.toISOString().slice(0, 10);
       var inRange = cur >= start && cur <= max;
       var isToday = dstr === todayStr;
       var selected = todoRepeatDates.indexOf(dstr) >= 0;
+      // 月份标签（仅范围内且换月时显示）
+      if (inRange && cur.getMonth() !== lastMonth) {
+        lastMonth = cur.getMonth();
+        html += '<div class="cal-month-label">' + (cur.getMonth() + 1) + '月</div>';
+      }
       var cls = 'cal-cell' + (inRange ? '' : ' out') + (isToday ? ' today' : '') + (selected ? ' selected' : '');
       var label = isToday ? '今' : String(cur.getDate());
       html += '<div class="' + cls + '" ' + (inRange ? 'onclick="toggleRepeatDate(\'' + dstr + '\')"' : '') + '>' + label + '</div>';
