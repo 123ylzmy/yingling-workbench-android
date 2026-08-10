@@ -310,6 +310,9 @@ html.is-native-app .lbl-app {
   font-weight: 500
 }
 
+/* 桌面端：greet-actions 为空时隐藏（按钮在 topbar-right） */
+.greet-actions:empty { display: none }
+
 .topbar .greet b {
   color: var(--g500);
   font-weight: 600
@@ -4636,29 +4639,57 @@ input[type=range]::-webkit-slider-thumb {
     padding: 8px 0
   }
 
-  /* 顶部栏 — 移动端垂直堆叠防重叠 */
+  /* 顶部栏 — 移动端：问候语+按钮同行，日期+天气次行 */
   .topbar {
     height: auto;
     padding: 8px 14px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px
+    flex-wrap: wrap;
+    gap: 4px 0;
+    align-content: flex-start
   }
 
   .topbar-main {
     flex-wrap: wrap;
     gap: 6px;
-    align-items: center
+    align-items: center;
+    order: 1;
+    width: 100%
   }
 
+  /* 问候语行：左侧文字+头像+心情，右侧放操作按钮 */
   .topbar .greet {
-    font-size: 13px
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 4px
   }
 
-  .topbar-right {
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: flex-end
+  /* 移动端 topbar-right 按钮嵌入问候语行（通过 JS 移动） */
+  .greet-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto
+  }
+  .greet-actions button,
+  .greet-actions .sync-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 8px !important;
+    min-height: 32px !important;
+    min-width: 32px;
+    font-size: 11px !important;
+    border-radius: 12px !important
+  }
+  .greet-actions #logoutBtn {
+    margin-left: 0 !important;
+    color: var(--danger) !important
   }
 
   .card-bd {

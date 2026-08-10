@@ -606,7 +606,22 @@
     if (h < 6) g = '凌晨好'; else if (h < 11) g = '早上好'; else if (h < 13) g = '中午好'; else if (h < 18) g = '下午好'; else g = '晚上好';
     var avatarHtml = getAvatarHtml(profile, 28);
     var nickname = (profile && profile.nickname) ? profile.nickname : '';
-    $('greetLine').innerHTML = g + '，' + nickname + ' ' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()" ontouchstart="if(event.target===this){event.preventDefault();closeMoodPanel()}"></span><span class="mood-panel" id="moodPanel"></span></span>';
+    $('greetLine').innerHTML = g + '，' + nickname + ' ' + avatarHtml + ' <span class="mood-wrap" style="margin-left:2px"><span class="mood-trigger" id="moodIcon" onclick="toggleMoodPanel(event)" title="选择心情"><svg id="moodIconSvg" viewBox="0 0 24 24" width="22" height="22"></svg></span><span class="mood-backdrop" id="moodBackdrop" onclick="closeMoodPanel()" ontouchstart="if(event.target===this){event.preventDefault();closeMoodPanel()}"></span><span class="mood-panel" id="moodPanel"></span></span>' + '<span class="greet-actions" id="greetActions"></span>';
+    // 移动端：把操作按钮从 topbar-right 移到问候语行右侧
+    (function moveGreetActions() {
+      var actionsContainer = document.getElementById('greetActions');
+      var rightBar = document.querySelector('.topbar-right');
+      if (!actionsContainer || !rightBar) return;
+      // 仅在窄屏（移动端）下移动；桌面端保持按钮在右上角
+      var isMobile = window.innerWidth < 768 || document.documentElement.classList.contains('is-native-app');
+      if (isMobile) {
+        actionsContainer.appendChild(rightBar);
+      } else {
+        // 桌面端：确保 rightBar 在 topbar 下（不在 greet 内）
+        var topbar = document.querySelector('.topbar');
+        if (rightBar.parentNode !== topbar) topbar.appendChild(rightBar);
+      }
+    })();
     if (!state.mood || state.mood.date !== today()) { state.mood = { date: today(), value: 'happy' }; }
     renderMoodIcon();
   }
