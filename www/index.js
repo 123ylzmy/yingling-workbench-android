@@ -1,4 +1,12 @@
 /* ===================== 认证 ===================== */
+  /* 原生环境(APK)兜底打标：head 脚本执行时 Capacitor bridge 可能尚未注入 */
+  (function markNativeApp() {
+    try {
+      var isNative = !!(window.Capacitor || location.protocol === 'file:' || location.protocol === 'capacitor:');
+      if (isNative) document.documentElement.classList.add('is-native-app');
+    } catch (e) { }
+  })();
+
   var APP_VERSION = '20260809';
   // 解析 sync_store 返回的 data 字段（兼容 JSONB 对象和 TEXT 字符串）
   function parseStoreData(d) {
