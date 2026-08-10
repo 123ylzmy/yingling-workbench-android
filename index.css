@@ -4451,12 +4451,19 @@ input[type=range]::-webkit-slider-thumb {
     padding: 8px 0
   }
 
-  /* 顶部栏 */
+  /* 顶部栏 — 移动端垂直堆叠防重叠 */
   .topbar {
     height: auto;
-    padding: 7px 14px;
+    padding: 8px 14px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px
+  }
+
+  .topbar-main {
     flex-wrap: wrap;
-    gap: 8px
+    gap: 6px;
+    align-items: center
   }
 
   .topbar .greet {
@@ -4465,7 +4472,8 @@ input[type=range]::-webkit-slider-thumb {
 
   .topbar-right {
     flex-wrap: wrap;
-    gap: 6px
+    gap: 6px;
+    justify-content: flex-end
   }
 
   .card-bd {
