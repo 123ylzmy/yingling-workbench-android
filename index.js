@@ -2722,12 +2722,85 @@
     });
     return { total, streak, yCount, mCount, wCount };
   }
-  function toggleCheckinStat() {
-    const el = document.getElementById('checkinStat');
+  let checkinRange = 'year';
+  function switchCheckinRange(r) {
+    checkinRange = r;
+    document.querySelectorAll('.ck-tab').forEach(function (t) { t.classList.toggle('active', t.dataset.r === r); });
+    renderCheckinChartInto('checkinChart', r);
+  }
+  function svgWrap(W, H, inner) {
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" preserveAspectRatio="xMidYMid meet" class="ck-svg">' + inner + '</svg>';
+  }
+  function renderCheckinChartInto(id, range) {
+    const el = document.getElementById(id);
     if (!el) return;
-    const btn = document.getElementById('checkinStatBtn');
-    if (el.style.display === 'none') { el.style.display = 'grid'; if (btn) btn.textContent = '统计 ▴'; }
-    else { el.style.display = 'none'; if (btn) btn.textContent = '统计 ▾'; }
+    if (!state.checkins || typeof state.checkins !== 'object') state.checkins = {};
+    const cks = state.checkins;
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    const W = 320, H = 160, padL = 8, padR = 8, padT = 22, padB = 20;
+    const chartW = W - padL - padR, chartH = H - padT - padB;
+    const G = 'var(--g500)', OFF = '#dfe6f0';
+    let bars = [], caption = '';
+    if (range === 'year') {
+      let maxc = 1;
+      for (let i = 1; i <= 12; i++) {
+        const days = new Date(y, i, 0).getDate(); let cnt = 0;
+        for (let d = 1; d <= days; d++) {
+          const ds = y + '-' + String(i).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+          if (cks[ds]) cnt++;
+        }
+        bars.push({ label: i, count: cnt }); if (cnt > maxc) maxc = cnt;
+      }
+      const sum = bars.reduce(function (a, b) { return a + b.count; }, 0);
+      caption = y + '年累计 ' + sum + ' 天';
+      const n = bars.length, slot = chartW / n, bw = slot * 0.6;
+      let s = '';
+      bars.forEach(function (b, i) {
+        const x = padL + slot * i + (slot - bw) / 2;
+        const h = Math.max(2, b.count / maxc * chartH);
+        const yy = padT + chartH - h;
+        s += '<rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" style="fill:' + G + '"/>';
+        if (b.count > 0) s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (yy - 4).toFixed(1) + '" text-anchor="middle" font-size="9" style="fill:var(--ink-soft)">' + b.count + '</text>';
+        if (i % 2 === 0 || i === 11) s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (padT + chartH + 14).toFixed(1) + '" text-anchor="middle" font-size="9" style="fill:var(--ink-soft)">' + (i + 1) + '</text>';
+      });
+      el.innerHTML = svgWrap(W, H, s) + '<div class="ck-cap">' + caption + '</div>';
+    } else if (range === 'month') {
+      const days = new Date(y, m + 1, 0).getDate(); let cnt = 0;
+      for (let d = 1; d <= days; d++) {
+        const ds = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const done = !!cks[ds]; bars.push({ label: d, done: done }); if (done) cnt++;
+      }
+      caption = (m + 1) + '月 已打卡 ' + cnt + ' / ' + days + ' 天';
+      const n = bars.length, slot = chartW / n, bw = Math.min(slot * 0.72, 11);
+      let s = '';
+      bars.forEach(function (b) {
+        const x = padL + slot * (b.label - 1) + (slot - bw) / 2;
+        const h = b.done ? chartH : chartH * 0.1;
+        const yy = padT + chartH - h;
+        s += '<rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" style="fill:' + (b.done ? G : OFF) + '"/>';
+        s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (padT + chartH + 14).toFixed(1) + '" text-anchor="middle" font-size="8" style="fill:var(--ink-soft)">' + (b.label % 5 === 0 || b.label === days ? b.label : '') + '</text>';
+      });
+      el.innerHTML = svgWrap(W, H, s) + '<div class="ck-cap">' + caption + '</div>';
+    } else {
+      const ws = new Date(now); const wd = (now.getDay() + 6) % 7; ws.setDate(now.getDate() - wd); ws.setHours(0, 0, 0, 0);
+      const wl = ['一', '二', '三', '四', '五', '六', '日']; let cnt = 0;
+      for (let i = 0; i < 7; i++) {
+        const dt = new Date(ws); dt.setDate(ws.getDate() + i);
+        const done = !!cks[fmtDate(dt)]; bars.push({ label: wl[i], done: done }); if (done) cnt++;
+      }
+      caption = '本周 已打卡 ' + cnt + ' / 7 天';
+      const n = bars.length, slot = chartW / n, bw = slot * 0.5;
+      let s = '';
+      bars.forEach(function (b, i) {
+        const x = padL + slot * i + (slot - bw) / 2;
+        const h = b.done ? chartH : chartH * 0.1;
+        const yy = padT + chartH - h;
+        s += '<rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" style="fill:' + (b.done ? G : OFF) + '"/>';
+        s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (padT + chartH + 14).toFixed(1) + '" text-anchor="middle" font-size="9" style="fill:var(--ink-soft)">' + b.label + '</text>';
+      });
+      el.innerHTML = svgWrap(W, H, s) + '<div class="ck-cap">' + caption + '</div>';
+    }
   }
   function renderHabits(containerId) {
     syncTodayCheckin();
@@ -2737,15 +2810,17 @@
     const all = [...builtins, ...customs];
     const st = checkinStats();
     $(containerId).innerHTML = `
-  <div class="checkin-ach">
-    <div class="checkin-num"><span class="checkin-big">${st.total}</span><span class="checkin-unit">天</span></div>
-    <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天</div>
-    <button class="checkin-stat-btn" id="checkinStatBtn" onclick="toggleCheckinStat()">统计 ▾</button>
-  </div>
-  <div class="checkin-stat" id="checkinStat" style="display:none">
-    <div class="checkin-stat-item"><div class="checkin-stat-n">${st.yCount}</div><div class="checkin-stat-l">本年</div></div>
-    <div class="checkin-stat-item"><div class="checkin-stat-n">${st.mCount}</div><div class="checkin-stat-l">本月</div></div>
-    <div class="checkin-stat-item"><div class="checkin-stat-n">${st.wCount}</div><div class="checkin-stat-l">本周</div></div>
+  <div class="checkin-block">
+    <div class="checkin-ach">
+      <div class="checkin-num"><span class="checkin-big">${st.total}</span><span class="checkin-unit">天</span></div>
+      <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天</div>
+    </div>
+    <div class="ck-tabs">
+      <button class="ck-tab ${checkinRange === 'year' ? 'active' : ''}" data-r="year" onclick="switchCheckinRange('year')">年</button>
+      <button class="ck-tab ${checkinRange === 'month' ? 'active' : ''}" data-r="month" onclick="switchCheckinRange('month')">月</button>
+      <button class="ck-tab ${checkinRange === 'week' ? 'active' : ''}" data-r="week" onclick="switchCheckinRange('week')">周</button>
+    </div>
+    <div class="checkin-chart" id="checkinChart"></div>
   </div>
   <div class="habit-grid">
     ${all.map(h => {
@@ -2762,6 +2837,7 @@
       <div class="hlbl">添加</div>
     </div>
   </div>`;
+    renderCheckinChartInto('checkinChart', checkinRange);
   }
 
   /* ===================== 弹窗：目标 ===================== */
