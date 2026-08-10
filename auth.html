@@ -258,13 +258,11 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
 <script>
-// ==================== Supabase ====================
+// ==================== Supabase REST 配置 ====================
+// 注：注册/登录不再依赖 Supabase Auth（邮箱），仅用 REST API 存取数据
 var SUPABASE_URL = 'https://dyvzxlntyqebblewpihj.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_kSGB8khWFcMSemqJ1m6Rxw_pI4gGrhc';
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================== 预设头像 ====================
 var AVATARS = [
@@ -599,20 +597,18 @@ $('registerForm').addEventListener('submit', function(e) {
   if (!name) { showToast('请输入账户名称', 'error'); return; }
   if (name.length < 3 || name.length > 20) { showToast('账户名称需 3-20 个字符', 'error'); return; }
   if (!/^[一-龥A-Za-z0-9_]+$/.test(name)) { showToast('账户名称仅限中英文、数字和下划线', 'error'); return; }
-  // 注册不再收集邮箱：Supabase 注册仍需 email 字段，使用占位地址
-  // 占位邮箱加入随机后缀，确保唯一性，避免同一邮箱重复注册触发 Supabase rate limit
-  var safeName = name.replace(/[^a-zA-Z0-9_]/g, '');
-  if (safeName.length < 3) safeName = 'user_' + Date.now().toString(36);
-  var randSuffix = randomStr(6); // 随机6位字母数字，确保每次注册邮箱不同
-  var effectiveEmail = safeName + '_' + randSuffix + '@localuser.internal';
+  // 注册完全不依赖 Supabase Auth（无邮箱、无 signUp）
+  // 用本地 UUID 作为用户 ID，所有数据通过 sbRest (REST API) 直存
   if (password.length < 6) { showToast('密码至少6位', 'error'); return; }
   if (password !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
 
   setLoading($('regBtn'), true);
 
-  // 生成 session_key — 这个才是 Supabase 的密码
-  // 用户输入的密码只在我们自己的 profile 里存储和验证
-  // 这样做的好处：不依赖 Supabase 邮箱验证，注册后即可登录
+  // 生成本地 UUID 作为用户 ID（不经过 Supabase Auth）
+  var userId = null;
+  try { userId = crypto.randomUUID(); } catch (_) {
+    userId = 'local_' + Date.now().toString(36) + '_' + randomStr(16);
+  }
   var sessionKey = randomStr(24);
   var passwordHash = hashPassword(password);
 
@@ -623,12 +619,10 @@ $('registerForm').addEventListener('submit', function(e) {
     avatar_bg: AVATARS[avatarIdx].bg,
     gender: gender,
     account: name,
-    email: effectiveEmail,
     birthday: birthday || null,
     height: height,
     created_at: new Date().toISOString(),
     last_active: new Date().toISOString()
-    // 注意：session_key 和 password_hash 存在 wb_profile_lookup，不在 profile 主体中
   };
 
   // 先检查账户名称是否已注册
@@ -639,41 +633,34 @@ $('registerForm').addEventListener('submit', function(e) {
       return Promise.reject('DUPLICATE');
     }
 
-    // 创建 Supabase 账号 — 密码用 sessionKey！
-    return supabase.auth.signUp({
-      email: effectiveEmail,
-      password: sessionKey,
-      options: { data: profile }
+    // 直接用 REST API 存数据，不走 Supabase Auth
+    // 第一步：存用户 profile
+    return sbRest('POST', 'sync_store', {
+      group_key: 'profile_' + userId,
+      store: 'wb_user_profile',
+      data: profile,
+      updated_at: new Date().toISOString()
     });
-  }).then(function(res) {
-    if (!res || res === 'DUPLICATE') return;
-    if (res.error) {
-      setLoading($('regBtn'), false);
-      var msg = res.error.message;
-      if (msg.indexOf('already registered') >= 0 || msg.indexOf('already exists') >= 0) {
-        msg = '该账户已注册，请直接登录';
-      } else if (msg.toLowerCase().indexOf('rate limit') >= 0) {
-        msg = '注册太频繁，请稍等 1 分钟后再试';
-      } else if (msg.toLowerCase().indexOf('email') >= 0 && msg.toLowerCase().indexOf('valid') >= 0) {
-        msg = '注册信息格式异常，请检查账户名称';
-      }
-      showToast(msg, 'error');
-      return;
-    }
-
-    var userId = null;
-    // signUp 可能返回 user（邮箱确认开启时）或 session（关闭时）
-    if (res.data.user && res.data.user.id) {
-      userId = res.data.user.id;
-    }
-    if (!userId) {
-      setLoading($('regBtn'), false);
-      showToast('注册失败，请重试', 'error');
-      return;
-    }
-
-    // 串行写入三份数据
-    return saveRegistrationData(userId, profile, name, effectiveEmail, sessionKey, passwordHash, res.data.session);
+  }).then(function() {
+    // 第二步：存账户名→用户映射（含密码哈希）
+    return sbRest('POST', 'sync_store', {
+      group_key: nameToLookupKey(name),
+      store: 'wb_profile_lookup',
+      data: {
+        user_id: userId,
+        account: name,
+        session_key: sessionKey,
+        password_hash: passwordHash
+      },
+      updated_at: new Date().toISOString()
+    });
+  }).then(function() {
+    // 第三步：自签本地 session 并保存，自动登录
+    var session = createLocalSession(userId, true);
+    saveAuthData(session, profile);
+    setLoading($('regBtn'), false);
+    showToast('注册成功，欢迎加入！', 'success');
+    setTimeout(function() { window.location.href = 'index.html'; }, 600);
   }).catch(function(err) {
     if (typeof err === 'string') return; // 已处理
     setLoading($('regBtn'), false);
@@ -682,46 +669,8 @@ $('registerForm').addEventListener('submit', function(e) {
   });
 });
 
-function saveRegistrationData(userId, profile, name, email, sessionKey, passwordHash, session) {
-  // 1. 存 profile
-  return sbRest('POST', 'sync_store', {
-    group_key: 'profile_' + userId,
-    store: 'wb_user_profile',
-    data: profile,
-    updated_at: new Date().toISOString()
-  }).then(function() {
-    // 2. 存账户名→用户映射（含 session_key 和 password_hash）
-    return sbRest('POST', 'sync_store', {
-      group_key: nameToLookupKey(name),
-      store: 'wb_profile_lookup',
-      data: {
-        user_id: userId,
-        account: name,
-        email: email,
-        session_key: sessionKey,
-        password_hash: passwordHash
-      },
-      updated_at: new Date().toISOString()
-    });
-  }).then(function() {
-    setLoading($('regBtn'), false);
-
-    if (session && session.access_token) {
-      // 邮箱验证关闭 → 自动登录
-      saveAuthData(session, profile);
-      showToast('注册成功，欢迎加入！', 'success');
-      setTimeout(function() { window.location.href = 'index.html'; }, 600);
-    } else {
-      // 邮箱验证开启 → 提示用户去验证邮箱
-      showToast('注册成功！请查收邮箱验证邮件后登录', 'success');
-      setTimeout(function() { tabsEl.querySelector('[data-tab="login"]').click(); }, 1000);
-    }
-  }).catch(function(err) {
-    setLoading($('regBtn'), false);
-    console.error('Save registration data error:', err);
-    showToast('数据保存失败，请重试', 'error');
-  });
-}
+// saveRegistrationData 已内联到注册流程中（见上方 doRegister），
+// 不再需要独立函数。注册现在完全走本地 UUID + sbRest，无 Supabase Auth 依赖。
 
 // ==================== 忘记密码（页面重置码模式） ====================
 function generateResetCode() {
@@ -780,20 +729,10 @@ async function handlePasswordReset() {
   var tokenHash = params.get('token_hash');
   var type = params.get('type');
 
-  // 模式A：邮件链接带回 token_hash → 走 Supabase OTP 验证（需配好邮件服务才可用）
+  // 模式A：邮件链接带回 token_hash → 已废弃（Supabase Auth 已移除）
+  // 如需邮件重置密码功能，需另行实现邮件服务集成
   if (tokenHash && type === 'recovery') {
-    try {
-      var res = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
-      if (res.error || !res.data.session) {
-        showResetError('重置链接无效或已过期，请重新获取。');
-        return;
-      }
-      resetAccount = (res.data.user && res.data.user.email) || '';
-      $('resetEmailHint').textContent = resetAccount ? ('账号邮箱：' + resetAccount) : '';
-      $('resetCodeInput').parentElement.style.display = 'none'; // 隐藏重置码输入
-    } catch (e) {
-      showResetError('无法验证重置链接，请重试。');
-    }
+    showResetError('邮件重置链接已不可用，请使用页面重置码模式。');
     return;
   }
 
@@ -864,7 +803,8 @@ async function submitNewPassword() {
       data: data,
       updated_at: new Date().toISOString()
     });
-    await supabase.auth.signOut();
+    // 清除本地登录态（不再依赖 supabase.auth.signOut）
+    try { localStorage.removeItem('wb_auth_data'); localStorage.removeItem('sb_session'); } catch (_) {}
     sessionStorage.removeItem('resetMode');
     setLoading($('resetSubmitBtn'), false);
     showToast('密码已重置，请用新密码登录', 'success');
