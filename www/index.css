@@ -4155,6 +4155,103 @@ input[type=range]::-webkit-slider-thumb {
   padding: 0 2px
 }
 
+/* ===== 循环待办日历选择器（对齐 Keep 训练日） ===== */
+#repeatCalWrap {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 10px 8px
+}
+
+.cal-head {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 6px;
+  text-align: center
+}
+
+.cal-head span {
+  font-size: 11px;
+  color: var(--ink-lighter);
+  font-weight: 600
+}
+
+.cal-grid, #repeatCal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px
+}
+
+.cal-cell {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  border-radius: 50%;
+  color: var(--ink);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .12s;
+  user-select: none
+}
+
+.cal-cell.out {
+  visibility: hidden;
+  cursor: default
+}
+
+.cal-cell.today {
+  background: var(--g400);
+  color: #fff;
+  font-weight: 700
+}
+
+.cal-cell.selected {
+  background: var(--g50);
+  color: var(--g500);
+  border-color: var(--g400);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--g400)
+}
+
+.cal-cell:not(.out):not(.today):not(.selected):hover {
+  background: var(--g50);
+  border-color: var(--line)
+}
+
+.cal-cell.selected.today {
+  background: var(--g400);
+  color: #fff;
+  position: relative
+}
+
+.cal-cell.selected.today::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff
+}
+
+/* 循环待办卡片标识 */
+.today-item .repeat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--g50);
+  color: var(--g500);
+  margin-right: 4px;
+  vertical-align: middle
+}
+
 .chip-del:hover {
   color: var(--danger)
 }
