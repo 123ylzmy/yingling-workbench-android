@@ -2723,6 +2723,19 @@
     return { total, streak, yCount, mCount, wCount };
   }
   let checkinRange = 'year';
+  function toggleCheckinChart() {
+    const card = document.getElementById('checkinChartCard');
+    const btn = document.getElementById('ckToggleBtn');
+    if (!card || !btn) return;
+    if (card.style.display === 'none') {
+      card.style.display = 'block';
+      btn.textContent = '趋势 ▴';
+      renderCheckinChartInto('checkinChart', checkinRange);
+    } else {
+      card.style.display = 'none';
+      btn.textContent = '趋势 ▾';
+    }
+  }
   function switchCheckinRange(r) {
     checkinRange = r;
     document.querySelectorAll('.ck-tab').forEach(function (t) { t.classList.toggle('active', t.dataset.r === r); });
@@ -2814,18 +2827,19 @@
     <div class="checkin-ach">
       <div class="checkin-num"><span class="checkin-big">${st.total}</span><span class="checkin-unit">天</span></div>
       <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天</div>
+      <button class="ck-toggle-btn" id="ckToggleBtn" onclick="toggleCheckinChart()">趋势 ▾</button>
     </div>
-  </div>
-  <div class="checkin-chart-card">
-    <div class="checkin-chart-head">
-      <span class="checkin-chart-title">打卡趋势</span>
-      <div class="ck-tabs">
-        <button class="ck-tab ${checkinRange === 'year' ? 'active' : ''}" data-r="year" onclick="switchCheckinRange('year')">年</button>
-        <button class="ck-tab ${checkinRange === 'month' ? 'active' : ''}" data-r="month" onclick="switchCheckinRange('month')">月</button>
-        <button class="ck-tab ${checkinRange === 'week' ? 'active' : ''}" data-r="week" onclick="switchCheckinRange('week')">周</button>
+    <div class="checkin-chart-card" id="checkinChartCard" style="display:none">
+      <div class="checkin-chart-head">
+        <span class="checkin-chart-title">打卡趋势</span>
+        <div class="ck-tabs">
+          <button class="ck-tab ${checkinRange === 'year' ? 'active' : ''}" data-r="year" onclick="switchCheckinRange('year')">年</button>
+          <button class="ck-tab ${checkinRange === 'month' ? 'active' : ''}" data-r="month" onclick="switchCheckinRange('month')">月</button>
+          <button class="ck-tab ${checkinRange === 'week' ? 'active' : ''}" data-r="week" onclick="switchCheckinRange('week')">周</button>
+        </div>
       </div>
+      <div class="checkin-chart" id="checkinChart"></div>
     </div>
-    <div class="checkin-chart" id="checkinChart"></div>
   </div>
   <div class="habit-grid">
     ${all.map(h => {
