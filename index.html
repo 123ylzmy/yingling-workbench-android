@@ -20,7 +20,17 @@
   <!-- 主题色（Android 状态栏 + PWA 标题栏） -->
   <meta name="theme-color" content="#7EB89A">
   <title>自洽日程</title>
-  <link rel="stylesheet" href="index.min.css?v=20260810">
+  <link rel="stylesheet" href="index.min.css?v=20260810b">
+  <script>
+    /* 原生环境（APK）标记：在渲染前打标，避免文案闪烁 */
+    (function () {
+      try {
+        if (window.Capacitor || location.protocol === 'file:' || location.protocol === 'capacitor:') {
+          document.documentElement.classList.add('is-native-app');
+        }
+      } catch (e) { }
+    })();
+  </script>
 </head>
 
 <body>
@@ -38,7 +48,7 @@
               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg></div>
-          今日
+          <span class="nav-lbl"><span class="lbl-web">今日待办</span><span class="lbl-app">今日</span></span>
           <span class="badge" id="todayBadge" style="display: inline;">3</span>
         </div>
         <div class="side-nav-item" data-tab="health" onclick="switchPage(&#39;health&#39;)">
@@ -1143,7 +1153,7 @@
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      今日
+      <span class="nav-lbl"><span class="lbl-web">今日待办</span><span class="lbl-app">今日</span></span>
     </div>
     <div class="bn-item" data-tab="health" onclick="switchPage(&#39;health&#39;)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1377,7 +1387,7 @@
   }
 })();
 </script>
-<script src="index.min.js?v=20260810"></script>
+<script src="index.min.js?v=20260810b"></script>
 
 <!-- PWA: 注册 Service Worker（离线缓存 + 可安装） -->
 <script>

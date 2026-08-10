@@ -180,6 +180,23 @@ input[type=number]::-webkit-inner-spin-button {
   overflow-y: auto
 }
 
+/* 导航文案环境自适应：网页端显示「今日待办」，APK(原生)显示「今日」 */
+.nav-lbl {
+  white-space: nowrap;
+}
+
+.lbl-app {
+  display: none;
+}
+
+html.is-native-app .lbl-web {
+  display: none;
+}
+
+html.is-native-app .lbl-app {
+  display: inline;
+}
+
 .side-nav-item {
   display: flex;
   align-items: center;
