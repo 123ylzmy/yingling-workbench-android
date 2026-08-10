@@ -2766,7 +2766,7 @@ html.is-native-app .lbl-app {
   margin-top: 2px
 }
 
-/* ========== 打卡统计可视化图表（年/月/周，默认隐藏） ========== */
+/* ========== 打卡统计：下拉三角 + 弹窗（年/月/周） ========== */
 .checkin-block {
   margin: 2px 0 12px
 }
@@ -2778,20 +2778,31 @@ html.is-native-app .lbl-app {
   gap: 2px;
   position: relative
 }
-.ck-toggle-btn {
-  font-size: 12px;
-  padding: 3px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
+.checkin-lab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px
+}
+.ck-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  padding: 0;
+  border: none;
   background: transparent;
   color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1;
   cursor: pointer;
-  transition: all .15s;
-  margin-top: 4px
+  border-radius: 50%;
+  transition: all .15s
 }
-.ck-toggle-btn:hover {
-  border-color: var(--g500);
-  color: var(--g500)
+.ck-caret:hover {
+  color: var(--g500);
+  background: rgba(0, 0, 0, .05)
 }
 .ck-tabs {
   display: flex;
@@ -2813,26 +2824,32 @@ html.is-native-app .lbl-app {
   color: #fff;
   border-color: var(--g500)
 }
-.checkin-chart-card {
+.checkin-chart {
+  width: 100%
+}
+.ck-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px
+}
+.ck-stat {
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  padding: 12px 12px 8px;
-  margin-top: 10px
+  padding: 10px 4px;
+  text-align: center
 }
-.checkin-chart-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px
+.ck-stat-n {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--g500)
 }
-.checkin-chart-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink)
-}
-.checkin-chart {
-  width: 100%
+.ck-stat-l {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 2px
 }
 .ck-svg {
   display: block;
