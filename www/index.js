@@ -465,6 +465,8 @@
         });
         if (d.measure) d.measure.forEach(m => { if (m.calf === undefined) m.calf = null });
       }
+      // 打卡记录：必须在 version 判断之外初始化（老数据 version 已=2，不会进入上面的迁移块）
+      if (!d.checkins || typeof d.checkins !== 'object') d.checkins = {};
       // 迁移旧体重：补 bodyFat
       if (d.weight) d.weight.forEach(w => { if (w.bodyFat === undefined) w.bodyFat = null });
       // 确保所有 todos 有 done 字段
@@ -2688,21 +2690,24 @@
     return habitDone && trainDone;
   }
   function syncTodayCheckin() {
-    if (!state || !state.checkins) return;
+    if (!state) return;
+    if (!state.checkins || typeof state.checkins !== 'object') state.checkins = {};
     const td = today();
     if (isTodayCheckinDone()) state.checkins[td] = true;
     else delete state.checkins[td];
   }
   function checkinStats() {
+    if (!state.checkins || typeof state.checkins !== 'object') state.checkins = {};
+    const cks = state.checkins;
     const td = today();
-    const keys = Object.keys(state.checkins || {});
+    const keys = Object.keys(cks);
     const total = keys.length;
     let streak = 0;
     let d = new Date();
-    if (!state.checkins[td]) d.setDate(d.getDate() - 1); // 今天未打卡则从昨天算连续
+    if (!cks[td]) d.setDate(d.getDate() - 1); // 今天未打卡则从昨天算连续
     while (true) {
       const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      if (state.checkins[ds]) { streak++; d.setDate(d.getDate() - 1); } else break;
+      if (cks[ds]) { streak++; d.setDate(d.getDate() - 1); } else break;
     }
     const now = new Date();
     const y = now.getFullYear(), m = now.getMonth();

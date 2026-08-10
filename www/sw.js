@@ -1,5 +1,5 @@
-// 自洽日程 Service Worker v8（网络优先）
-const CACHE_NAME = 'yl-workbench-v8';
+// 自洽日程 Service Worker v9（网络优先）
+const CACHE_NAME = 'yl-workbench-v9';
 const ASSETS = [
   '/',
   '/index.html',
