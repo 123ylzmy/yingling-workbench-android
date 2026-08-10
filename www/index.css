@@ -2768,17 +2768,16 @@ html.is-native-app .lbl-app {
 
 /* ========== 打卡统计可视化图表（年/月/周） ========== */
 .checkin-block {
-  margin: 2px 0 14px
+  margin: 2px 0 12px
 }
 .ck-tabs {
   display: flex;
   gap: 6px;
-  justify-content: center;
-  margin: 4px 0 10px
+  margin: 0
 }
 .ck-tab {
   font-size: 12px;
-  padding: 5px 18px;
+  padding: 5px 16px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--bg);
@@ -2791,12 +2790,32 @@ html.is-native-app .lbl-app {
   color: #fff;
   border-color: var(--g500)
 }
+.checkin-chart-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 12px 8px;
+  margin: 0 0 14px
+}
+.checkin-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px
+}
+.checkin-chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink)
+}
 .checkin-chart {
   width: 100%
 }
 .ck-svg {
   display: block;
-  width: 100%
+  width: 100%;
+  aspect-ratio: 320 / 160;
+  height: auto
 }
 .ck-cap {
   text-align: center;
@@ -2804,10 +2823,19 @@ html.is-native-app .lbl-app {
   color: var(--ink-soft);
   margin-top: 2px
 }
-/* 网页端：打卡区与习惯网格居中限宽，宽屏不散 */
-html:not(.is-native-app) .checkin-block {
+/* 网页端：打卡区/图表卡/习惯网格居中限宽，宽屏不散 */
+html:not(.is-native-app) .checkin-block,
+html:not(.is-native-app) .checkin-chart-card {
   max-width: 480px;
-  margin: 2px auto 14px
+  margin-left: auto;
+  margin-right: auto
+}
+html:not(.is-native-app) .checkin-block {
+  margin-top: 2px;
+  margin-bottom: 12px
+}
+html:not(.is-native-app) .checkin-chart-card {
+  margin-bottom: 14px
 }
 html:not(.is-native-app) #healthHabits .habit-grid {
   max-width: 480px;

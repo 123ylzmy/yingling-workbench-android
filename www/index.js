@@ -2815,10 +2815,15 @@
       <div class="checkin-num"><span class="checkin-big">${st.total}</span><span class="checkin-unit">天</span></div>
       <div class="checkin-lab">累计打卡 · 连续 ${st.streak} 天</div>
     </div>
-    <div class="ck-tabs">
-      <button class="ck-tab ${checkinRange === 'year' ? 'active' : ''}" data-r="year" onclick="switchCheckinRange('year')">年</button>
-      <button class="ck-tab ${checkinRange === 'month' ? 'active' : ''}" data-r="month" onclick="switchCheckinRange('month')">月</button>
-      <button class="ck-tab ${checkinRange === 'week' ? 'active' : ''}" data-r="week" onclick="switchCheckinRange('week')">周</button>
+  </div>
+  <div class="checkin-chart-card">
+    <div class="checkin-chart-head">
+      <span class="checkin-chart-title">打卡趋势</span>
+      <div class="ck-tabs">
+        <button class="ck-tab ${checkinRange === 'year' ? 'active' : ''}" data-r="year" onclick="switchCheckinRange('year')">年</button>
+        <button class="ck-tab ${checkinRange === 'month' ? 'active' : ''}" data-r="month" onclick="switchCheckinRange('month')">月</button>
+        <button class="ck-tab ${checkinRange === 'week' ? 'active' : ''}" data-r="week" onclick="switchCheckinRange('week')">周</button>
+      </div>
     </div>
     <div class="checkin-chart" id="checkinChart"></div>
   </div>
