@@ -20,7 +20,7 @@
   <!-- 主题色（Android 状态栏 + PWA 标题栏） -->
   <meta name="theme-color" content="#7EB89A">
   <title>自洽日程</title>
-  <link rel="stylesheet" href="index.min.css?v=20260811m">
+  <link rel="stylesheet" href="index.min.css?v=20260812a">
   <script>
     /* 原生环境（APK）标记：在渲染前打标，避免文案闪烁 */
     (function () {
@@ -216,13 +216,12 @@
               </path>
             </svg>
           </button>
-          <span class="sync-indicator offline" id="syncIndicator" style="margin-right:4px">
-            <span class="sync-dot" id="syncDot" title="云同步状态"></span>
-          </span>
           <button class="topbar-btn cloud-btn" id="cloudBtn" onclick="toggleCloudPanel()" title="云同步" style="background:var(--g50);color:var(--g400);border:1.5px solid var(--g200)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
               <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path>
             </svg>
+            <span class="sync-dot" id="syncDot" title="云同步状态"></span>
+            <span class="cloud-label">云同步</span>
           </button>
           <button class="topbar-btn" id="logoutBtn" onclick="handleLogout()" title="退出登录" style="color:var(--danger);margin-left:4px">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
@@ -1163,7 +1162,7 @@
 
   <!-- ============ 个人资料编辑弹窗 ============ -->
   <div class="auth-modal-overlay" id="profileOverlay" style="display:none">
-    <div class="auth-modal" style="max-width:440px;text-align:left">
+    <div class="auth-modal" style="max-width:min(440px,92vw);text-align:left">
       <h3 style="text-align:center">👤 个人资料</h3>
       <p class="sub" style="text-align:center;margin-bottom:16px">修改后自动同步到云端，所有设备更新</p>
 
@@ -1347,7 +1346,7 @@
   }
 })();
 </script>
-<script src="app.min.js?v=20260811m"></script>
+<script src="app.min.js?v=20260812a"></script>
 
 <!-- PWA: 注册 Service Worker（离线缓存 + 可安装） -->
 <script>

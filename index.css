@@ -5487,15 +5487,12 @@ input[type=range]::-webkit-slider-thumb {
     padding: 8px 18px
   }
 
-  /* 头像选择器移动端 — 一行6个 */
+  /* 头像选择器移动端 — 自适应（沿用主规则，仅微调） */
   .avatar-picker {
-    grid-template-columns: repeat(6, 1fr) !important;
     gap: 6px !important;
   }
   .avatar-option {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
+    font-size: clamp(16px, 4.6vw, 20px);
   }
 }
 
@@ -6189,6 +6186,8 @@ html[data-font="l"] body { zoom: 1.15 }
   padding: 28px 24px;
   width: 90%;
   max-width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: var(--shadow-hover);
   text-align: center;
 }
@@ -6241,25 +6240,28 @@ html[data-font="l"] body { zoom: 1.15 }
   min-height: 18px;
 }
 
-/* 头像选择器 — 一行6个 */
+/* 头像选择器 — 自适应，每行6个，永不溢出边框 */
 .avatar-picker {
   display: grid !important;
   grid-template-columns: repeat(6, 1fr);
-  gap: 8px !important;
-  justify-items: center;
+  gap: clamp(6px, 1.6vw, 10px) !important;
+  justify-items: stretch;
+  width: 100%;
 }
 .avatar-option {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 100% !important;
+  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: 50%;
-  font-size: 24px;
+  font-size: clamp(18px, 5vw, 24px);
   cursor: pointer;
   transition: all .15s;
   border: 3px solid transparent;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 .avatar-option:hover {
   transform: scale(1.1);
@@ -6273,7 +6275,16 @@ html[data-font="l"] body { zoom: 1.15 }
 .cloud-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  width: auto;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.cloud-btn svg { flex-shrink: 0; }
+.cloud-btn .cloud-label {
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
 }
 .cloud-btn .avatar-dot {
   width: 20px;
