@@ -4656,7 +4656,7 @@ input[type=range]::-webkit-slider-thumb {
     width: 100%
   }
 
-  /* 问候语行：左侧文字+头像+心情，右侧放操作按钮 */
+  /* 问候语行：左侧文字+头像+心情，右侧操作按钮绝对定位靠右 */
   .topbar .greet {
     font-size: 13px;
     display: flex;
@@ -4664,17 +4664,27 @@ input[type=range]::-webkit-slider-thumb {
     flex-wrap: wrap;
     gap: 4px;
     width: 100%;
-    justify-content: space-between;
-    padding-right: 4px
+    padding-right: 4px;
+    position: relative
   }
 
-  /* 移动端 topbar-right 按钮嵌入问候语行（通过 JS 移动） */
+  /* 左侧：问候语+头像+心情（可收缩，给按钮留空间） */
+  .topbar .greet > #greetText,
+  .topbar .greet > .mood-wrap {
+    flex-shrink: 1;
+    min-width: 0;
+    padding-right: 140px /* 预留按钮宽度，避免文字被遮挡 */
+  }
+
+  /* 移动端操作按钮——绝对定位始终靠右（不依赖 margin-left:auto） */
   .greet-actions {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-    margin-left: auto
+    gap: 4px
   }
   .greet-actions button,
   .greet-actions .sync-indicator {
