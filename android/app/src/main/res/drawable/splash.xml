@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 米白背景 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F9F6F0"/>
+        </shape>
+    </item>
+    <!-- 居中 Logo -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/splash_logo"/>
+    </item>
+</layer-list>
