@@ -602,31 +602,7 @@
     var nickname = (profile && profile.nickname) ? profile.nickname : '';
     var gt = document.getElementById('greetText');
     if (gt) gt.innerHTML = g + '，' + nickname + ' ' + avatarHtml;
-    // 移动端：天气移到心情之后，三个按钮移到问候语行最右（幂等，可重复调用）
-    function moveGreetActions() {
-      var greet = document.getElementById('greetLine');
-      var actionsContainer = document.getElementById('greetActions');
-      var rightBar = document.querySelector('.topbar-right');
-      var weather = document.getElementById('weatherWidget');
-      var topbar = document.querySelector('.topbar');
-      var topbarMain = document.querySelector('.topbar-main');
-      if (!greet || !actionsContainer || !rightBar || !weather || !topbar || !topbarMain) return;
-      var isMobile = window.innerWidth < 768 || document.documentElement.classList.contains('is-native-app');
-      if (isMobile) {
-        // 三按钮移到问候语行最右；天气保持独立（已在问候块之后，CSS 让其整行第二排）
-        if (rightBar.parentNode !== actionsContainer) actionsContainer.appendChild(rightBar);
-      } else {
-        // 还原桌面：按钮回到 .topbar 末尾；兼容旧状态把误插入问候块内的天气移回
-        if (rightBar.parentNode !== topbar) topbar.appendChild(rightBar);
-        if (weather.parentNode === greet) {
-          var gp = greet.parentNode;
-          topbarMain.insertBefore(weather, gp.nextSibling);
-        }
-      }
-    }
-    moveGreetActions();
-    window.removeEventListener('resize', moveGreetActions);
-    window.addEventListener('resize', moveGreetActions);
+    // 三按钮位置固定由 CSS 控制（移动端绝对定位右上角），不再 JS 挪动，避免逐页跳动
     if (!state.mood || state.mood.date !== today()) { state.mood = { date: today(), value: 'happy' }; }
     renderMoodIcon();
   }

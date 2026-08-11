@@ -4658,7 +4658,7 @@ input[type=range]::-webkit-slider-thumb {
     padding: 8px 0
   }
 
-  /* 顶部栏 — 移动端：两行（问候+按钮一行，天气整行第二排） */
+  /* 顶部栏 — 移动端：问候一行 + 天气一行；三按钮绝对定位固定右上角 */
   .topbar {
     height: auto;
     padding: 8px 14px;
@@ -4726,11 +4726,18 @@ input[type=range]::-webkit-slider-thumb {
     padding: 10px 12px
   }
 
-  /* 移动端兜底：未移动到问候语行时，排到顶部栏最后（不再“太高”在顶部） */
+  /* 移动端：三按钮固定右上角（绝对定位），不随页面跳动；正文右避让避免重叠 */
   .topbar-right {
-    order: 2;
-    align-items: center
+    position: absolute;
+    top: 9px;
+    right: 12px;
+    z-index: 5;
+    order: 0;
+    align-items: center;
+    gap: 6px
   }
+  .topbar .greet { padding-right: 122px }
+  .weather-inline { padding-right: 122px }
 
   .topbar-right button {
     min-height: 32px;
