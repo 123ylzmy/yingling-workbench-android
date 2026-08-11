@@ -5896,18 +5896,11 @@ input[type=range]::-webkit-slider-thumb {
 }
 [data-theme="dark"] .goal-reward-done { animation: rewardPulseDark 2s ease-in-out infinite }
 
-/* 字体大小 */
-[data-font="s"] {
-  font-size: 13px
-}
-
-[data-font="m"] {
-  font-size: 14px
-}
-
-[data-font="l"] {
-  font-size: 16px
-}
+/* 字体大小：整体等比缩放（绕过正文固定 px 不跟随根字号的问题）
+   zoom 作用于 body，使侧边栏/主内容/弹窗整体随 s/m/l 缩放 */
+html[data-font="s"] body { zoom: 0.9 }
+html[data-font="m"] body { zoom: 1 }
+html[data-font="l"] body { zoom: 1.15 }
 
 /* 强调色 */
 [data-accent="green"] {
