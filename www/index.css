@@ -5678,6 +5678,7 @@ input[type=range]::-webkit-slider-thumb {
   --ink-light: #707070;
   --ink-lighter: #505050;
   --line: #383840;
+  --input-bg: #333340;
   --danger: #E88888;
   --danger-soft: #3A2828;
   --success: #88C088;
@@ -5716,7 +5717,7 @@ input[type=range]::-webkit-slider-thumb {
   background: rgba(0, 0, 0, 0.7)
 }
 
-[data-theme="dark"] .modal-content {
+[data-theme="dark"] .modal {
   background: var(--card)
 }
 [data-theme="dark"] .modal-hd {
@@ -5895,6 +5896,21 @@ input[type=range]::-webkit-slider-thumb {
   50% { border-color: #C8A860; box-shadow: 0 0 0 6px rgba(100,80,40,0) }
 }
 [data-theme="dark"] .goal-reward-done { animation: rewardPulseDark 2s ease-in-out infinite }
+
+/* 暗色补丁 — 漏覆盖组件（硬编码 #fff 背景 / 缺失变量回退） */
+[data-theme="dark"] .cal-nav { background: var(--input-bg) }
+[data-theme="dark"] .mood-panel { background: var(--card); border-color: var(--line) }
+[data-theme="dark"] .today-cb { background: var(--card) }
+[data-theme="dark"] .today-act-move { background: var(--card) }
+[data-theme="dark"] .train-week-nav button { background: var(--card); color: var(--ink-soft) }
+[data-theme="dark"] .train-rest-toggle { background: var(--card); color: var(--ink-soft) }
+[data-theme="dark"] .period-bar button { background: var(--card); color: var(--ink-soft) }
+[data-theme="dark"] .train-cat-tab.sel { background: var(--card); color: var(--ink) }
+[data-theme="dark"] .ex-dropdown-btn { background: var(--card); color: var(--ink-soft) }
+[data-theme="dark"] .ex-dropdown-panel { background: var(--card); border-color: var(--line) }
+[data-theme="dark"] .train-list-day { background: var(--card); border-color: var(--line) }
+[data-theme="dark"] .chart-actions button { background: var(--card); color: var(--g400); border-color: var(--g300) }
+[data-theme="dark"] .chart-inline-area { background: var(--card); border-color: var(--line) }
 
 /* 字体大小：整体等比缩放（绕过正文固定 px 不跟随根字号的问题）
    zoom 作用于 body，使侧边栏/主内容/弹窗整体随 s/m/l 缩放 */
