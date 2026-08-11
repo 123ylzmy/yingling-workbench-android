@@ -5437,13 +5437,6 @@ input[type=range]::-webkit-slider-thumb {
     height: 28px
   }
 
-  /* 训练弹窗下拉 */
-  .ex-dropdown-btn {
-    min-height: 48px;
-    font-size: 16px;
-    padding: 12px 14px
-  }
-
   .ex-panel-item {
     padding: 12px 14px;
     font-size: 14px;
