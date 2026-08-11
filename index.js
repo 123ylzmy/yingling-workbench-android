@@ -126,15 +126,12 @@
   function updateSyncUI(connected) {
     var btn = document.getElementById('cloudBtn');
     var dot = document.getElementById('syncDot');
-    var label = btn && btn.querySelector('.cloud-label');
     if (connected) {
       if (btn) { btn.style.background = 'var(--g100)'; btn.style.color = 'var(--g500)'; btn.style.borderColor = 'var(--g300)'; btn.title = '已同步 · 点击手动同步'; }
       if (dot) dot.style.background = 'var(--success)';
-      if (label) label.textContent = '已同步';
     } else {
       if (btn) { btn.style.background = 'var(--g50)'; btn.style.color = 'var(--g400)'; btn.style.borderColor = 'var(--g200)'; btn.title = '离线 · 点击同步'; }
       if (dot) dot.style.background = 'var(--g200)';
-      if (label) label.textContent = '云同步';
     }
   }
 
@@ -541,12 +538,6 @@
         .then(function() {
           lastSyncedAt = Date.now();
           _cloudSaveRetries = 0;
-          var btnLabel = document.querySelector('#cloudBtn .cloud-label');
-          if (btnLabel) {
-            var orig = btnLabel.textContent;
-            btnLabel.textContent = '已同步';
-            setTimeout(function() { if (btnLabel.textContent === '已同步') btnLabel.textContent = orig; }, 2000);
-          }
         })
         .catch(function() {
           _cloudSaveRetries++;
