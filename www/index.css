@@ -4780,7 +4780,7 @@ input[type=range]::-webkit-slider-thumb {
   }
 
   .wi-clothes {
-    display: none
+    display: inline
   }
 
   .topbar-main {
