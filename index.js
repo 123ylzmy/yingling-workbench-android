@@ -94,12 +94,6 @@
 
   function doUpload() {
     if (!syncConfig) return Promise.resolve();
-    // 安全检查：空数据上传前警告
-    var localSize = JSON.stringify(state).length;
-    if (localSize < CLOUD_MIN_DATA_SIZE) {
-      console.log('[Sync] ⛔ doUpload 被拦截：本地数据仅 ' + localSize + ' 字节');
-      return Promise.reject(new Error('本地数据疑似为空（' + localSize + ' 字节），为保护云端数据已拒绝上传'));
-    }
     return sbFetch(syncConfig, 'POST', 'sync_store', {
       group_key: syncConfig.userId,
       store: 'wb_yingling_v2',
@@ -254,9 +248,6 @@
       }
       // 3) 如果本地比云端新 → 上传（本设备刚改过数据）
       else if (lastLocalUpdate > cloudTime && lastLocalUpdate > (lastSyncedAt || 0)) {
-        // 安全检查：防止空数据覆盖云端
-        var _pollLocalSize = JSON.stringify(state).length;
-        if (_pollLocalSize < CLOUD_MIN_DATA_SIZE) { console.log('[Sync] pollSync 上传被拦截：本地数据仅 ' + _pollLocalSize + ' 字节'); return; }
         var upBody = { group_key: syncConfig.userId, store: 'wb_yingling_v2', data: state, updated_at: new Date().toISOString() };
         await sbFetch(syncConfig, 'POST', 'sync_store', upBody, 'Prefer: resolution=merge-duplicates');
         lastSyncedAt = Date.now();
@@ -539,16 +530,8 @@
   /* 自动云端保存（防抖 1.5 秒，失败自动重试最多 3 次） */
   var _cloudSavePending = null;
   var _cloudSaveRetries = 0;
-  // 安全阈值：本地数据小于此值时视为"空/初始状态"，禁止上传覆盖云端真实数据
-  var CLOUD_MIN_DATA_SIZE = 1500;
   function autoCloudSave() {
     if (!syncConfig || !syncConnected) return;
-    // 安全检查：防止空数据（localStorage 被清空后）覆盖云端真实数据
-    var localSize = JSON.stringify(state).length;
-    if (localSize < CLOUD_MIN_DATA_SIZE) {
-      console.log('[Sync] ⛔ 本地数据仅 ' + localSize + ' 字节，疑似空状态，跳过自动上传以保护云端数据');
-      return;
-    }
     if (_cloudSavePending) clearTimeout(_cloudSavePending);
     _cloudSavePending = setTimeout(function() {
       doUpload()
