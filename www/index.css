@@ -6281,11 +6281,6 @@ html[data-font="l"] body { zoom: 1.15 }
   white-space: nowrap;
 }
 .cloud-btn svg { flex-shrink: 0; }
-.cloud-btn .cloud-label {
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 600;
-}
 .cloud-btn .avatar-dot {
   width: 20px;
   height: 20px;
