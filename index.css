@@ -313,6 +313,12 @@ html.is-native-app .lbl-app {
 .topbar .greet > * {
   align-self: center
 }
+#greetText {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  line-height: 1
+}
 
 /* 桌面端：greet-actions 为空时隐藏（按钮在 topbar-right） */
 .greet-actions:empty { display: none }
