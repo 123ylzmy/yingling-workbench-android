@@ -2646,9 +2646,18 @@
     el.innerHTML = '当前 BMI：<b>' + bmi + '</b> · ' + bmiCategory(bmi);
   }
   function saveWeight() {
-    const d = $('wd').value, v = parseFloat($('wv').value);
-    if (!d || isNaN(v)) return toast('请填写完整');
-    const bf = $('wbf') ? parseFloat($('wbf').value) || null : null;
+    const d = $('wd').value, vRaw = ($('wv').value || '').trim();
+    if (!d) return toast('请选择日期');
+    // 编辑已有记录时若清空体重 → 删除该记录，避免留下空记录
+    if (!vRaw) {
+      const ex = state.weight.find(w => w.date === d);
+      if (ex) { state.weight = state.weight.filter(w => w.date !== d); save(); closeModal(); renderAll(); toast('已删除该体重记录') }
+      return toast('请输入体重');
+    }
+    const v = parseFloat(vRaw);
+    if (isNaN(v)) return toast('请输入有效体重');
+    const bfRaw = $('wbf') ? ($('wbf').value || '').trim() : '';
+    const bf = bfRaw ? parseFloat(bfRaw) : null;
     const ex = state.weight.find(w => w.date === d);
     if (ex) { ex.weight = v; ex.bodyFat = bf; } else state.weight.push({ id: uid(), date: d, weight: v, bodyFat: bf });
     state.weight.sort((a, b) => a.date.localeCompare(b.date));
@@ -2672,12 +2681,14 @@
   }
   function saveMeasure() {
     const d = $('md').value;
-    const data = { date: d, waist: +$('waist').value || null, hip: +$('hip').value || null, thigh: +$('thigh').value || null, calf: +$('calf').value || null, arm: +$('arm').value || null };
     if (!d) return toast('请选择日期');
+    const w = $('waist').value.trim(), h = $('hip').value.trim(), t = $('thigh').value.trim(), c = $('calf').value.trim(), a = $('arm').value.trim();
+    if (!(w || h || t || c || a)) return toast('请至少填写一项围度');
+    const data = { date: d, waist: w ? +w : null, hip: h ? +h : null, thigh: t ? +t : null, calf: c ? +c : null, arm: a ? +a : null };
     const ex = state.measure.find(m => m.date === d);
     if (ex) Object.assign(ex, data); else state.measure.push({ id: uid(), ...data });
     state.measure.sort((a, b) => a.date.localeCompare(b.date));
-    save(); closeModal(); renderAll(); toast('已记录');
+    save(); closeModal(); renderAll(); toast(ex ? '已更新' : '已记录');
   }
 
   /* ===================== 弹窗：自定义习惯（健康页用） ===================== */

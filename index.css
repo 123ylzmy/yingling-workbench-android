@@ -2152,6 +2152,15 @@ html.is-native-app .lbl-app {
   overflow-y: auto;
   padding-right: 4px;
 }
+/* 全局主题化滚动条：跟随昼夜（var(--line) 在暗色板中为深色） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px }
+*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; min-height: 24px }
+*::-webkit-scrollbar-track { background: transparent }
+*::-webkit-scrollbar-thumb:hover { background: var(--ink-lighter) }
 /* 自定义滚动条 */
 .train-list::-webkit-scrollbar { width: 4px; }
 .train-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
@@ -5803,6 +5812,18 @@ input[type=range]::-webkit-slider-thumb {
 [data-theme="dark"] .cal-day:hover {
   background: #333340
 }
+
+/* 弹窗内日期选择器（重复日期 / 目标日期）暗色补全 */
+[data-theme="dark"] .cal-head span { color: var(--ink-lighter) }
+[data-theme="dark"] .cal-month-label { color: var(--ink-lighter) }
+[data-theme="dark"] .cal-grid, [data-theme="dark"] #repeatCal { background: transparent }
+[data-theme="dark"] .cal-cell { color: var(--ink) }
+[data-theme="dark"] .cal-cell.out { color: var(--ink-lighter) }
+[data-theme="dark"] .cal-cell.today { background: var(--g400); color: #fff }
+[data-theme="dark"] .cal-cell:hover { background: #333340 }
+[data-theme="dark"] .cal-cell.selected { background: #3A6350; color: #fff; border-color: var(--g400) }
+[data-theme="dark"] .cal-cell.selected.today { background: var(--g400); color: #fff }
+[data-theme="dark"] .cal-cell.selected.today::after { background: #fff }
 
 [data-theme="dark"] .goal-card {
   background: var(--card);
