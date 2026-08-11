@@ -4656,15 +4656,15 @@ input[type=range]::-webkit-slider-thumb {
     width: 100%
   }
 
-  /* 问候语行：左侧文字+头像+心情，右侧放操作按钮 */
+  /* 问候语行：文字+心情+天气 居左，三个按钮推到最右（单行不换行） */
   .topbar .greet {
     font-size: 13px;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 4px;
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding-right: 4px
   }
 
@@ -4754,8 +4754,7 @@ input[type=range]::-webkit-slider-thumb {
   }
 
   .wi-clothes {
-    font-size: 10px;
-    padding-left: 4px
+    display: none
   }
 
   .topbar-main {
