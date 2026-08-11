@@ -404,6 +404,7 @@ html.is-native-app .lbl-app {
 .topbar-btn {
   width: 36px;
   height: 36px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,7 +414,8 @@ html.is-native-app .lbl-app {
   color: var(--ink-soft);
   cursor: pointer;
   transition: all .15s;
-  padding: 0
+  padding: 0;
+  box-sizing: border-box
 }
 
 .topbar-btn:hover {
@@ -4726,15 +4728,16 @@ input[type=range]::-webkit-slider-thumb {
     padding: 10px 12px
   }
 
-  /* 移动端：三按钮固定右上角（绝对定位），不随页面跳动；正文右避让避免重叠 */
+  /* 移动端：三按钮固定右上角（视口 fixed 定位），切换 4 个页面/滚动都纹丝不动；正文右避让避免重叠 */
   .topbar-right {
-    position: absolute;
+    position: fixed;
     top: 9px;
     right: 12px;
-    z-index: 5;
+    z-index: 120;
     order: 0;
     align-items: center;
-    gap: 6px
+    gap: 6px;
+    flex: 0 0 auto
   }
   .topbar .greet { padding-right: 122px }
   .weather-inline { padding-right: 122px }
