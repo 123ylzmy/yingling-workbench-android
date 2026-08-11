@@ -126,12 +126,15 @@
   function updateSyncUI(connected) {
     var btn = document.getElementById('cloudBtn');
     var dot = document.getElementById('syncDot');
+    var label = btn && btn.querySelector('.cloud-label');
     if (connected) {
       if (btn) { btn.style.background = 'var(--g100)'; btn.style.color = 'var(--g500)'; btn.style.borderColor = 'var(--g300)'; btn.title = '已同步 · 点击手动同步'; }
       if (dot) dot.style.background = 'var(--success)';
+      if (label) label.textContent = '已同步';
     } else {
       if (btn) { btn.style.background = 'var(--g50)'; btn.style.color = 'var(--g400)'; btn.style.borderColor = 'var(--g200)'; btn.title = '离线 · 点击同步'; }
       if (dot) dot.style.background = 'var(--g200)';
+      if (label) label.textContent = '云同步';
     }
   }
 
