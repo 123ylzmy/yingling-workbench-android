@@ -747,15 +747,28 @@
     if (name && name.trim()) fetchWeatherByCity(name.trim());
   }
 
+  // 统一取定位：APK 优先用 Capacitor 原生定位插件（已声明并申请定位权限），
+  // 网页/其它环境回退到 navigator.geolocation；都不可用则 reject。
+  function getGeoPosition() {
+    return new Promise(function (resolve, reject) {
+      var cap = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
+      var isNative = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+      if (cap && isNative) {
+        cap.getCurrentPosition({ enableHighAccuracy: false, timeout: 8000 })
+          .then(function (p) { resolve({ coords: { latitude: p.coords.latitude, longitude: p.coords.longitude } }); })
+          .catch(function (e) { reject(e); });
+        return;
+      }
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000, enableHighAccuracy: false });
+        return;
+      }
+      reject(new Error('geolocation unavailable'));
+    });
+  }
+
   function fetchWeather() {
-    if (!navigator.geolocation) {
-      // 无定位能力：用已保存城市或显示设置入口
-      var cached = state.weather;
-      if (cached) { renderWeather(cached); }
-      else { var sc = getSavedCity(); if (sc) fetchWeatherByCity(sc); else showWeatherFallback(); }
-      return;
-    }
-    // 尝试用缓存（当天有效）
+    // 当天有效缓存直接渲染
     var cached = state.weather;
     if (cached && cached.date === today()) {
       renderWeather(cached);
@@ -763,8 +776,7 @@
       if (!cached.city) fetchCityByLatLng(parseFloat(cached.lat || 0), parseFloat(cached.lng || 0), cached);
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      function (pos) {
+    getGeoPosition().then(function (pos) {
         var lat = pos.coords.latitude.toFixed(2);
         var lng = pos.coords.longitude.toFixed(2);
         var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng + '&current=temperature_2m,apparent_temperature,weather_code,relative_humidity_2m,wind_speed_10m&timezone=auto';
@@ -803,15 +815,11 @@
           if (cached) { renderWeather(cached); }
           else { showWeatherFallback(); }
         });
-      },
-      function () {
-        // 定位失败：回退到已保存城市，否则显示设置入口
-        var cached = state.weather;
-        if (cached) renderWeather(cached);
-        else { var sc = getSavedCity(); if (sc) fetchWeatherByCity(sc); else showWeatherFallback(); }
-      },
-      { timeout: 8000, enableHighAccuracy: false }
-    );
+    }).catch(function () {
+      // 定位不可用/被拒：回退到已保存城市，否则显示设置入口
+      if (cached) { renderWeather(cached); }
+      else { var sc = getSavedCity(); if (sc) fetchWeatherByCity(sc); else showWeatherFallback(); }
+    });
   }
 
   function fetchCityByLatLng(lat, lng, cachedData) {
