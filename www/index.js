@@ -608,16 +608,27 @@
     var nickname = (profile && profile.nickname) ? profile.nickname : '';
     var gt = document.getElementById('greetText');
     if (gt) gt.innerHTML = g + '，' + nickname + ' ' + avatarHtml;
-    // 移动端：把操作按钮从 topbar-right 移到问候语行右侧（幂等，可重复调用）
+    // 移动端：天气移到心情之后，三个按钮移到问候语行最右（幂等，可重复调用）
     function moveGreetActions() {
+      var greet = document.getElementById('greetLine');
       var actionsContainer = document.getElementById('greetActions');
       var rightBar = document.querySelector('.topbar-right');
-      if (!actionsContainer || !rightBar) return;
+      var weather = document.getElementById('weatherWidget');
+      var topbar = document.querySelector('.topbar');
+      var topbarMain = document.querySelector('.topbar-main');
+      if (!greet || !actionsContainer || !rightBar || !weather || !topbar || !topbarMain) return;
       var isMobile = window.innerWidth < 768 || document.documentElement.classList.contains('is-native-app');
       if (isMobile) {
+        // 天气插入到心情之后（greetActions 之前），三个按钮移到最右
+        if (weather.parentNode !== greet) greet.insertBefore(weather, actionsContainer);
         if (rightBar.parentNode !== actionsContainer) actionsContainer.appendChild(rightBar);
       } else {
-        var topbar = document.querySelector('.topbar');
+        // 还原桌面：天气回到 topbar-main（问候语块之后），按钮回到 .topbar 末尾
+        if (weather.parentNode !== topbarMain) {
+          var wrap = topbarMain.querySelector('div');
+          if (wrap && wrap.parentNode === topbarMain) topbarMain.insertBefore(weather, wrap.nextSibling);
+          else topbarMain.appendChild(weather);
+        }
         if (rightBar.parentNode !== topbar) topbar.appendChild(rightBar);
       }
     }
