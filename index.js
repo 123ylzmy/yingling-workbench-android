@@ -619,17 +619,15 @@
       if (!greet || !actionsContainer || !rightBar || !weather || !topbar || !topbarMain) return;
       var isMobile = window.innerWidth < 768 || document.documentElement.classList.contains('is-native-app');
       if (isMobile) {
-        // 天气插入到心情之后（greetActions 之前），三个按钮移到最右
-        if (weather.parentNode !== greet) greet.insertBefore(weather, actionsContainer);
+        // 三按钮移到问候语行最右；天气保持独立（已在问候块之后，CSS 让其整行第二排）
         if (rightBar.parentNode !== actionsContainer) actionsContainer.appendChild(rightBar);
       } else {
-        // 还原桌面：天气回到 topbar-main（问候语块之后），按钮回到 .topbar 末尾
-        if (weather.parentNode !== topbarMain) {
-          var wrap = topbarMain.querySelector('div');
-          if (wrap && wrap.parentNode === topbarMain) topbarMain.insertBefore(weather, wrap.nextSibling);
-          else topbarMain.appendChild(weather);
-        }
+        // 还原桌面：按钮回到 .topbar 末尾；兼容旧状态把误插入问候块内的天气移回
         if (rightBar.parentNode !== topbar) topbar.appendChild(rightBar);
+        if (weather.parentNode === greet) {
+          var gp = greet.parentNode;
+          topbarMain.insertBefore(weather, gp.nextSibling);
+        }
       }
     }
     moveGreetActions();
