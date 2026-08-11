@@ -4649,19 +4649,22 @@ input[type=range]::-webkit-slider-thumb {
     padding: 8px 0
   }
 
-  /* 顶部栏 — 移动端：问候语+按钮同行，日期+天气次行 */
+  /* 顶部栏 — 移动端：两行（问候+按钮一行，天气整行第二排） */
   .topbar {
     height: auto;
     padding: 8px 14px;
-    flex-wrap: wrap;
-    gap: 4px 0;
-    align-content: center
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: nowrap
   }
+  .topbar .date { display: none }
 
   .topbar-main {
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: stretch;
     order: 1;
     width: 100%
   }
@@ -4695,11 +4698,15 @@ input[type=range]::-webkit-slider-thumb {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 8px !important;
-    min-height: 32px !important;
-    min-width: 32px;
+    padding: 7px !important;
+    min-height: 34px !important;
+    min-width: 34px;
     font-size: 11px !important;
-    border-radius: 12px !important
+    border-radius: 10px !important
+  }
+  .greet-actions button svg {
+    width: 18px !important;
+    height: 18px !important
   }
   .greet-actions #logoutBtn {
     margin-left: 0 !important;
@@ -4751,20 +4758,24 @@ input[type=range]::-webkit-slider-thumb {
     font-size: 10px
   }
 
-  /* 天气 */
+  /* 天气：移动端整行居中（带城市） */
   .weather-inline {
-    padding: 5px 10px;
-    gap: 5px;
-    font-size: 11px
+    width: 100%;
+    justify-content: center;
+    padding: 7px 14px;
+    gap: 6px;
+    background: #EAF3DE;
+    border-color: #C0DD97;
+    font-size: 12px
   }
 
   .wi-city {
-    font-size: 10px;
-    max-width: 50px
+    font-size: 12px;
+    max-width: 120px
   }
 
   .wi-temp {
-    font-size: 13px
+    font-size: 15px
   }
 
   .wi-clothes {
