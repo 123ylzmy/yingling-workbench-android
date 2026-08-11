@@ -2711,8 +2711,9 @@
     const all = [...HABITS, ...(state.customHabits || [])];
     const tdh = state.habits[td] || {};
     const habitDone = all.length === 0 ? true : all.every(h => tdh[h.key]);
-    const trainTodos = (state.todos || []).filter(t => t.isRepeat && t.repeatDates && t.repeatDates.indexOf(td) >= 0);
-    const trainDone = trainTodos.length === 0 ? true : trainTodos.every(t => t.doneBy && t.doneBy[td]);
+    // 下方的当日训练计划（state.trainLogs 中 date === 今天）；当日无训练计划则视为满足
+    const trainLogsToday = (state.trainLogs || []).filter(l => l.date === td);
+    const trainDone = trainLogsToday.length === 0 ? true : trainLogsToday.every(l => l.done);
     return habitDone && trainDone;
   }
   function syncTodayCheckin() {
