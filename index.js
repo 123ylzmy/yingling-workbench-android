@@ -3486,7 +3486,7 @@
     var total = 0;
     for (var i = 0; i < 7; i++) { var d = new Date(lastMon); d.setDate(d.getDate() + i); var ds = fmtTrainDate(d); state.trainLogs.filter(function (l) { return l.date === ds }).forEach(function (l) { state.trainLogs.push({ id: uid(), date: fmtTrainDate(new Date(trainWeekStart.getTime() + i * 864e5)), text: l.text, done: false }); total++ }) }
     if (!total) return toast('上周没有训练计划');
-    conf('从上周复制 ' + total + ' 项训练到本周？', function () { save(); renderTrainLogs('trainRecords'); toast('已复制 ' + total + ' 项') });
+    conf('从上周复制 ' + total + ' 项训练到本周？', function () { save(); renderTrainLogs('trainRecords'); refreshCheckinIfHealth(); toast('已复制 ' + total + ' 项') });
   }
 
   function renderTrainLogs(containerId) {
@@ -3989,19 +3989,26 @@
     } else {
       state.trainLogs.push(item);
       save(); closeModal();
-      trainWeekStart = getMonday(new Date(d)); renderTrainLogs('trainRecords'); toast('已添加');
+      trainWeekStart = getMonday(new Date(d)); renderTrainLogs('trainRecords'); refreshCheckinIfHealth(); toast('已添加');
     }
   }
 
+  // 训练数据变化后，刷新同页的「累计打卡」计数（修复：先健康后训练不刷新计数）
+  function refreshCheckinIfHealth() {
+    if (curPage === 'health' && healthSubTab !== 'health') {
+      syncTodayCheckin();
+      renderHabits('healthHabits');
+    }
+  }
   function toggleTrain(id) {
     var t = state.trainLogs.find(function (x) { return x.id === id });
-    if (t) { t.done = !t.done; save(); renderTrainLogs('trainRecords'); toast(t.done ? '完成 ✓' : '已撤销') }
+    if (t) { t.done = !t.done; save(); renderTrainLogs('trainRecords'); refreshCheckinIfHealth(); toast(t.done ? '完成 ✓' : '已撤销') }
   }
 
   function delTrain(id) {
     conf('删除这条训练记录？', function () {
       state.trainLogs = state.trainLogs.filter(function (t) { return t.id !== id });
-      save(); renderTrainLogs('trainRecords');
+      save(); renderTrainLogs('trainRecords'); refreshCheckinIfHealth();
     });
   }
 
