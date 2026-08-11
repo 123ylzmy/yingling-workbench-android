@@ -307,7 +307,11 @@ html.is-native-app .lbl-app {
   flex-wrap: wrap;
   font-size: 14px;
   color: var(--ink);
-  font-weight: 500
+  font-weight: 500;
+  line-height: 1
+}
+.topbar .greet > * {
+  align-self: center
 }
 
 /* 桌面端：greet-actions 为空时隐藏（按钮在 topbar-right） */
@@ -4645,7 +4649,7 @@ input[type=range]::-webkit-slider-thumb {
     padding: 8px 14px;
     flex-wrap: wrap;
     gap: 4px 0;
-    align-content: flex-start
+    align-content: center
   }
 
   .topbar-main {
@@ -4656,7 +4660,7 @@ input[type=range]::-webkit-slider-thumb {
     width: 100%
   }
 
-  /* 问候语行：文字+心情+天气 居左，三个按钮推到最右（单行不换行） */
+  /* 问候语行：文字+心情+天气 居左，三个按钮推到最右（单行不换行，强制垂直居中） */
   .topbar .greet {
     font-size: 13px;
     display: flex;
@@ -4665,7 +4669,11 @@ input[type=range]::-webkit-slider-thumb {
     gap: 4px;
     width: 100%;
     justify-content: flex-start;
-    padding-right: 4px
+    padding-right: 4px;
+    line-height: 1
+  }
+  .topbar .greet > * {
+    align-self: center
   }
 
   /* 移动端 topbar-right 按钮嵌入问候语行（通过 JS 移动） */
