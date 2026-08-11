@@ -4758,14 +4758,15 @@ input[type=range]::-webkit-slider-thumb {
     font-size: 10px
   }
 
-  /* 天气：移动端整行居中（带城市） */
+  /* 天气：移动端恢复为左对齐胶囊（非整条，沿用原蓝胶囊样式） */
   .weather-inline {
-    width: 100%;
-    justify-content: center;
-    padding: 7px 14px;
-    gap: 6px;
-    background: #EAF3DE;
-    border-color: #C0DD97;
+    width: auto;
+    justify-content: flex-start;
+    align-self: flex-start;
+    padding: 6px 14px;
+    gap: 7px;
+    background: linear-gradient(135deg, #EEF5FF, #E8F1FB);
+    border-color: #D0E2F5;
     font-size: 12px
   }
 
