@@ -4696,9 +4696,15 @@ input[type=range]::-webkit-slider-thumb {
     padding: 10px 12px
   }
 
+  /* 移动端兜底：未移动到问候语行时，排到顶部栏最后（不再“太高”在顶部） */
+  .topbar-right {
+    order: 2;
+    align-items: center
+  }
+
   .topbar-right button {
-    min-height: 36px;
-    padding: 5px 12px;
+    min-height: 32px;
+    padding: 5px 10px;
     font-size: 11px
   }
 
