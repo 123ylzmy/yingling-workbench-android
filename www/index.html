@@ -20,7 +20,7 @@
   <!-- 主题色（Android 状态栏 + PWA 标题栏） -->
   <meta name="theme-color" content="#7EB89A">
   <title>自洽日程</title>
-  <link rel="stylesheet" href="index.min.css?v=20260812f">
+  <link rel="stylesheet" href="index.min.css?v=20260812g">
   <script>
     /* 原生环境（APK）标记：在渲染前打标，避免文案闪烁 */
     (function () {
@@ -1190,14 +1190,13 @@
           <label style="font-size:12px;color:var(--g400);display:block;margin-bottom:4px">性别</label>
           <input type="hidden" id="profileGender" value="">
           <div class="ex-dropdown" id="genderDropdown">
-            <div class="ex-dropdown-btn" id="genderBtn" onclick="toggleGenderDropdown(event)" style="padding:8px 10px;min-height:auto;border-radius:8px">
+            <div class="ex-dropdown-btn" id="genderBtn" onclick="toggleGenderDropdown(event)">
               <span id="genderBtnText">请选择</span>
               <span class="ex-dropdown-arrow">&#9660;</span>
             </div>
             <div class="ex-dropdown-panel" id="genderPanel">
               <div class="ex-panel-item sel" onclick="selectGender('female')" data-g="female">女</div>
               <div class="ex-panel-item" onclick="selectGender('male')" data-g="male">男</div>
-              <div class="ex-panel-item" onclick="selectGender('other')" data-g="other">其他</div>
             </div>
           </div>
         </div>

@@ -2530,15 +2530,15 @@ html.is-native-app .lbl-app {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border: 1.5px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
+  border-radius: 8px;
+  background: var(--input-bg);
   font-size: 14px;
-  color: var(--ink);
+  color: var(--text);
   cursor: pointer;
   transition: all .2s;
-  min-height: 44px;
+  min-height: auto;
   box-sizing: border-box
 }
 
@@ -5931,7 +5931,7 @@ input[type=range]::-webkit-slider-thumb {
 [data-theme="dark"] .train-rest-toggle { background: var(--card); color: var(--ink-soft) }
 [data-theme="dark"] .period-bar button { background: var(--card); color: var(--ink-soft) }
 [data-theme="dark"] .train-cat-tab.sel { background: var(--card); color: var(--ink) }
-[data-theme="dark"] .ex-dropdown-btn { background: var(--card); color: var(--ink-soft) }
+[data-theme="dark"] .ex-dropdown-btn { background: var(--input-bg); color: var(--text) }
 [data-theme="dark"] .ex-dropdown-panel { background: var(--card); border-color: var(--line) }
 [data-theme="dark"] .train-list-day { background: var(--card); border-color: var(--line) }
 [data-theme="dark"] .chart-actions button { background: var(--card); color: var(--g400); border-color: var(--g300) }
