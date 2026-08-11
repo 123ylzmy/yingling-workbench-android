@@ -696,11 +696,63 @@
     return '超薄夏装 + 注意防暑';
   }
 
+  // ===== 手动城市天气（无定位/定位失败时的可靠回退，按账号隔离）=====
+  function weatherCityKey() {
+    return 'wb_weather_city_' + (getUserId() || 'anon');
+  }
+  function getSavedCity() {
+    try { return localStorage.getItem(weatherCityKey()) || ''; } catch (e) { return ''; }
+  }
+  function saveCityName(n) {
+    try { localStorage.setItem(weatherCityKey(), n); } catch (e) {}
+  }
+
+  function showWeatherLoading() {
+    var w = document.getElementById('weatherWidget'); if (!w) return;
+    w.style.display = 'flex'; w.style.cursor = 'default'; w.onclick = null;
+    document.getElementById('wIcon2').innerHTML = '<circle cx="12" cy="12" r="9" fill="none" stroke="#A0A0A0" stroke-width="2" stroke-dasharray="40 20"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></circle>';
+    document.getElementById('wCity2').textContent = '获取中…';
+    document.getElementById('wTemp2').textContent = '°C';
+    document.getElementById('wClothes2').textContent = '';
+  }
+
+  function fetchWeatherByCity(cityName) {
+    if (!cityName) return;
+    showWeatherLoading();
+    var geoUrl = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(cityName) + '&count=1&language=zh&format=json';
+    fetch(geoUrl).then(function (r) { return r.json(); }).then(function (g) {
+      if (!g.results || !g.results.length) { toast('未找到城市：' + cityName); showWeatherFallback(); return; }
+      var loc = g.results[0];
+      var lat = loc.latitude, lng = loc.longitude;
+      var label = loc.name + (loc.country ? '·' + loc.country : '');
+      var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng + '&current=temperature_2m,apparent_temperature,weather_code,relative_humidity_2m,wind_speed_10m&timezone=auto';
+      fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+        var c = d.current;
+        if (!c) { showWeatherFallback(); return; }
+        var wd = weatherCode(c.weather_code);
+        var data = {
+          date: today(), lat: lat, lng: lng,
+          temp: Math.round(c.temperature_2m), feel: Math.round(c.apparent_temperature),
+          desc: wd[1], type: wd[2], humidity: c.relative_humidity_2m, wind: c.wind_speed_10m,
+          clothes: clothesAdvice(c.apparent_temperature), city: label
+        };
+        state.weather = data; save(); renderWeather(data); saveCityName(cityName);
+      }).catch(function () { showWeatherFallback(); });
+    }).catch(function () { toast('城市查询失败，请重试'); showWeatherFallback(); });
+  }
+
+  function promptCityForWeather() {
+    var name = '';
+    try { name = window.prompt('输入城市名称获取天气（如：北京、上海、广州）', getSavedCity() || ''); } catch (e) { name = ''; }
+    if (name && name.trim()) fetchWeatherByCity(name.trim());
+  }
+
   function fetchWeather() {
     if (!navigator.geolocation) {
-      // 无定位，用缓存或显示获取不到
+      // 无定位能力：用已保存城市或显示设置入口
       var cached = state.weather;
       if (cached) { renderWeather(cached); }
+      else { var sc = getSavedCity(); if (sc) fetchWeatherByCity(sc); else showWeatherFallback(); }
       return;
     }
     // 尝试用缓存（当天有效）
@@ -753,10 +805,10 @@
         });
       },
       function () {
-        // 定位失败
+        // 定位失败：回退到已保存城市，否则显示设置入口
         var cached = state.weather;
         if (cached) renderWeather(cached);
-        else showWeatherFallback();
+        else { var sc = getSavedCity(); if (sc) fetchWeatherByCity(sc); else showWeatherFallback(); }
       },
       { timeout: 8000, enableHighAccuracy: false }
     );
@@ -781,9 +833,9 @@
     w.style.display = 'flex';
     document.getElementById('wIcon2').innerHTML = '<circle cx="12" cy="10" r="4" fill="none" stroke="#A0A0A0" stroke-width="1.5"/><line x1="12" y1="16" x2="12" y2="20" stroke="#A0A0A0" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="20" x2="16" y2="20" stroke="#A0A0A0" stroke-width="1.5" stroke-linecap="round"/>';
     document.getElementById('wTemp2').textContent = '--°C';
-    document.getElementById('wClothes2').textContent = '点击获取天气';
+    document.getElementById('wClothes2').textContent = '📍 点击设置城市';
     w.style.cursor = 'pointer';
-    w.onclick = function () { fetchWeather(); };
+    w.onclick = function () { promptCityForWeather(); };
   }
 
   function renderWeather(d) {
@@ -4311,6 +4363,7 @@
   })();
 
   function saveProfileChanges() {
+    var oldProfile = getUserProfile();
     var errEl = document.getElementById('profileError');
     var val = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
 
@@ -4325,7 +4378,6 @@
     if (!nickname) { if (errEl) errEl.textContent = '请输入昵称'; return; }
     if (nickname.length > 7) { if (errEl) errEl.textContent = '昵称最多7个字符'; return; }
 
-    var oldProfile = getUserProfile();
     var newProfile = {
       nickname: nickname,
       avatar_idx: avatarIdx,
